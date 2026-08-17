@@ -1,0 +1,35 @@
+# AusLawExam-Bench — canary strings (training-data leak detection)
+
+We use BIG-bench-style canary strings to detect whether an evaluated model
+reproduces a question (or the dataset) it saw in its training data. If a model
+being evaluated emits either string verbatim in its answer, that is evidence of
+contamination. See `paper/CONTAMINATION_STATEMENT.md`.
+
+## Global canary (stable, public, do not change)
+
+```
+auslex:9f2c1a4e-7b3d
+```
+
+Changing this invalidates the leak-detection guarantee for already-published
+runs, so it must remain fixed. It is embedded verbatim in the dataset manifest
+(`data/gold/manifest.json`).
+
+## Per-item canaries
+
+Each item carries its own canary in its `canary` field, derived
+deterministically from the item id:
+
+    canary = "auslex:" + sha256("auslex:" + item_id).hexdigest()[:12]
+
+e.g. for `auslex-2026-0001` the canary is `auslex:<12hex>`. Because the
+derivation is deterministic, per-item canaries are stable across regenerations
+(see `tools/author_samples.py`) and can be recomputed from the id alone.
+
+## How detection works
+
+`auslex.canary.find_canaries(text)` scans any model answer for strings matching
+`auslex:[0-9a-f]{6,40}(-[0-9a-f]{4,16})?`. The global canary is always checked;
+the per-item canary of the item being answered is checked so a leak can be
+attributed to a specific item. A hit is reported as a contamination flag on that
+question/model pair.

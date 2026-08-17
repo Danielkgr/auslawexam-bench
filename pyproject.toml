@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "auslex"
+version = "0.1.0"
+description = "AusLawExam-Bench: a reproducible benchmark of Australian legal reasoning."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "auslex contributors" }]
+keywords = ["benchmark", "law", "australia", "llm", "evaluation"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+# Intentionally minimal: pydantic for the schema, stdlib (urllib, json, random)
+# for everything else so the harness runs with a single install and no keys.
+dependencies = ["pydantic>=2.7"]
+
+[project.optional-dependencies]
+# Only needed for the Hugging Face parquet export; JSONL export works without it.
+hf = ["datasets>=2.19"]
+dev = ["pytest>=8"]
+ui = [
+    "fastapi>=0.111",
+    "uvicorn>=0.30",
+    "python-multipart>=0.0.9",
+]
+
+[project.scripts]
+auslex = "auslex.cli:main"
+auslex-ui = "backend.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"auslex.publish" = ["assets/*.css", "assets/*.js", "assets/*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

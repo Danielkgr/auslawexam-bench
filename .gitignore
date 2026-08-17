@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Secrets / local config — never commit keys
+.env
+auslex.local.json
+*.local.json
+
+# Runtime outputs are reproducible; keep them out of the source history.
+# (Published leaderboard + raw runs ship as release artefacts, not in-tree.)
+runs/*/
+!runs/.gitkeep
+site-out/
+hf-export/
+
+# OS
+.DS_Store
