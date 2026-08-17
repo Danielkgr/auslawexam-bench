@@ -48,6 +48,7 @@ class RunConfig(BaseModel):
     models: list[str] = Field(default_factory=lambda: ["gpt", "claude", "gemini", "local"])
     n_reps: int = Field(default=3, ge=1, le=20)
     base_seed: int = Field(default=0, ge=0)
+    run_id: Optional[str] = None  # optional explicit run id (auto-generated if omitted)
     question_filter: Optional[str] = None  # comma-separated question IDs
     priestley_filter: Optional[str] = None  # comma-separated area names
     jurisdiction_filter: Optional[str] = None  # comma-separated jurisdictions

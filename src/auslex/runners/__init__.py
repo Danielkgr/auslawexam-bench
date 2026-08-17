@@ -8,9 +8,10 @@
 - ``google``  -> :class:`GoogleRunner`    (needs ``GOOGLE_API_KEY``)
 - ``mock``    -> :class:`MockRunner` (always)
 
-Commercial slots with no configured API key fall back to :class:`MockRunner`
-(when ``allow_mock_fallback``), so the pipeline runs end-to-end offline and the
-fallback is flagged ``is_mock`` on every record.
+Commercial slots with no configured API key raise an error by default.
+Pass ``allow_mock_fallback=True`` to fall back to :class:`MockRunner` — this is
+off by default so the benchmark never silently substitutes synthetic output for
+a real model run.
 """
 
 from __future__ import annotations
@@ -32,7 +33,7 @@ _API_RUNNERS = {
 }
 
 
-def get_runner(spec: ModelSpec, *, allow_mock_fallback: bool = True) -> Runner:
+def get_runner(spec: ModelSpec, *, allow_mock_fallback: bool = False) -> Runner:
     kind = spec.runner
     if kind == "mock":
         return MockRunner(spec)

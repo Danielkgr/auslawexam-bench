@@ -5,9 +5,9 @@ configured model ``n_reps`` times (temperature 0, seed = rep), and writes an
 append-only, content-hash-addressed transcript under ``runs/<run-id>/``.
 
 Commercial slots with no API key (or a local endpoint that fails its probe)
-transparently fall back to the mock runner and are flagged ``is_mock`` on every
-record, so the pipeline always completes and the provenance of each row is
-auditable.
+are skipped by default — the pipeline no longer silently falls back to mock
+output. Set ``allow_mock_fallback=True`` to restore the old behaviour for
+offline testing.
 """
 
 from __future__ import annotations
@@ -51,7 +51,11 @@ class RunConfig:
     run_id: Optional[str] = None
     out_root: Path = Path("runs")
     base_seed: int = 0
-    allow_mock_fallback: bool = True
+    allow_mock_fallback: bool = False
+    question_filter: Optional[str] = None
+    priestley_filter: Optional[str] = None
+    jurisdiction_filter: Optional[str] = None
+    difficulty_filter: Optional[str] = None
 
 
 @dataclass
@@ -111,13 +115,22 @@ def run(cfg: RunConfig) -> RunReport:
     # Decide the runner per model, resolving any mock fallback up front so that
     # every row for a given model is homogeneous (never a real/mock mix).
     resolved: list[tuple[ModelSpec, Runner, bool, bool]] = []
+    skipped: list[str] = []
     for spec in cfg.models:
-        fallback = False
-        runner = get_runner(spec, allow_mock_fallback=cfg.allow_mock_fallback)
-        if isinstance(runner, LocalRunner) and not probe_local(spec.base_url or ""):
-            fallback = True
-            runner = MockRunner(spec)
-        resolved.append((spec, runner, is_mock_runner(runner), fallback))
+        try:
+            fallback = False
+            runner = get_runner(spec, allow_mock_fallback=cfg.allow_mock_fallback)
+            if isinstance(runner, LocalRunner) and not probe_local(spec.base_url or ""):
+                if cfg.allow_mock_fallback:
+                    fallback = True
+                    runner = MockRunner(spec)
+                else:
+                    skipped.append(spec.name)
+                    continue
+            resolved.append((spec, runner, is_mock_runner(runner), fallback))
+        except RuntimeError as exc:
+            skipped.append(spec.name)
+            print(f"  skip  {spec.name}: {exc}")
 
     # Meta is written once (config snapshot), before any completions, so a run
     # directory always self-describes even if it is interrupted.
@@ -130,14 +143,19 @@ def run(cfg: RunConfig) -> RunReport:
         }
         for spec, runner, is_mock, fb in resolved
     ]
+    # Include skipped models so meta reflects all requested slots.
+    for name in skipped:
+        model_states.append({"name": name, "runner": "skipped", "is_mock": False})
     meta = _make_meta(cfg, model_states)
-    store.write_meta(meta)
 
     per_model: dict[str, ModelSummary] = {
         spec.name: ModelSummary(name=spec.name, is_mock=ismock, fallback=fb,
                                 n_ok=0, n_error=0)
         for spec, _, ismock, fb in resolved
     }
+    for name in skipped:
+        per_model[name] = ModelSummary(name=name, is_mock=False, fallback=False,
+                                       n_ok=0, n_error=0)
     n_completions = n_ok = n_err = 0
 
     for spec, runner, is_mock, fb in resolved:
@@ -199,7 +217,7 @@ def run(cfg: RunConfig) -> RunReport:
     meta["n_completions"] = n_completions
     meta["n_ok"] = n_ok
     meta["n_error"] = n_err
-    store.write_meta(meta)  # finalise (append-only log untouched)
+    store.write_meta(meta)  # single finalise write
 
     return RunReport(
         run_id=cfg.run_id,
@@ -210,7 +228,9 @@ def run(cfg: RunConfig) -> RunReport:
         n_completions=n_completions,
         n_ok=n_ok,
         n_error=n_err,
-        models=[per_model[s.name] for s in cfg.models],
+        models=[per_model.get(s.name, ModelSummary(name=s.name, is_mock=False,
+                                                   fallback=False, n_ok=0, n_error=0))
+                for s in cfg.models],
         started_at=started,
         finished_at=finished,
     )

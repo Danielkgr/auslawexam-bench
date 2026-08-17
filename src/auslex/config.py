@@ -63,13 +63,18 @@ def _env(name: Optional[str]) -> Optional[str]:
 
 
 def default_models() -> list[ModelSpec]:
-    """The canonical four-model benchmark roster (config-overridable)."""
+    """The canonical eight-model benchmark roster (config-overridable).
+
+    Commercial slots without an API key are skipped at runtime (set
+    ``--mock`` to fall back to deterministic mocks for offline testing).
+    """
     return [
         ModelSpec(
             name="gpt",
             vendor="openai",
             model="gpt-5.6",
             runner="openai",
+            base_url="https://api.openai.com/v1",
             api_key_env="OPENAI_API_KEY",
             temperature=0.0,
             max_tokens=3000,
@@ -90,12 +95,60 @@ def default_models() -> list[ModelSpec]:
         ModelSpec(
             name="gemini",
             vendor="google",
-            model="gemini-3.1-pro",
+            model="gemini-2.0-flash",
             runner="google",
             api_key_env="GOOGLE_API_KEY",
             temperature=0.0,
             max_tokens=3000,
             mock_quality=0.80,
+            mock_fabricate_rate=0.13,
+        ),
+        ModelSpec(
+            name="groq",
+            vendor="openai",
+            model="llama-3.3-70b-specdec",
+            runner="openai",
+            base_url="https://api.groq.com/openai/v1",
+            api_key_env="GROQ_API_KEY",
+            temperature=0.0,
+            max_tokens=3000,
+            mock_quality=0.82,
+            mock_fabricate_rate=0.10,
+        ),
+        ModelSpec(
+            name="deepseek",
+            vendor="openai",
+            model="deepseek-chat",
+            runner="openai",
+            base_url="https://api.deepseek.com/v1",
+            api_key_env="DEEPSEEK_API_KEY",
+            temperature=0.0,
+            max_tokens=3000,
+            mock_quality=0.78,
+            mock_fabricate_rate=0.12,
+        ),
+        ModelSpec(
+            name="mistral",
+            vendor="openai",
+            model="mistral-small-latest",
+            runner="openai",
+            base_url="https://api.mistral.ai/v1",
+            api_key_env="MISTRAL_API_KEY",
+            temperature=0.0,
+            max_tokens=3000,
+            mock_quality=0.75,
+            mock_fabricate_rate=0.14,
+        ),
+        ModelSpec(
+            name="qwen",
+            vendor="openai",
+            model="qwen2.5-72b",
+            runner="openai",
+            base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+            api_key_env="DASHSCOPE_API_KEY",
+            temperature=0.0,
+            max_tokens=3000,
+            mock_quality=0.76,
             mock_fabricate_rate=0.13,
         ),
         ModelSpec(

@@ -8,9 +8,9 @@ A public, reproducible benchmark of Australian legal reasoning for LLMs.
 
 AusLawExam-Bench measures how well language models reason about Australian law using exam-style questions. It scores answers on two axes: conventional rubric correctness and, more importantly, whether the model invents citations to look like it knows the law.
 
-The benchmark runs four model slots (GPT, Claude, Gemini, plus a local open-weight slot) over a shared prompt template at temperature 0, extracts every citation in each answer, classifies them as real or fabricated, and publishes raw outputs plus scores so anyone can audit the numbers end to end.
+The benchmark runs eight model slots (GPT, Claude, Gemini, Groq, DeepSeek, Mistral, Qwen, plus a local open-weight slot) over a shared prompt template at temperature 0, extracts every citation in each answer, classifies them as real or fabricated, and publishes raw outputs plus scores so anyone can audit the numbers end to end.
 
-Current status: working prototype with 16 provisional (not lawyer-verified) questions covering all four question types across the Priestley 11 areas. The full pipeline is runnable offline with zero configuration — commercial slots fall back to deterministic seeded mocks when no API key is present.
+Current status: working prototype with 16 provisional (not lawyer-verified) questions covering all four question types across the Priestley 11 areas. Commercial slots require an API key to run live (set `--mock` to fall back to deterministic seeded mocks for offline testing).
 
 ## Headline metric: fabricated-citation rate
 
@@ -82,12 +82,16 @@ The mock runner is deterministic (`seed + slot + item_id`), so anyone can reprod
 
 Config in [src/auslex/config.py](src/auslex/config.py). Resolution: default < config file < environment.
 
-| Slot | Vendor | Real when... | Mock profile |
-|------|--------|--------------|-------------|
-| gpt | OpenAI | `OPENAI_API_KEY` set | quality 0.86, fab 0.08 |
-| claude | Anthropic | `ANTHROPIC_API_KEY` set | quality 0.83, fab 0.10 |
-| gemini | Google | `GOOGLE_API_KEY` set | quality 0.80, fab 0.13 |
-| local | OpenAI-compat (local) | `base_url` reachable | quality 0.55, fab 0.25 |
+| Slot | Vendor | Model | Real when... | Mock profile |
+|------|--------|-------|--------------|-------------|
+| gpt | OpenAI | gpt-5.6 | `OPENAI_API_KEY` set | quality 0.86, fab 0.08 |
+| claude | Anthropic | claude-opus-5 | `ANTHROPIC_API_KEY` set | quality 0.83, fab 0.10 |
+| gemini | Google | gemini-2.0-flash | `GOOGLE_API_KEY` set | quality 0.80, fab 0.13 |
+| groq | Groq | llama-3.3-70b-specdec | `GROQ_API_KEY` set | quality 0.82, fab 0.10 |
+| deepseek | DeepSeek | deepseek-chat | `DEEPSEEK_API_KEY` set | quality 0.78, fab 0.12 |
+| mistral | Mistral | mistral-small-latest | `MISTRAL_API_KEY` set | quality 0.75, fab 0.14 |
+| qwen | Qwen | qwen2.5-72b | `DASHSCOPE_API_KEY` set | quality 0.76, fab 0.13 |
+| local | OpenAI-compat | 14. Qwen3.8-27B (Q5_K_M) | `base_url` reachable | quality 0.55, fab 0.25 |
 
 Local slot environment variables:
 
@@ -140,7 +144,7 @@ The mock judge is a seeded ensemble (`n_judges=3`), so the entire pipeline runs 
 ```
 src/auslex/
   schema.py              Pydantic contract -- QuestionItem model
-  config.py              Four-model roster (config + env-driven)
+  config.py              Eight-model roster (config + env-driven)
   prompts.py             Single versioned prompt template
   canary.py              Contamination detection
   io.py                  JSONL IO + SHA-256 content hashing

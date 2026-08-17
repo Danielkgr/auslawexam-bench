@@ -23,17 +23,18 @@ from typing import Any
 
 
 class RunStore:
-    def __init__(self, root: str | Path, run_id: str):
+    def __init__(self, root: str | Path, run_id: str, *, create_dirs: bool = True):
         self.root = Path(root)
+        self.run_id = run_id
         self.run_dir = self.root / run_id
         self.meta_path = self.run_dir / "meta.json"
         self.records_path = self.run_dir / "records.jsonl"
         self.raw_dir = self.run_dir / "raw"
-        self.run_dir.mkdir(parents=True, exist_ok=True)
-        self.raw_dir.mkdir(parents=True, exist_ok=True)
-        # Ensure the append-only log exists (empty if fresh).
-        if not self.records_path.exists():
-            self.records_path.touch()
+        if create_dirs:
+            self.run_dir.mkdir(parents=True, exist_ok=True)
+            self.raw_dir.mkdir(parents=True, exist_ok=True)
+            if not self.records_path.exists():
+                self.records_path.touch()
 
     # -- config snapshot -------------------------------------------------- #
     def write_meta(self, meta: dict[str, Any]) -> None:

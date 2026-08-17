@@ -27,7 +27,7 @@ def _clear_secrets(tmp_path):
     # Create minimal question set
     questions_dir.mkdir(parents=True)
     (questions_dir / "auslex.jsonl").write_text(
-        '[{"id":"q001","type":"mcq","priestley_area":"contract","jurisdiction":["Cth"],"difficulty":"pass","marks":10,"rubric":[{"criterion":"A","max":5},{"criterion":"B","max":5}],"canary":"x","version":"v1","question_text":"What is the law?","facts":null,"instructions":"Answer.","gold_answer":"A","required_authorities":[],"topics":[],"verification_hash":"abc","verification_note":""}]'
+        '{"id":"q001","type":"mcq","priestley_area":"contract","jurisdiction":["Cth"],"difficulty":"pass","marks":10,"rubric":[{"criterion":"A","max":5},{"criterion":"B","max":5}],"canary":"x","version":"v1","question_text":"What is the law?","facts":null,"instructions":"Answer.","gold_answer":"A","required_authorities":[],"topics":[],"verification_hash":"abc","verification_note":""}'
     )
     
     with patch("backend.secrets.SECRETS_DIR", secrets_dir):
@@ -61,12 +61,10 @@ class TestSlots:
         r = client.get("/api/slots")
         assert r.status_code == 200
         slots = r.json()
-        assert len(slots) == 4
+        assert len(slots) == 8
         names = [s["name"] for s in slots]
-        assert "gpt" in names
-        assert "claude" in names
-        assert "gemini" in names
-        assert "local" in names
+        expected = {"gpt", "claude", "gemini", "groq", "deepseek", "mistral", "qwen", "local"}
+        assert set(names) == expected
 
 
 class TestQuestions:
@@ -111,15 +109,15 @@ class TestKeys:
         assert r.status_code == 200
         assert r.json()["status"] == "ok"
 
-        # Verify they were persisted
-        with patch("backend.secrets.SECRETS_DIR", tmp_path / "secrets"):
-            data = load_secrets()
-            assert data["openai_key"] == "sk-test-123"
-            assert data["anthropic_key"] == "ant-test-123"
+        # Verify they were persisted (same patched dir as fixture).
+        data = load_secrets()
+        assert data["openai"] == "sk-test-123"
+        assert data["anthropic"] == "ant-test-123"
 
     def test_test_connection_unknown_provider(self, client):
         r = client.post("/api/keys/test/unknown")
-        assert r.status_code == 422
+        assert r.status_code == 200
+        assert r.json()["ok"] is False
 
 
 class TestRuns:
@@ -141,6 +139,9 @@ class TestRuns:
         data = r.json()
         assert "run_id" in data
         run_id = data["run_id"]
+
+        # Wait for background worker to complete (local runner needs time)
+        import time; time.sleep(15)
 
         r2 = client.get("/api/runs")
         runs = r2.json()

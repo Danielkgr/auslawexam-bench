@@ -49,6 +49,8 @@ class AnthropicRunner(Runner):
             "temperature": self.spec.temperature,
             "max_tokens": self.spec.max_tokens,
         }
+        if seed is not None:
+            payload["random_seed"] = seed
         headers = {
             "x-api-key": self._key,
             "anthropic-version": "2023-06-01",

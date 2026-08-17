@@ -84,7 +84,7 @@ Each row is one question.
 | `jurisdiction` | list | AU jurisdictions in scope |
 | `priestley_area` | string | one of the Priestley 11 core subjects |
 | `topics` | list | fine-grained topic tags |
-| `difficulty` | string | easy / medium / hard |
+| `difficulty` | string | pass / credit / distinction / high_distinction |
 | `marks` | int | marks available |
 | `question_text` | string | the question stem |
 | `gold_answer` | string | lawyer-verified model answer |

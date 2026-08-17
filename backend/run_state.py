@@ -23,6 +23,9 @@ from auslex.run.storage import RunStore
 from auslex.score.score import score_run
 from auslex.stats.report import build_report, write_report
 
+from .secrets import load_secrets
+from fastapi import HTTPException
+
 
 @dataclass
 class InFlightRun:
@@ -44,6 +47,7 @@ class RunManager:
     def start_run(self, cfg: RunConfig) -> str:
         """Launch a run in the background and return its run_id."""
         run_id = cfg.run_id or f"auslex-{int(time.time())}"
+        cfg.run_id = run_id  # ensure cfg carries the id into the worker
         with self._lock:
             self._runs[run_id] = InFlightRun(run_id=run_id, report=RunReport(
                 run_id=run_id, run_dir="", n_models=0, n_items=len(cfg.items),
@@ -62,8 +66,16 @@ class RunManager:
         from auslex.score.score import score_run
         from auslex.stats.report import build_report, write_report
 
+        run_id = cfg.run_id  # must match the key in self._runs
+        debug_log = Path(f"/tmp/run_worker_{run_id}.log")
+
+        def log(msg):
+            with open(debug_log, "a") as f:
+                f.write(f"[{run_id}] {msg}\n")
+
         try:
             # Load items (filter if requested).
+            log("start_load_items")
             items = list(cfg.items)
             if cfg.question_filter:
                 ids = {s.strip() for s in cfg.question_filter.split(",") if s.strip()}
@@ -78,15 +90,6 @@ class RunManager:
                 diffs = {s.strip() for s in cfg.difficulty_filter.split(",") if s.strip()}
                 items = [it for it in items if it.get("difficulty") in diffs]
 
-            cfg = RunConfig(
-                models=cfg.models,
-                items=items,
-                n_reps=cfg.n_reps,
-                run_id=cfg.run_id,
-                out_root=cfg.out_root,
-                base_seed=cfg.base_seed,
-            )
-
             # Override env vars for keys during the run.
             saved_env: dict[str, str] = {}
             key_map = {
@@ -100,15 +103,20 @@ class RunManager:
                     saved_env[env_var] = os.environ.get(env_var, "")
                     os.environ[env_var] = val
 
-            try:
-                report = run(cfg)
-            finally:
-                for env_var, old in saved_env.items():
-                    if old:
-                        os.environ[env_var] = old
-                    else:
-                        os.environ.pop(env_var, None)
+            log("calling_run")
+            report = run(cfg)
+            log(f"run_done n_ok={report.n_ok}")
+        except Exception as exc:
+            log(f"run_exception: {exc}")
+            raise
+        finally:
+            for env_var, old in saved_env.items():
+                if old:
+                    os.environ[env_var] = old
+                else:
+                    os.environ.pop(env_var, None)
 
+        try:
             with self._lock:
                 if run_id in self._runs:
                     self._runs[run_id].report = report
@@ -116,9 +124,10 @@ class RunManager:
             # Notify waiters.
             self._notify_waiters(run_id)
 
-            # Score.
+            log("score_run")
             scored_path = Path(report.run_dir) / "records.jsonl"
             srep = score_run(report.run_dir, items)
+            log("score_done")
 
             # Stats.
             stats_dir = Path(self.out_root) / "scores" / report.run_id
@@ -128,6 +137,7 @@ class RunManager:
                 n_boot=cfg.n_reps * 1000, n_perm=cfg.n_reps * 1000, seed=cfg.base_seed,
             )
             write_report(report_stats, self.out_root)
+            log("stats_done")
 
             # Write contamination note to meta.
             store = RunStore(cfg.out_root, report.run_id)
@@ -145,6 +155,7 @@ class RunManager:
                     r.report = report
 
         except Exception as e:
+            import traceback; traceback.print_exc()
             with self._lock:
                 if run_id in self._runs:
                     r = self._runs[run_id]
@@ -225,7 +236,7 @@ class RunManager:
                     "started_at": meta.get("started_at"),
                     "finished_at": meta.get("finished_at"),
                 }
-            return {"run_id": run_id, "status": "error", "error_msg": "run not found"}
+            raise HTTPException(status_code=404, detail=f"run {run_id} not found")
         rp = r.report
         return {
             "run_id": run_id,

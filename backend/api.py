@@ -9,6 +9,7 @@ from typing import Any, AsyncIterator
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
+from auslex.io import read_jsonl
 
 from .models import (
     ApiKeyConfig,
@@ -26,6 +27,8 @@ from .models import (
     TestConnectionResult,
 )
 from .run_state import RunManager, _apply_keys_to_env, _get_stored_key, _restore_env
+from auslex.run.orchestrator import probe_local, RunConfig as OrchestrationRunConfig
+import re
 
 router = APIRouter(prefix="/api")
 
@@ -44,6 +47,24 @@ run_manager = RunManager(out_root=DEFAULT_OUT_ROOT)
 # --------------------------------------------------------------------------- #
 # Helpers
 # --------------------------------------------------------------------------- #
+
+# Strict run_id pattern: alphanum + underscore, dot, hyphen (no ../ or /).
+_RUN_ID_RE = re.compile(r"^[A-Za-z0-9._-]+$")
+
+
+def _validate_run_id(run_id: str) -> None:
+    """Raise HTTPException(400) if run_id contains path traversal chars."""
+    if not run_id or not _RUN_ID_RE.match(run_id):
+        raise HTTPException(status_code=400, detail=f"invalid run_id {run_id!r}")
+
+
+def _safe_path(base: Path, run_id: str) -> Path:
+    """Resolve base/run_id and verify it stays under base."""
+    p = (base / run_id).resolve()
+    root = base.resolve()
+    if not str(p).startswith(str(root)):
+        raise HTTPException(status_code=400, detail=f"path traversal in run_id {run_id!r}")
+    return p
 
 
 def _load_questions() -> list[dict[str, Any]]:
@@ -84,7 +105,6 @@ async def health() -> dict[str, str]:
 @router.get("/slots")
 async def get_slots() -> list[dict[str, Any]]:
     """Return the 4 model slots with their real/mock status."""
-    specs = [s for s in run_manager.__class__.__module__ and __import__("auslex.config", fromlist=["default_models"]).default_models()]
     from auslex.config import default_models
     specs = default_models()
     return [_spec_to_status(s).model_dump() for s in specs]
@@ -180,6 +200,10 @@ async def test_connection(provider: str) -> TestConnectionResult:
     from auslex.config import default_models
     from auslex.runners import get_runner
 
+    KNOWN = {"openai", "anthropic", "google"}
+    if provider not in KNOWN:
+        return TestConnectionResult(ok=False, detail=f"Unknown provider {provider!r}")
+
     key = _get_stored_key(provider)
     if not key:
         return TestConnectionResult(ok=False, detail=f"No key configured for {provider}")
@@ -215,7 +239,7 @@ async def test_connection(provider: str) -> TestConnectionResult:
                 os.environ.pop(env_var, None)
 
 
-@router.post("/runs")
+@router.post("/runs", status_code=201)
 async def create_run(cfg: RunConfig) -> dict[str, str]:
     """Start a new run and return its run_id."""
     from auslex.config import load_models
@@ -231,7 +255,7 @@ async def create_run(cfg: RunConfig) -> dict[str, str]:
         if not wanted:
             raise HTTPException(status_code=400, detail="no valid model slots selected")
 
-        run_cfg = RunConfig(
+        run_cfg = OrchestrationRunConfig(
             models=wanted,
             items=items,
             n_reps=cfg.n_reps,
@@ -248,12 +272,14 @@ async def create_run(cfg: RunConfig) -> dict[str, str]:
 @router.get("/runs/{run_id}/status")
 async def get_run_status(run_id: str) -> dict[str, Any]:
     """Get the current status of a run."""
+    _validate_run_id(run_id)
     return run_manager.get_run_status(run_id)
 
 
 @router.get("/runs/{run_id}/stream")
 async def stream_run(run_id: str) -> StreamingResponse:
     """SSE stream for run progress."""
+    _validate_run_id(run_id)
     async def event_stream() -> AsyncIterator[str]:
         async for event in run_manager.stream_records(run_id):
             yield event
@@ -290,6 +316,7 @@ async def list_runs() -> list[dict[str, Any]]:
 @router.get("/runs/{run_id}/report")
 async def get_report(run_id: str) -> dict[str, Any]:
     """Get the stats report for a run."""
+    _validate_run_id(run_id)
     from auslex.stats.report import load_scored
     scored_path = DEFAULT_OUT_ROOT / "scores" / run_id / "scored.jsonl"
     if not scored_path.exists():
@@ -306,6 +333,7 @@ async def get_item_results(
     question: str | None = None,
 ) -> list[dict[str, Any]]:
     """Get per-item results for a run, with optional filters."""
+    _validate_run_id(run_id)
     from auslex.score.citations import build_known_corpus
     scored_path = DEFAULT_OUT_ROOT / "scores" / run_id / "scored.jsonl"
     if not scored_path.exists():
@@ -375,6 +403,7 @@ async def get_item_results(
 @router.get("/runs/{run_id}/records")
 async def get_records(run_id: str) -> list[dict[str, Any]]:
     """Get raw records for a run."""
+    _validate_run_id(run_id)
     from auslex.run.storage import RunStore
     store = RunStore(DEFAULT_OUT_ROOT, run_id)
     return store.records()
@@ -423,18 +452,26 @@ async def export_site(run_id: str) -> dict[str, str]:
 @router.post("/runs/{run_id}/export-hf")
 async def export_hf(run_id: str) -> dict[str, str]:
     """Export run outputs for Hugging Face."""
+    from auslex.run.storage import RunStore
+
+    # Validate that the run directory exists.
+    store = RunStore(DEFAULT_OUT_ROOT, run_id, create_dirs=False)
+    if not store.run_dir.exists():
+        raise HTTPException(status_code=404, detail=f"run {run_id} not found")
+
     from auslex.publish.export_hf import build_hf_export
+
     items = _load_questions()
     out = ROOT / "export" / "hf" / run_id
     exp = build_hf_export(out, items, name=f"auslex-{run_id}", version="0.1.0")
-    return {"export_path": str(out), "n_items": exp.n_items, "files": ", ".join(exp.files)}
+    return {"export_path": str(out), "n_items": str(exp.n_items), "files": ", ".join(exp.files)}
 
 
 @router.get("/runs/{run_id}/download")
 async def download_run(run_id: str) -> dict[str, str]:
     """Return paths for downloading raw run outputs."""
     from auslex.run.storage import RunStore
-    store = RunStore(DEFAULT_OUT_ROOT, run_id)
+    store = RunStore(DEFAULT_OUT_ROOT, run_id, create_dirs=False)
     if not store.run_dir.exists():
         raise HTTPException(status_code=404, detail=f"run {run_id} not found")
     return {

@@ -11,9 +11,10 @@ from auslex.config import (
 )
 
 
-def test_default_roster_has_four_slots():
+def test_default_roster_has_eight_slots():
+    """The default roster contains exactly the eight canonical slots."""
     names = {s.name for s in default_models()}
-    assert names == {"gpt", "claude", "gemini", "local"}
+    assert names == {"gpt", "claude", "gemini", "groq", "deepseek", "mistral", "qwen", "local"}
 
 
 def test_local_thinking_is_off_by_default(monkeypatch):

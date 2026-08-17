@@ -55,6 +55,157 @@ def _load_items(path: str | Path) -> list[dict[str, Any]]:
     return read_jsonl(p)
 
 
+# --------------------------------------------------------------------------- #
+# Import helper
+# --------------------------------------------------------------------------- #
+
+
+def _parse_csv_row(row: dict[str, str]) -> dict[str, Any]:
+    """Map a CSV row (columns: question,answer,type,jurisdiction,area,difficulty,
+    marks,authorities,rubric[,options,correct]) to a QuestionItem dict."""
+    # Strip whitespace from all values (CSV may emit None keys for extra columns).
+    cleaned: dict[str, str] = {}
+    for k, v in row.items():
+        if k is None:
+            continue
+        cleaned[k.strip()] = v.strip() if v is not None else ""
+
+    def _split(v: str, sep: str = ";") -> list[str]:
+        if not v:
+            return []
+        return [x.strip() for x in v.split(sep) if x.strip()]
+
+    juris = _split(cleaned.get("jurisdiction", "Cth"), sep=",")
+    authorities_raw = _split(cleaned.get("authorities", ""))
+    authorities = []
+    for a in authorities_raw:
+        # Try to detect kind: "Act ... (Cth) s N" -> statute, otherwise case.
+        if "Act" in a and "s " in a:
+            kind = "statute"
+        else:
+            kind = "case"
+        authorities.append({"kind": kind, "cite": a})
+
+    rubric_raw = _split(cleaned.get("rubric", ""))
+    rubric = []
+    for r in rubric_raw:
+        # Support both "criterion:max" and "criterion(max)" formats.
+        if "(" in r and r.endswith(")"):
+            crit, max_str = r.rsplit("(", 1)
+            max_val = int(max_str.rstrip(")"))
+        elif ":" in r:
+            crit, max_str = r.split(":", 1)
+            max_val = int(max_str.strip())
+        else:
+            crit = r
+            max_val = 1
+        rubric.append({"criterion": crit.strip(), "max": max_val})
+
+    item: dict[str, Any] = {
+        "type": cleaned.get("type", "short_answer"),
+        "jurisdiction": juris,
+        "priestley_area": cleaned.get("area", "contract"),
+        "difficulty": cleaned.get("difficulty", "pass"),
+        "marks": int(cleaned.get("marks", 10)),
+        "question_text": cleaned.get("question", ""),
+        "gold_answer": cleaned.get("answer", ""),
+        "topics": _split(cleaned.get("topics", cleaned.get("area", ""))),
+        "key_issues": _split(cleaned.get("key_issues", "")),
+        "required_authorities": authorities,
+        "rubric": rubric,
+        "law_as_at": cleaned.get("law_as_at", "2026-01-01"),
+        "provenance": {"author": "imported", "provisional": True, "tier": "C"},
+        "verification": {"second_pass": False},
+        "version": "0.1.0",
+    }
+
+    # MCQ fields.
+    if item["type"] == "mcq":
+        options_raw = cleaned.get("options", "")
+        if options_raw:
+            # Accept comma-separated or semicolon-separated options with letter prefixes.
+            import re
+            raw_options = re.findall(r"[A-D]\.\s*([^,;]+)", options_raw)
+            if not raw_options:
+                raw_options = _split(options_raw)
+            item["mcq_options"] = [o.strip() for o in raw_options if o.strip()]
+        correct = cleaned.get("correct", cleaned.get("mcq_correct", ""))
+        if correct:
+            idx = ord(correct.upper()) - ord("A")
+            if 0 <= idx < 26:
+                item["mcq_correct"] = idx
+
+    return item
+
+
+def cmd_import(args: argparse.Namespace) -> int:
+    """Import questions from an external file (JSONL or CSV)."""
+    import csv as _csv
+    from .canary import make_canary
+
+    inp = Path(args.input)
+    if not inp.exists():
+        sys.exit(f"error: input file not found: {inp}")
+
+    fmt = args.format or (".csv" if inp.suffix.lower() == ".csv" else "jsonl")
+    items: list[dict[str, Any]] = []
+
+    if fmt == "csv":
+        import datetime as _dt  # noqa: PLC0415
+        with open(inp, "r", encoding="utf-8") as fh:
+            reader = _csv.DictReader(fh)
+            for row in reader:
+                try:
+                    item = _parse_csv_row(row)
+                    # Generate id and canary for imported items.
+                    if "id" not in item:
+                        item["id"] = f"auslex-{_dt.datetime.now(_dt.timezone.utc).strftime('%Y')}-{len(items)+1:04d}"
+                    if "canary" not in item:
+                        item["canary"] = make_canary(item["id"])
+                    items.append(item)
+                except (ValueError, KeyError) as exc:
+                    print(f"  warn  [PARSE] row {len(items)+1}: {exc}")
+    else:
+        # JSONL — each line is either a full item or a dict missing id/canary.
+        for line in read_jsonl(inp):
+            if "id" not in line or not line["id"].startswith("auslex-"):
+                line["id"] = f"auslex-{dt.datetime.now(dt.timezone.utc).strftime('%Y')}-{len(items)+1:04d}"
+            if "canary" not in line or not line["canary"].startswith("auslex:"):
+                line["canary"] = make_canary(line["id"])
+            line.setdefault("version", "0.1.0")
+            line.setdefault("provenance", {}).setdefault("provisional", True)
+            items.append(line)
+
+    # Validation.
+    from .ingest import validate_dataset
+    report = validate_dataset(items)
+    errs = [i for i in report.issues if i.level == "error"]
+    warns = [i for i in report.issues if i.level == "warning"]
+    print(f"imported  : {len(items)} items from {inp}")
+    print(f"validated : errors={len(errs)}  warnings={len(warns)}")
+    for i in warns:
+        print(f"  warn  [{i.code}] {i.item_id}: {i.message}")
+    for i in errs:
+        print(f"  ERROR [{i.code}] {i.item_id}: {i.message}")
+
+    if errs:
+        print("validation failed — not writing output (use --dry-run to preview)")
+        return 1
+
+    if args.dry_run:
+        print("\n--- dry-run: would write the following items ---")
+        for it in items:
+            print(f"  - {it['id']}  ({it.get('type')})  {it.get('marks')} marks")
+        return 0
+
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    from .io import write_jsonl
+    write_jsonl(out, items)
+    print(f"written   : {out}  ({len(items)} items)")
+    return 0
+
+
 def _filter_models(names: Optional[str]) -> list:
     specs = load_models()
     if not names:
@@ -76,7 +227,12 @@ def _filter_models(names: Optional[str]) -> list:
 def _print_models(specs) -> None:
     from .config import is_real
     for s in specs:
-        tag = "real" if is_real(s) else "mock-fallback"
+        if is_real(s):
+            tag = "real"
+        elif s.runner == "mock":
+            tag = "mock (explicit)"
+        else:
+            tag = "skip (no key)"
         extra = f"  [{s.base_url}]" if s.base_url else ""
         print(f"  - {s.name:<7} {s.model:<28} {tag}{extra}")
 
@@ -162,6 +318,7 @@ def _run_pipeline(args: argparse.Namespace) -> str:
         run_id=args.run_id,
         out_root=Path(args.out_root),
         base_seed=args.seed,
+        allow_mock_fallback=getattr(args, "mock", False),
     )
     rep = run(cfg)
     print(f"run complete: {rep.run_id}")
@@ -325,6 +482,8 @@ def _build_parser() -> argparse.ArgumentParser:
         sp.add_argument("--run-id", default=None)
         sp.add_argument("--n-boot", type=int, default=10_000)
         sp.add_argument("--n-perm", type=int, default=10_000)
+        sp.add_argument("--mock", action="store_true",
+                        help="allow mock fallback for slots without API keys (offline testing only)")
         if with_pipeline:
             sp.add_argument("--no-score", action="store_true")
             sp.add_argument("--no-stats", action="store_true")
@@ -354,6 +513,16 @@ def _build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--questions", default=str(_default_questions()))
     sp.add_argument("--out", default=str(ROOT / "export" / "hf"))
     sp.set_defaults(func=cmd_export_hf)
+
+    sp = sub.add_parser("import", help="import questions from JSONL or CSV")
+    sp.add_argument("--input", required=True, help="input file (JSONL or CSV)")
+    sp.add_argument("--format", choices=["jsonl", "csv"], default=None,
+                    help="auto-detected from extension if omitted")
+    sp.add_argument("--out", default=str(ROOT / "data" / "questions" / "imported.jsonl"),
+                    help="output JSONL path (default: data/questions/imported.jsonl)")
+    sp.add_argument("--dry-run", action="store_true",
+                    help="validate and report but do not write output")
+    sp.set_defaults(func=cmd_import)
 
     return p
 

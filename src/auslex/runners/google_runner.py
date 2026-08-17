@@ -33,7 +33,7 @@ class GoogleRunner(Runner):
                 "live (otherwise the mock runner is used)"
             )
 
-    def _build(self, messages: list[dict[str, str]]) -> dict[str, Any]:
+    def _build(self, messages: list[dict[str, str]], *, seed: Optional[int] = None) -> dict[str, Any]:
         system_parts = [m["content"] for m in messages if m.get("role") == "system"]
         contents = [
             {"role": "user" if m.get("role") == "user" else "model",
@@ -47,6 +47,8 @@ class GoogleRunner(Runner):
                 "maxOutputTokens": self.spec.max_tokens,
             },
         }
+        if seed is not None:
+            payload["generationConfig"]["seed"] = seed
         if system_parts:
             payload["systemInstruction"] = {"parts": [{"text": "\n\n".join(system_parts)}]}
         return payload
@@ -54,7 +56,7 @@ class GoogleRunner(Runner):
     def complete(
         self, messages, *, seed: Optional[int] = None, item: Optional[dict] = None
     ) -> RawResponse:  # noqa: ARG002
-        payload = self._build(messages)
+        payload = self._build(messages, seed=seed)
         headers = {"x-goog-api-key": self._key, "Content-Type": "application/json"}
         try:
             body, latency_ms = self._timed(lambda: http_json(

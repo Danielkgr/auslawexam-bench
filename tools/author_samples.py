@@ -121,7 +121,7 @@ ITEMS: list[dict] = [
             "force-majeure clause. Has the contract been frustrated? Explain the test."
         ),
         gold_answer=(
-            "The leading authority is Codelfa Construction Construction Pty Ltd v State Rail "
+            "The leading authority is Codelfa Construction Pty Ltd v State Rail "
             "Authority of New South Wales (1982) 149 CLR 337. Frustration discharges a contract when, "
             "without fault of either party, a supervening event renders performance impossible or "
             "radically transforms the obligations so that they are fundamentally different from what "
@@ -137,7 +137,7 @@ ITEMS: list[dict] = [
             "increase in cost not enough", "variation or repudiation alternatives",
         ],
         authorities=[{"kind": "case",
-                      "cite": "Codelfa Construction Construction Pty Ltd v State Rail Authority of New South Wales (1982) 149 CLR 337"}],
+                      "cite": "Codelfa Construction Pty Ltd v State Rail Authority of NSW (1982) 149 CLR 337"}],
         rubric=[("rule", 4), ("application", 4), ("conclusion", 2)],
     ),
     # 3 — torts / mcq / pass

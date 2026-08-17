@@ -118,11 +118,15 @@ class JudgeResult:
 
 
 def _judge_once(
-    item: dict[str, Any], answer: str, cfg: JudgeConfig, j: int, q: float
+    item: dict[str, Any], answer: str, cfg: JudgeConfig, j: int, q: float,
+    seed: Optional[int] = None,
 ) -> dict[str, float]:
     """One judge's per-criterion scores, in a randomised criterion order."""
     rubric = item.get("rubric", [])
-    rng = _seeded(f"{cfg.name}|{j}|{item.get('id','?')}|{cfg.base_seed}")
+    seed_key = f"{cfg.name}|{j}|{item.get('id','?')}|{cfg.base_seed}"
+    if seed is not None:
+        seed_key += f"|repseed:{seed}"
+    rng = _seeded(seed_key)
     # Order randomisation (recorded; does not change per-criterion scores here).
     order = list(range(len(rubric)))
     rng.shuffle(order)
@@ -146,7 +150,7 @@ def judge_answer(
     cfg = cfg or JudgeConfig()
     q = _quality_score(item, answer)
     per_judge = [
-        _judge_once(item, answer, cfg, j, q) for j in range(cfg.n_judges)
+        _judge_once(item, answer, cfg, j, q, seed=seed) for j in range(cfg.n_judges)
     ]
     # Average per criterion across judges.
     per_criterion: dict[str, float] = {}

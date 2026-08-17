@@ -44,6 +44,11 @@ def build_prompt(item: dict[str, Any]) -> tuple[str, str]:
         marks=item.get("marks", ""),
         question_text=item.get("question_text", ""),
     )
+    # Include MCQ options so the model sees all choices.
+    if item.get("type") == "mcq" and item.get("mcq_options"):
+        options = item["mcq_options"]
+        parts = [f"{chr(65 + i)}) {opt}" for i, opt in enumerate(options)]
+        user += "\n\nOptions:\n" + "\n".join(parts)
     return SYSTEM_PROMPT, user
 
 

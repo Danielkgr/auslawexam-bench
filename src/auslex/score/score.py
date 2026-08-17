@@ -116,15 +116,16 @@ def score_run(
                 {
                     "model_id": rec.get("model_id"),
                     "is_mock": rec.get("is_mock", False),
-                    "scores": [], "fab": [], "op": [], "ncite": [],
+                    "scores": [],
+                    "fab_total": 0, "op_total": 0, "total_cites": 0,  # POOLED numerators + denom
                     "items": set(), "n_err": 0,
                     "per_diff": {}, "per_pri": {},
                 },
             )
             m["scores"].append(row["item_score_100"])
-            m["fab"].append(cite.fabricated_rate)
-            m["op"].append(cite.on_point_rate)
-            m["ncite"].append(cite.total)
+            m["fab_total"] += cite.fabricated
+            m["op_total"] += cite.on_point
+            m["total_cites"] += cite.total
             m["items"].add(rec["item_id"])
             d = item.get("difficulty")
             m["per_diff"].setdefault(d, []).append(row["item_score_100"])
@@ -139,6 +140,7 @@ def score_run(
 
     models: list[ModelScore] = []
     for name, m in by_model.items():
+        total_cites = m["total_cites"] or 1  # guard div-by-zero
         models.append(ModelScore(
             model=name,
             model_id=m["model_id"] or name,
@@ -147,9 +149,9 @@ def score_run(
             n_completed=len(m["scores"]),
             n_error=err_counts.get(name, 0),
             mean_item_score_100=round(_mean(m["scores"]), 2),
-            fabricated_rate=round(_mean(m["fab"]), 4),
-            on_point_rate=round(_mean(m["op"]), 4),
-            avg_citations=round(_mean(m["ncite"]), 2),
+            fabricated_rate=round(m["fab_total"] / total_cites, 4),
+            on_point_rate=round(m["op_total"] / total_cites, 4),
+            avg_citations=round(total_cites / len(m["scores"]) if m["scores"] else 0.0, 2),
             per_difficulty={
                 k: {"n": len(v), "mean_item_score_100": round(_mean(v), 2)}
                 for k, v in sorted(m["per_diff"].items())
