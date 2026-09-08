@@ -1,8 +1,8 @@
 # AusLawExam-Bench
 
-A public, reproducible benchmark of Australian legal reasoning for LLMs.
+A reproducible benchmark of Australian legal reasoning for LLMs.
 
-[Apache-2.0](LICENSE) · Python >= 3.10 · 66 tests · 16 provisional questions
+[Apache-2.0 (code) / CC BY 4.0 (data)](LICENSE) · Python >= 3.10 · 85 tests · 16 provisional questions
 
 ## Overview
 
@@ -10,7 +10,9 @@ AusLawExam-Bench measures how well language models reason about Australian law u
 
 The benchmark runs eight model slots (GPT, Claude, Gemini, Groq, DeepSeek, Mistral, Qwen, plus a local open-weight slot) over a shared prompt template at temperature 0, extracts every citation in each answer, classifies them as real or fabricated, and publishes raw outputs plus scores so anyone can audit the numbers end to end.
 
-Current status: working prototype with 16 provisional (not lawyer-verified) questions covering all four question types across the Priestley 11 areas. Commercial slots require an API key to run live (set `--mock` to fall back to deterministic seeded mocks for offline testing).
+**What it does not do:** it is not a legal research tool and gives no legal advice. It does not answer legal questions or verify legal propositions; the 16 shipped questions are provisional drafts that have not been reviewed by a qualified Australian lawyer.
+
+**Maturity:** working prototype. The full pipeline runs offline with deterministic seeded mocks (set `--mock` to force); commercial model slots are config-ready and activate when API keys are supplied.
 
 ## Headline metric: fabricated-citation rate
 
@@ -34,10 +36,10 @@ A model can score well on rubric items and still have a high fabricated rate. Th
 
 ```bash
 pip install -e .
-auslex run --reps 3
+auslex run --reps 3 --mock
 ```
 
-That single command runs the full pipeline: sends the shared prompt to every configured model, scores citations and rubric items, computes bootstrap CIs and permutation tests, and renders a static leaderboard HTML page. No API keys required.
+That single command runs the full pipeline offline: sends the shared prompt to every configured model (via the deterministic seeded mock runner), scores citations and rubric items, computes bootstrap CIs and permutation tests, and renders a static leaderboard HTML page. No API keys required. Without `--mock`, slots without an API key (or an unreachable local endpoint) are skipped rather than mocked.
 
 ### Other commands
 
@@ -63,7 +65,7 @@ auslex site runs/<run-id>
 auslex export-hf --out export/hf
 ```
 
-Run flags: `--models local,gpt` (subset of slots), `--reps N` (repeats per item; default 3), `--out-root <dir>`, `--run-id <id>`, `--n-boot N` / `--n-perm N` (CI/permutation precision; default 10,000 each).
+Run flags: `--models local,gpt` (subset of slots), `--reps N` (repeats per item; default 3), `--mock` (allow mock fallback for slots without API keys), `--out-root <dir>`, `--run-id <id>`, `--n-boot N` / `--n-perm N` (CI/permutation precision; default 10,000 each).
 
 ## Leaderboard at a glance
 
@@ -160,7 +162,7 @@ frontend/                    React + Vite dashboard
 data/                        Question set, canaries, gold manifest
 paper/                       Methodology, contamination statement, analysis plan
 tools/                       author_samples.py -- regenerate provisional questions
-tests/                       66 tests
+tests/                       85 tests
 ```
 
 ## Tests
@@ -169,7 +171,7 @@ tests/                       66 tests
 python3 -m pytest
 ```
 
-66 tests across 11 files: schema validation, canary derivation and detection, AU-jurisdiction filters, citation extraction and classification, permutation test logic, content hashing, mock runner determinism, full mock-to-site end-to-end pipeline, CLI argument parsing, FastAPI endpoints, secrets store.
+85 tests across 12 files: schema validation, canary derivation and detection, AU-jurisdiction filters, citation extraction and classification, permutation test logic, content hashing, mock runner determinism, full mock-to-site end-to-end pipeline, CLI argument parsing, FastAPI endpoints, secrets store.
 
 ## Web UI
 
