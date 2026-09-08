@@ -46,4 +46,4 @@ follows [Keep a Changelog](https://keepachangelog.com/); versions follow
 - **Open-weight slot is real.** The local `llama.cpp` slot runs a genuine local
   model (Qwen3.8-27B at `http://localhost:10000/v1` in this prototype).
 
-[0.1.0]: https://github.com/auslex/aus-legal-200-bench/compare/v0.0.0...v0.1.0
+[0.1.0]: https://github.com/Danielkgr/auslawexam-bench/compare/v0.0.0...v0.1.0
