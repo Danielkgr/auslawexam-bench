@@ -20,9 +20,9 @@ In law, a confidently wrong citation is worse than an admitted gap. A model that
 
 For every answer we extract citations and classify each one:
 
-- **`on_point`** — matches one of the item's required authorities
-- **`known_other`** — a real Australian authority from the corpus (correct, but not this item's specific list)
-- **`fabricated`** — looks like a citation but is in neither list; an invented case or provision
+- **`on_point`** - matches one of the item's required authorities
+- **`known_other`** - a real Australian authority from the corpus (correct, but not this item's specific list)
+- **`fabricated`** - looks like a citation but is in neither list; an invented case or provision
 
 ```
 fabricated_rate = fabricated / total_citations

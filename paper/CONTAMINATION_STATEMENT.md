@@ -1,4 +1,4 @@
-# AusLawExam-Bench — Contamination Statement
+# AusLawExam-Bench Contamination Statement
 
 ## Why this matters
 
@@ -12,17 +12,17 @@ that.
 
 ## Mechanism: BIG-bench-style canary strings
 
-We embed **canary strings** — long, distinctive, meaningless-looking tokens —
+We embed **canary strings** - long, distinctive, meaningless-looking tokens -
 in the dataset so that if a model reproduces one verbatim in its answer, we can
 conclude the corresponding item was present in its training distribution.
 
 Two layers (see `src/auslex/canary.py` and `data/canary.txt`):
 
-1. **Global canary** — one stable, public string, `auslex:9f2c1a4e-7b3d`,
+1. **Global canary** - one stable, public string, `auslex:9f2c1a4e-7b3d`,
    embedded verbatim in the dataset manifest (`data/gold/manifest.json`). It is
    **never changed** (changing it would invalidate the detection guarantee for
    already-published runs).
-2. **Per-item canaries** — each item carries its own canary,
+2. **Per-item canaries** - each item carries its own canary,
    `canary = "auslex:" + sha256("auslex:" + item_id).hexdigest()[:12]`.
    Because the derivation is deterministic from the id, per-item canaries are
    stable across regenerations and can be recomputed from the id alone. This
@@ -50,7 +50,7 @@ Detection is a **sufficient but not necessary** signal:
 - For the public leaderboard we would exclude flagged pairs from the aggregate
   scores for the affected model and note the exclusion in the run's
   provenance, so the headline number is not contaminated. (At the current 16-item
-  provisional scale no model is expected to hit the canaries — this is a
+  provisional scale no model is expected to hit the canaries - this is a
   guardrail for the full release.)
 - Because canaries are **deterministic from the item id**, any future
   regeneration of an item keeps the same canary, so the detection guarantee

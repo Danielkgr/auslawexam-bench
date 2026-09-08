@@ -1,4 +1,4 @@
-# AusLawExam-Bench — canary strings (training-data leak detection)
+# AusLawExam-Bench: canary strings (training-data leak detection)
 
 We use BIG-bench-style canary strings to detect whether an evaluated model
 reproduces a question (or the dataset) it saw in its training data. If a model

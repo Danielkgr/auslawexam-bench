@@ -4,7 +4,7 @@ This repository is distributed under a two-part licensing model, matching the
 design document:
 
 1. Harness / code (everything under `src/`, `tests/`, `paper/`, and the
-   build/packaging files) — Apache License 2.0.
+   build/packaging files): Apache License 2.0.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ design document:
    limitations under the License.
 
 2. Original question items (the Tier-C scored dataset under `data/questions/`
-   and `data/gold/`) — Creative Commons Attribution 4.0 International (CC BY 4.0).
+   and `data/gold/`): Creative Commons Attribution 4.0 International (CC BY 4.0).
 
    You are free to share and adapt the material for any purpose, even
    commercially, provided you give appropriate credit, indicate changes, and

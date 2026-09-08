@@ -1,8 +1,8 @@
-# AusLawExam-Bench — Analysis Plan
+# AusLawExam-Bench Analysis Plan
 
 This is the plan for **what we will analyse, how we will read the numbers, and
-what the numbers will and will not mean** — at the current 16-item provisional
-scale, and at the full 100–200 lawyer-verified scale.
+what the numbers will and will not mean** - at the current 16-item provisional
+scale, and at the full 100-200 lawyer-verified scale.
 
 ## 1. The headline: fabricated-citation rate
 
@@ -13,7 +13,7 @@ and a pairwise-permutation significance table against the other models.
 ### Reading the fabricated rate (important caveat)
 
 `fabricated` is defined against a **known-authorities corpus** that is, at the
-current scale, the union of the 16 items' `required_authorities` — a small set
+current scale, the union of the 16 items' `required_authorities` - a small set
 of real Australian cases/statutes. Consequently:
 
 - A citation that is **real but not in that small corpus is counted as
@@ -58,9 +58,9 @@ models are within noise; the bootstrap CIs will be wide and the permutation
 tests will have little power. The leaderboard at this scale is a **layout and
 method demo**, not a ranking.
 
-## 4. What the numbers WILL mean (full 100–200, verified scale)
+## 4. What the numbers WILL mean (full 100-200, verified scale)
 
-Once the question set is (a) grown to 100–200, (b) lawyer-verified, and (c)
+Once the question set is (a) grown to 100-200, (b) lawyer-verified, and (c)
 paired with a real judge and a grown known-authorities corpus:
 
 - **Fabricated-citation rate** becomes a meaningful, comparable safety metric
@@ -86,7 +86,7 @@ paired with a real judge and a grown known-authorities corpus:
 | # | Item | Status | Why it matters |
 |---|---|---|---|
 | 1 | Grow known-authorities corpus (seed list of real AU authorities) | **Planned** | Turns fabricated rate from an upper bound into an estimate |
-| 2 | Lawyer-verify the question set to 100–200 | **Planned** | Removes the "provisional" disclaimer; prerequisite for any real claim |
+| 2 | Lawyer-verify the question set to 100-200 | **Planned** | Removes the "provisional" disclaimer; prerequisite for any real claim |
 | 3 | Real LLM judge (replace seeded mock ensemble) | **Planned** | Makes rubric item scores a real measurement |
 | 4 | Real commercial runs (set OPENAI/ANTHROPIC/GOOGLE keys) | **Config-ready** | The 3 commercial slots currently run as seeded mocks |
 | 5 | Near-duplicate / semantic-leakage check at authoring time | **Planned** | Closes the canary gap for semantic memorisation |
@@ -111,5 +111,5 @@ Treat the shipped leaderboard as a **worked example of the method on 16
 unverified items with one real local model and three seeded mocks**. The useful
 takeaway is not "model A beats model B" but: *here is a reproducible pipeline
 that will produce a defensible AU-legal benchmark once the corpus is grown, the
-items are lawyer-verified, and a real judge is wired in* — and here is exactly
+items are lawyer-verified, and a real judge is wired in* - and here is exactly
 what the numbers will and will not mean at each stage.

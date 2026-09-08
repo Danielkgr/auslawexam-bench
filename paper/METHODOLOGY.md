@@ -1,4 +1,4 @@
-# AusLawExam-Bench — Methodology
+# AusLawExam-Bench Methodology
 
 ## 1. Objective
 
@@ -11,12 +11,12 @@ pipeline bit-for-bit and recompute every number.
 This document describes the prototype methodology at the current scale
 (16 provisional questions, 4 model slots, 3 reps). It is deliberately written
 so the *method* survives the current small scale: the same pipeline will be
-run unchanged when the question set grows to the 100–200 target and becomes
+run unchanged when the question set grows to the 100-200 target and becomes
 lawyer-verified.
 
 ## 2. Design principles
 
-1. **Legal accuracy is not enough — fabrication is the headline failure mode.**
+1. **Legal accuracy is not enough - fabrication is the headline failure mode.**
    In law, a confidently-wrong or invented citation is worse than an admitted
    gap. The benchmark therefore reports a **fabricated-citation rate** as its
    primary safety metric, alongside a conventional rubric item score.
@@ -41,16 +41,16 @@ Each item is a validated Pydantic model (`src/auslex/schema.py`) with:
 
 - `id` (canonical, e.g. `auslex-2026-0001`), `version` (semver),
 - `type` ∈ {`hypothetical`, `short_answer`, `mcq`, `essay`},
-- `jurisdiction` (list; Australian codes — `Cth`, `NSW`, `VIC`, …),
+- `jurisdiction` (list; Australian codes - `Cth`, `NSW`, `VIC`, …),
 - `priestley_area` (the Priestley 11: `contract`, `tort`, `property`, `criminal`,
   `equity_trusts`, `constitutional`, `corporate`, `administrative`, `family`,
   `intellectual_property`, `environmental`),
 - `question_text`, `facts`, `instructions`,
 - `required_authorities` (list of typed AU authorities: case or statute),
-- `gold_answer` (may reference only Australian primary sources — see §6),
+- `gold_answer` (may reference only Australian primary sources - see §6),
 - `rubric` (a list of `(aspect, marks)` that must sum to `marks`),
 - `marks`, `difficulty`,
-- `canary` (per-item leak-detection string — §7),
+- `canary` (per-item leak-detection string - §7),
 - `provenance` (tier, author, provisional flag) and `verification` (who/when,
   with a self-content-hash written at lock time).
 
@@ -93,9 +93,9 @@ Each non-empty completion is scored two ways, independently:
 `src/auslex/score/citations.py` extracts case and statutory citations from the
 answer and classifies each against a **known-authorities corpus**:
 
-- `on_point` — in the item's own `required_authorities`;
-- `known_other` — a real AU authority elsewhere in the corpus;
-- `fabricated` — in neither.
+- `on_point` - in the item's own `required_authorities`;
+- `known_other` - a real AU authority elsewhere in the corpus;
+- `fabricated` - in neither.
 
 The corpus is built by unioning every item's `required_authorities`
 (`build_known_corpus`), so at 16 items it is a small set of real authorities.
@@ -168,13 +168,13 @@ and the site from an existing run without touching the model APIs.
 ## 10. Scope and known limitations (prototype)
 
 - **16 provisional, unverified questions.** Not lawyer-verified; not
-  representative of the target 100–200.
+  representative of the target 100-200.
 - **Small known-authorities corpus** → fabricated rate is an upper bound.
 - **Mock judge** (seeded ensemble) rather than a real LLM judge → item scores
   are a stand-in for judge quality, not a calibrated rubric measurement.
 - **Mock commercial slots** when no key is set → three of four rows are
   synthetic (and labelled as such).
-- **No cross-model judge** — the judge is per-item, not a comparative ranking.
+- **No cross-model judge** - the judge is per-item, not a comparative ranking.
 
 The plan to close each of these, and what the numbers will mean once they are
 closed, is in `ANALYSIS_PLAN.md`.
