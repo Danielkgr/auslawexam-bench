@@ -1,0 +1,66 @@
+{
+  "raw": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "# Legitimate Expectations\n\n## Issues\n\nWhether the doctrine of legitimate expectations operates as (A) a rule mandating a particular outcome, (B) a procedural protection requiring consistency or a hearing, (C) a contractual right, or (D) inapplicable to administrative decisions.\n\n## Governing Rules\n\nThe doctrine of legitimate expectations is a creature of **common law and equity**, not statute. It does not create a free-standing substantive right to the promised outcome. Its authoritative statement is *Waltons Stores (Interstate) Ltd v Maher* (1988) 164 CLR 387. In that case the High Court recognised that a representation may give rise to a **legitimate expectation** that the representee will not be permitted to depart from it without providing a **hearing or opportunity to be heard**. Mason CJ and Wilson J grounded the doctrine in the equitable doctrine of **unconscionability**, while Deane J analysed it through the equitable doctrine of **estoppel**. Critically, neither the expectation nor the outcome is itself enforceable; rather, the protection attaches to the **procedure** by which a decision is made.\n\nThe leading administrative-law authority is *Sue v Han* (1994) 179 CLR 338, where the High Court held that a legitimate expectation does not confer a right to the substantive benefit but only a right to be **heard** before the expectation is frustrated. This was reaffirmed in *Minister for Immigration and Ethnic Affairs v Teo* (1995) 183 CLR 252, where the Court made plain that the doctrine does not dictate the **result** of a decision.\n\n## Application\n\nThe department has **no statutory obligation** to grant the permit; it has merely made representations historically. A relying party's application, founded on those representations, may attract the doctrine. However:\n\n- It does **not** compel the department to grant the permit (rejecting A). The expectation is not a guarantee of outcome.\n- It does **not** create a contractual right (rejecting C); there is no indication of agreement, consideration, or contractual intention, and the doctrine is not founded in contract.\n- It plainly **does** apply to administrative decisions (rejecting D); the doctrine developed precisely in the administrative context.\n\nWhat the doctrine does require is that the decision-maker, having induced the expectation, must either **act consistently** with the representation or, before departing from it, afford the relying party an **opportunity to be heard** and give reasons for the departure. This is precisely the position described in option B.\n\n## Distinguishing the Competing Arguments\n\nThe strongest competing proposition is A, which treats the doctrine as mandating the promised outcome. This is wrong because the High Court has consistently refused to recognise a substantive right flowing from a legitimate expectation: the protection is **procedural**, not **substantive**. Option B correctly captures this: the doctrine requires consistency *or* a reasoned opportunity to be heard before departure, and is **not** a free-standing right to the outcome.\n\n## Conclusion\n\n**B** is correct. The doctrine of legitimate expectations requires the decision-maker to act in accordance with its earlier representations, or at minimum to afford the relying party an opportunity to be heard and give reasons before departing from them; it is not a free-standing right to the outcome.",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789363247,
+    "id": "chatcmpl-TdBleSTm0lY8GTODTwK57YFM3SrSjy3a",
+    "model": "ornith-agent-strix",
+    "object": "chat.completion",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "timings": {
+      "cache_n": 362,
+      "predicted_ms": 9092.208,
+      "predicted_n": 706,
+      "predicted_per_second": 77.64890552437866,
+      "predicted_per_token_ms": 12.878481586402268,
+      "prompt_ms": 30.833,
+      "prompt_n": 4,
+      "prompt_per_second": 129.73113222845652,
+      "prompt_per_token_ms": 7.70825
+    },
+    "usage": {
+      "completion_tokens": 706,
+      "prompt_tokens": 366,
+      "prompt_tokens_details": {
+        "cached_tokens": 362
+      },
+      "total_tokens": 1072
+    }
+  },
+  "record": {
+    "completion_tokens": 706,
+    "content_hash": "7a67b3eed8dbadf862437405da1444b64f4a7104a07a32870263e254056bbee1",
+    "cost_usd": 0.0,
+    "error": null,
+    "fallback": false,
+    "finish_reason": "stop",
+    "is_mock": false,
+    "item_id": "auslex-2026-0010",
+    "latency_ms": 9188,
+    "model": "local",
+    "model_id": "ornith-agent-strix",
+    "ok": true,
+    "prompt_hash": "bbc2a82a347ea2a5baa98926171e1a1ff4c39735e4b56a5ae51278bf7c40436f",
+    "prompt_template_version": "1.0.0",
+    "prompt_tokens": 366,
+    "reasoning": null,
+    "rep": 2,
+    "run_id": "auslex-2026-09-14-ornith",
+    "seed": 2,
+    "system": "You are an experienced Australian lawyer. Answer the question below as if sitting a final-year law examination. Apply only Australian law as it stood on the stated date. Identify the issues, state the governing rules with pinpoint authority (statutory provisions and cases), apply the law to the facts, and reach a clear conclusion. Cite real Australian primary sources only; do not invent cases or provisions.",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "temperature": 0.0,
+    "text": "# Legitimate Expectations\n\n## Issues\n\nWhether the doctrine of legitimate expectations operates as (A) a rule mandating a particular outcome, (B) a procedural protection requiring consistency or a hearing, (C) a contractual right, or (D) inapplicable to administrative decisions.\n\n## Governing Rules\n\nThe doctrine of legitimate expectations is a creature of **common law and equity**, not statute. It does not create a free-standing substantive right to the promised outcome. Its authoritative statement is *Waltons Stores (Interstate) Ltd v Maher* (1988) 164 CLR 387. In that case the High Court recognised that a representation may give rise to a **legitimate expectation** that the representee will not be permitted to depart from it without providing a **hearing or opportunity to be heard**. Mason CJ and Wilson J grounded the doctrine in the equitable doctrine of **unconscionability**, while Deane J analysed it through the equitable doctrine of **estoppel**. Critically, neither the expectation nor the outcome is itself enforceable; rather, the protection attaches to the **procedure** by which a decision is made.\n\nThe leading administrative-law authority is *Sue v Han* (1994) 179 CLR 338, where the High Court held that a legitimate expectation does not confer a right to the substantive benefit but only a right to be **heard** before the expectation is frustrated. This was reaffirmed in *Minister for Immigration and Ethnic Affairs v Teo* (1995) 183 CLR 252, where the Court made plain that the doctrine does not dictate the **result** of a decision.\n\n## Application\n\nThe department has **no statutory obligation** to grant the permit; it has merely made representations historically. A relying party's application, founded on those representations, may attract the doctrine. However:\n\n- It does **not** compel the department to grant the permit (rejecting A). The expectation is not a guarantee of outcome.\n- It does **not** create a contractual right (rejecting C); there is no indication of agreement, consideration, or contractual intention, and the doctrine is not founded in contract.\n- It plainly **does** apply to administrative decisions (rejecting D); the doctrine developed precisely in the administrative context.\n\nWhat the doctrine does require is that the decision-maker, having induced the expectation, must either **act consistently** with the representation or, before departing from it, afford the relying party an **opportunity to be heard** and give reasons for the departure. This is precisely the position described in option B.\n\n## Distinguishing the Competing Arguments\n\nThe strongest competing proposition is A, which treats the doctrine as mandating the promised outcome. This is wrong because the High Court has consistently refused to recognise a substantive right flowing from a legitimate expectation: the protection is **procedural**, not **substantive**. Option B correctly captures this: the doctrine requires consistency *or* a reasoned opportunity to be heard before departure, and is **not** a free-standing right to the outcome.\n\n## Conclusion\n\n**B** is correct. The doctrine of legitimate expectations requires the decision-maker to act in accordance with its earlier representations, or at minimum to afford the relying party an opportunity to be heard and give reasons before departing from them; it is not a free-standing right to the outcome.",
+    "timestamp": "2026-09-14T05:20:47.090577+00:00",
+    "total_tokens": 1072,
+    "vendor": "local"
+  }
+}

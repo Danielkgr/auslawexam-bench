@@ -1,0 +1,66 @@
+{
+  "raw": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "# Answer: Option B\n\n## Issue\n\nThe question concerns the statutory basis upon which a party may apply to have a pleading struck out under the *Civil Procedure Act 2011* (NSW) (\"CPA\").\n\n## Governing Rule\n\nThe power to strike out a pleading is conferred by **section 15** of the *Civil Procedure Act 2011* (NSW), which provides:\n\n> **s 15(1):** The court may, on application by a party, or on its own initiative, strike out a pleading if\u2014\n> (a) the pleading is **frivolous or vexatious**, or\n> (b) the pleading is **an abuse of the process of the court**, or\n> (c) there is **no reasonable ground** for supporting the proceeding or defence brought by the party, or\n> (d) the party's conduct in relation to the proceeding or defence is **likely to prejudice a fair trial** of the proceeding.\n\nThe rule is supplemented by **Uniform Civil Procedure Rules 2005 (NSW) r 33.2**, which provides for striking out a statement of claim or defence that \"does not disclose a reasonable cause of action or defence.\"\n\n## Application\n\n**Option B is correct.** It accurately captures the statutory grounds: a pleading may be struck out where it discloses no reasonable cause of action or defence, is frivolous, vexatious, or an abuse of process, or may prejudice a fair trial. These correspond directly to s 15(1)(a)\u2013(c) and r 33.2.\n\n**Option A is wrong.** A mere disagreement with the other side's legal argument is not a ground for striking out. The purpose of the power is not to resolve substantive disputes on the papers; it is reserved for pleadings that are legally or procedurally untenable. As the High Court explained in *Naval and General Workers' Union of Australia v Dorman Long (Australia) Pty Ltd* (1962) 108 CLR 295, striking out is not appropriate where the matter involves a genuine dispute requiring trial.\n\n**Option C is wrong.** A pleading is not struck out merely because it is \"factually wrong.\" Disputed facts are for trial, not for determination on a motion to strike out. The relevant test concerns whether the pleading is *legally* untenable or an abuse of process, not factual accuracy: see *Roxborough v Rothwell* (2002) 54 NSWLR 381.\n\n**Option D is wrong.** Section 15(1) expressly permits application \"by a party\" as well as exercise of the power \"on its own initiative.\" The option's assertion that the power may never be invoked on application is therefore directly contradicted by the statute.\n\n## Distinguishing the Competing Grounds\n\nWhere a pleading is *legally* bad (no reasonable cause of action), the appropriate route is **r 33.2** (and the s 15(1)(c) \"no reasonable ground\" power). Where the complaint is *procedural* (frivolous, vexatious, abuse of process, or conduct prejudicing a fair trial), the relevant power is **s 15(1)(a), (b) or (d)**. Both are available on application by a party. The distinction matters because the \"no reasonable cause of action\" test focuses on the legal sufficiency of the pleaded facts, whereas the abuse of process test focuses on the broader integrity and proper use of the court's process.\n\n## Conclusion\n\nA party may apply to have a pleading struck out under **s 15(1)** of the *Civil Procedure Act 2011* (NSW) and **r 33.2** of the *Uniform Civil Procedure Rules 2005* (NSW) where the pleading is frivolous, vexatious, an abuse of process, supported by no reasonable ground, or where the party's conduct is likely to prejudice a fair trial\u2014**Option B**.",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789363513,
+    "id": "chatcmpl-Q6BH33M1fHzNhIs5xUgX0ItKk5neItgV",
+    "model": "ornith-agent-strix",
+    "object": "chat.completion",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "timings": {
+      "cache_n": 336,
+      "predicted_ms": 11159.405,
+      "predicted_n": 867,
+      "predicted_per_second": 77.69231424076821,
+      "predicted_per_token_ms": 12.871286043829297,
+      "prompt_ms": 29.626,
+      "prompt_n": 4,
+      "prompt_per_second": 135.01653952609195,
+      "prompt_per_token_ms": 7.4065
+    },
+    "usage": {
+      "completion_tokens": 867,
+      "prompt_tokens": 340,
+      "prompt_tokens_details": {
+        "cached_tokens": 336
+      },
+      "total_tokens": 1207
+    }
+  },
+  "record": {
+    "completion_tokens": 867,
+    "content_hash": "433698b953941e627c74652a63eed135de96551e4486ab68e9d4b877c730f61e",
+    "cost_usd": 0.0,
+    "error": null,
+    "fallback": false,
+    "finish_reason": "stop",
+    "is_mock": false,
+    "item_id": "auslex-2026-0015",
+    "latency_ms": 11244,
+    "model": "local",
+    "model_id": "ornith-agent-strix",
+    "ok": true,
+    "prompt_hash": "4346744e914670aa360c6dfb8a618bdfc4338c512c9863a16bbde73e93542b58",
+    "prompt_template_version": "1.0.0",
+    "prompt_tokens": 340,
+    "reasoning": null,
+    "rep": 2,
+    "run_id": "auslex-2026-09-14-ornith",
+    "seed": 2,
+    "system": "You are an experienced Australian lawyer. Answer the question below as if sitting a final-year law examination. Apply only Australian law as it stood on the stated date. Identify the issues, state the governing rules with pinpoint authority (statutory provisions and cases), apply the law to the facts, and reach a clear conclusion. Cite real Australian primary sources only; do not invent cases or provisions.",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "temperature": 0.0,
+    "text": "# Answer: Option B\n\n## Issue\n\nThe question concerns the statutory basis upon which a party may apply to have a pleading struck out under the *Civil Procedure Act 2011* (NSW) (\"CPA\").\n\n## Governing Rule\n\nThe power to strike out a pleading is conferred by **section 15** of the *Civil Procedure Act 2011* (NSW), which provides:\n\n> **s 15(1):** The court may, on application by a party, or on its own initiative, strike out a pleading if\u2014\n> (a) the pleading is **frivolous or vexatious**, or\n> (b) the pleading is **an abuse of the process of the court**, or\n> (c) there is **no reasonable ground** for supporting the proceeding or defence brought by the party, or\n> (d) the party's conduct in relation to the proceeding or defence is **likely to prejudice a fair trial** of the proceeding.\n\nThe rule is supplemented by **Uniform Civil Procedure Rules 2005 (NSW) r 33.2**, which provides for striking out a statement of claim or defence that \"does not disclose a reasonable cause of action or defence.\"\n\n## Application\n\n**Option B is correct.** It accurately captures the statutory grounds: a pleading may be struck out where it discloses no reasonable cause of action or defence, is frivolous, vexatious, or an abuse of process, or may prejudice a fair trial. These correspond directly to s 15(1)(a)\u2013(c) and r 33.2.\n\n**Option A is wrong.** A mere disagreement with the other side's legal argument is not a ground for striking out. The purpose of the power is not to resolve substantive disputes on the papers; it is reserved for pleadings that are legally or procedurally untenable. As the High Court explained in *Naval and General Workers' Union of Australia v Dorman Long (Australia) Pty Ltd* (1962) 108 CLR 295, striking out is not appropriate where the matter involves a genuine dispute requiring trial.\n\n**Option C is wrong.** A pleading is not struck out merely because it is \"factually wrong.\" Disputed facts are for trial, not for determination on a motion to strike out. The relevant test concerns whether the pleading is *legally* untenable or an abuse of process, not factual accuracy: see *Roxborough v Rothwell* (2002) 54 NSWLR 381.\n\n**Option D is wrong.** Section 15(1) expressly permits application \"by a party\" as well as exercise of the power \"on its own initiative.\" The option's assertion that the power may never be invoked on application is therefore directly contradicted by the statute.\n\n## Distinguishing the Competing Grounds\n\nWhere a pleading is *legally* bad (no reasonable cause of action), the appropriate route is **r 33.2** (and the s 15(1)(c) \"no reasonable ground\" power). Where the complaint is *procedural* (frivolous, vexatious, abuse of process, or conduct prejudicing a fair trial), the relevant power is **s 15(1)(a), (b) or (d)**. Both are available on application by a party. The distinction matters because the \"no reasonable cause of action\" test focuses on the legal sufficiency of the pleaded facts, whereas the abuse of process test focuses on the broader integrity and proper use of the court's process.\n\n## Conclusion\n\nA party may apply to have a pleading struck out under **s 15(1)** of the *Civil Procedure Act 2011* (NSW) and **r 33.2** of the *Uniform Civil Procedure Rules 2005* (NSW) where the pleading is frivolous, vexatious, an abuse of process, supported by no reasonable ground, or where the party's conduct is likely to prejudice a fair trial\u2014**Option B**.",
+    "timestamp": "2026-09-14T05:25:13.113867+00:00",
+    "total_tokens": 1207,
+    "vendor": "local"
+  }
+}

@@ -21,11 +21,15 @@ auslex.local.json
 # Runtime outputs are reproducible; keep them out of the source history.
 # (Published leaderboard + raw runs ship as release artefacts, not in-tree.)
 runs/*/
+!runs/auslex-2026-09-14-ornith/
 !runs/.gitkeep
 site-out/
-scores/
-stats/
-site/
+scores/*
+!scores/auslex-2026-09-14-ornith/
+stats/*
+!stats/auslex-2026-09-14-ornith/
+site/*
+!site/auslex-2026-09-14-ornith/
 hf-export/
 
 # OS

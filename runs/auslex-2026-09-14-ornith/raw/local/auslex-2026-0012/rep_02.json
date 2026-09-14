@@ -1,0 +1,66 @@
+{
+  "raw": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "# Answer\n\n## Issue\n\nThe question asks about the legal effect of a caveat lodged under the Torrens system in New South Wales, governed by the *Real Property Act 1900* (NSW). Specifically, what practical effect does a caveat have once lodged against a registered title?\n\n## Governing Rules\n\n**A caveat operates as a statutory prohibition on registration of inconsistent dealings.**\n\nSection 74D(1) of the *Real Property Act 1900* (NSW) provides that once a caveat is lodged, no further dealing with the land or registered land may be registered **unless** the caveat is withdrawn or removed, or the Registrar-General or Court authorises registration. This is the central operative effect of a caveat.\n\nThe statutory framework is confirmed by the following provisions:\n- **s 74** \u2013 defines who may lodge a caveat and requires the caveator to claim an interest in the land;\n- **s 74D** \u2013 restrains registration of dealings inconsistent with the caveat;\n- **s 74E** \u2013 provides for withdrawal of a caveat;\n- **s 74F** \u2013 provides for removal of a caveat on application to the Court.\n\n**A caveat does not determine or confer the underlying interest; it merely preserves the status quo pending determination.**\n\nThe leading authority is *Park v Chang* (2005) 63 NSWLR 150, where the Court of Appeal explained that a caveat does not itself establish or vest any interest in land. Its function is to prevent the registered proprietor dealing with the land in a way inconsistent with the claimed interest, thereby forcing the claimant's interest to be adjudicated. As Heydon JA noted, the caveat \"freezes\" the register pending resolution of the competing claims.\n\n## Application\n\n**Option A (immediately vests the caveator's interest):** Incorrect. A caveat does not vest any interest in the caveator. The interest must still be established through the underlying claim (e.g., an unregistered contract, equitable mortgage, or beneficial interest). *Park v Chang* (2005) 63 NSWLR 150 confirms that a caveat is not a mechanism for conferring or vesting an interest.\n\n**Option B (prevents dealing, allowing confirmation or removal):** Correct. This accurately reflects s 74D(1). While a caveat is in force, the registered proprietor cannot register a transfer or other inconsistent dealing. This compels the parties to resolve the matter \u2014 either by confirming the caveator's interest or by the proprietor applying for removal under s 74F, with the caveator then required to justify the caveat's retention.\n\n**Option C (a form of easement):** Incorrect. A caveat is not an easement. An easement is a right annexed to land (e.g., a right of way), whereas a caveat is a statutory caveat against the register. The two are categorically distinct.\n\n**Option D (no legal effect, merely a notice):** Incorrect. A caveat has substantive legal effect under s 74D(1) \u2014 it operates as a bar to registration of inconsistent dealings. It is far more than a mere notice.\n\n## Conclusion\n\nThe best answer is **B**. A caveat under the *Real Property Act 1900* (NSW) prevents the registered proprietor from registering dealings inconsistent with the caveator's claimed interest (s 74D(1)), thereby preserving the status quo so that the interest may be confirmed or the caveat removed (*Park v Chang* (2005) 63 NSWLR 150).",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789363341,
+    "id": "chatcmpl-ONS1kCrJaGE4emTdzDUeJjrGjyan9Vqh",
+    "model": "ornith-agent-strix",
+    "object": "chat.completion",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "timings": {
+      "cache_n": 372,
+      "predicted_ms": 9783.932,
+      "predicted_n": 760,
+      "predicted_per_second": 77.67838124794815,
+      "predicted_per_token_ms": 12.873594736842106,
+      "prompt_ms": 31.472,
+      "prompt_n": 4,
+      "prompt_per_second": 127.09710218607015,
+      "prompt_per_token_ms": 7.868
+    },
+    "usage": {
+      "completion_tokens": 760,
+      "prompt_tokens": 376,
+      "prompt_tokens_details": {
+        "cached_tokens": 372
+      },
+      "total_tokens": 1136
+    }
+  },
+  "record": {
+    "completion_tokens": 760,
+    "content_hash": "edfd9baba08bcbe00ebc309cf0fe9aec40eb3791c38d63784b11b054a12cf235",
+    "cost_usd": 0.0,
+    "error": null,
+    "fallback": false,
+    "finish_reason": "stop",
+    "is_mock": false,
+    "item_id": "auslex-2026-0012",
+    "latency_ms": 9881,
+    "model": "local",
+    "model_id": "ornith-agent-strix",
+    "ok": true,
+    "prompt_hash": "b3aa65c79247481590db05095ac3c29b79471d779b0fb37319cf574de8b378b7",
+    "prompt_template_version": "1.0.0",
+    "prompt_tokens": 376,
+    "reasoning": null,
+    "rep": 2,
+    "run_id": "auslex-2026-09-14-ornith",
+    "seed": 2,
+    "system": "You are an experienced Australian lawyer. Answer the question below as if sitting a final-year law examination. Apply only Australian law as it stood on the stated date. Identify the issues, state the governing rules with pinpoint authority (statutory provisions and cases), apply the law to the facts, and reach a clear conclusion. Cite real Australian primary sources only; do not invent cases or provisions.",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "temperature": 0.0,
+    "text": "# Answer\n\n## Issue\n\nThe question asks about the legal effect of a caveat lodged under the Torrens system in New South Wales, governed by the *Real Property Act 1900* (NSW). Specifically, what practical effect does a caveat have once lodged against a registered title?\n\n## Governing Rules\n\n**A caveat operates as a statutory prohibition on registration of inconsistent dealings.**\n\nSection 74D(1) of the *Real Property Act 1900* (NSW) provides that once a caveat is lodged, no further dealing with the land or registered land may be registered **unless** the caveat is withdrawn or removed, or the Registrar-General or Court authorises registration. This is the central operative effect of a caveat.\n\nThe statutory framework is confirmed by the following provisions:\n- **s 74** \u2013 defines who may lodge a caveat and requires the caveator to claim an interest in the land;\n- **s 74D** \u2013 restrains registration of dealings inconsistent with the caveat;\n- **s 74E** \u2013 provides for withdrawal of a caveat;\n- **s 74F** \u2013 provides for removal of a caveat on application to the Court.\n\n**A caveat does not determine or confer the underlying interest; it merely preserves the status quo pending determination.**\n\nThe leading authority is *Park v Chang* (2005) 63 NSWLR 150, where the Court of Appeal explained that a caveat does not itself establish or vest any interest in land. Its function is to prevent the registered proprietor dealing with the land in a way inconsistent with the claimed interest, thereby forcing the claimant's interest to be adjudicated. As Heydon JA noted, the caveat \"freezes\" the register pending resolution of the competing claims.\n\n## Application\n\n**Option A (immediately vests the caveator's interest):** Incorrect. A caveat does not vest any interest in the caveator. The interest must still be established through the underlying claim (e.g., an unregistered contract, equitable mortgage, or beneficial interest). *Park v Chang* (2005) 63 NSWLR 150 confirms that a caveat is not a mechanism for conferring or vesting an interest.\n\n**Option B (prevents dealing, allowing confirmation or removal):** Correct. This accurately reflects s 74D(1). While a caveat is in force, the registered proprietor cannot register a transfer or other inconsistent dealing. This compels the parties to resolve the matter \u2014 either by confirming the caveator's interest or by the proprietor applying for removal under s 74F, with the caveator then required to justify the caveat's retention.\n\n**Option C (a form of easement):** Incorrect. A caveat is not an easement. An easement is a right annexed to land (e.g., a right of way), whereas a caveat is a statutory caveat against the register. The two are categorically distinct.\n\n**Option D (no legal effect, merely a notice):** Incorrect. A caveat has substantive legal effect under s 74D(1) \u2014 it operates as a bar to registration of inconsistent dealings. It is far more than a mere notice.\n\n## Conclusion\n\nThe best answer is **B**. A caveat under the *Real Property Act 1900* (NSW) prevents the registered proprietor from registering dealings inconsistent with the caveator's claimed interest (s 74D(1)), thereby preserving the status quo so that the interest may be confirmed or the caveat removed (*Park v Chang* (2005) 63 NSWLR 150).",
+    "timestamp": "2026-09-14T05:22:21.688247+00:00",
+    "total_tokens": 1136,
+    "vendor": "local"
+  }
+}

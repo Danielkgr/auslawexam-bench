@@ -1,0 +1,61 @@
+{
+  "fabricated_pairwise": [],
+  "method": {
+    "ci": "percentile bootstrap, n_boot=10000, question-level, seeded",
+    "comparison": "paired permutation (sign-flip), n_perm=10000, two-sided, seeded",
+    "seed": 0
+  },
+  "models": [
+    {
+      "ci_seed": {
+        "ci": 0.95,
+        "high": 79.0197,
+        "low": 57.7999,
+        "n": 16,
+        "n_boot": 10000,
+        "point": 68.8557,
+        "seed": 0
+      },
+      "fabricated_rate": {
+        "ci95": [
+          0.8783,
+          0.9609
+        ],
+        "point": 0.9107
+      },
+      "is_mock": false,
+      "mean_item_score_100": {
+        "ci95": [
+          57.8,
+          79.02
+        ],
+        "point": 68.86
+      },
+      "model": "local",
+      "n_questions": 16,
+      "per_difficulty": {
+        "credit": 68.55,
+        "distinction": 62.53,
+        "high_distinction": 91.1,
+        "pass": 67.61
+      },
+      "per_priestley": {
+        "admin": 56.6,
+        "civil_procedure": 88.73,
+        "constitutional": 85.18,
+        "contract": 74.15,
+        "corporations": 84.89,
+        "crime": 39.34,
+        "equity_trusts": 42.69,
+        "ethics": 87.75,
+        "evidence": 93.56,
+        "property": 84.4,
+        "torts": 54.58
+      }
+    }
+  ],
+  "n_models": 1,
+  "n_questions_total": 16,
+  "pairwise_permutation": [],
+  "run_id": "auslex-2026-09-14-ornith"
+}

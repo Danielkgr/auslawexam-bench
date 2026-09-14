@@ -1,0 +1,66 @@
+{
+  "raw": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "# Legitimate Expectations in Administrative Law\n\n## Issues\n\nThe question concerns the nature and effect of the doctrine of legitimate expectations in Commonwealth administrative law, where a public authority has made representations without any underlying statutory obligation. The key issue is whether the doctrine operates to *force* a particular outcome, to *constrain the manner* in which a decision is made, or to create some other effect.\n\n## Governing Rules\n\n**Nature of the doctrine.** The doctrine of legitimate expectations is a component of *procedural* natural justice, not a source of substantive rights. As Mason CJ, Brennan and Deane JJ stated in *Council of Civil Service Unions v Minister for the Civil Service* [1985] AC 374 at 410\u2013411 (applied in Australia): a legitimate expectation arises where a public authority, acting within its powers, makes a representation (a promise, or a practice it has consistently followed) that it will either confer a benefit or adopt a particular procedure, and it is then unfair for it to resile from that representation without affording an opportunity to be heard.\n\n**The classic Australian authority.** In *Waltons Stores (Interstate) Ltd v Maher* (1988) 164 CLR 387, the High Court recognised the doctrine (in the form of estoppel by encouragement) as a basis for enforcing a procedural expectation, though the majority ultimately decided the case on the basis of traditional estoppel. Deane J's judgment is the leading exposition of legitimate expectation as an independent doctrine, and it confirms that the expectation is *procedural* in nature.\n\n**The decisive limitation \u2014 no free-standing substantive right.** In *Minister for Immigration and Ethnic Affairs v Teo* (1990) 21 FCR 102, the Full Court of the Federal Court held that a legitimate expectation does **not** create a substantive right to obtain the benefit; it only entitles the claimant to the *procedural* benefit of being consulted or heard before the representation is departed from. This was reaffirmed in *Re Minister for Immigration and Multicultural Affairs; Ex parte* **Cohen** (2002) 192 ALR 199, where the Court confirmed that legitimate expectation operates procedurally and does not bind a decision-maker to reach a particular result.\n\n**Statutory context.** Under the *Administrative Decisions (Judicial Review) Act 1977* (Cth) (ADJR Act), a failure to observe a procedural expectation may render a decision procedurally defective (s 5(1)(b) \u2014 failure to observe a requirement imposed by law as to the procedure to be followed). But this is a review ground, not a source of a substantive entitlement.\n\n## Application to the Facts\n\nThe department has **no statutory obligation** to grant the permit; it has merely, historically, done so on the strength of representations. This is precisely the factual matrix in which legitimate expectation operates: a representation made without legal obligation, which the relying party has acted on.\n\n- **Option A** is wrong. The doctrine does not compel the department to grant the permit. There is no substantive right to the outcome; the department remains free to refuse.\n- **Option C** is wrong. There is no contract \u2014 no consideration, no intention to create legal relations in the permit context, and the doctrine is not contractual in nature.\n- **Option D** is wrong. The doctrine applies to *administrative* decisions and the exercise of discretionary public power; it is precisely concerned with the kind of conduct described here.\n- **Option B** is correct. The doctrine requires the decision-maker, having created a legitimate expectation, to either (i) honour the representation, or (ii) afford the relying party an opportunity to be heard / give reasons before departing from it. It is **not** a free-standing right to the outcome. This accords with *Teo* and *Ex parte Cohen*.\n\n## Conclusion\n\n**The correct answer is B.** The doctrine of legitimate expectations requires the decision-maker to act in accordance with its earlier representations, or at minimum to afford the relying party a hearing (and give a reasoned explanation) before departing from them. It is a procedural doctrine, not a free-standing substantive right to the permit, and it is not contractual.",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789363228,
+    "id": "chatcmpl-rs9P9tmhjlLEH82bdLQdGtY7wx2twWpe",
+    "model": "ornith-agent-strix",
+    "object": "chat.completion",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 11700.997,
+      "predicted_n": 909,
+      "predicted_per_second": 77.68568780933796,
+      "predicted_per_token_ms": 12.872383938393838,
+      "prompt_ms": 385.813,
+      "prompt_n": 366,
+      "prompt_per_second": 948.6461057558973,
+      "prompt_per_token_ms": 1.0541338797814208
+    },
+    "usage": {
+      "completion_tokens": 909,
+      "prompt_tokens": 366,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 1275
+    }
+  },
+  "record": {
+    "completion_tokens": 909,
+    "content_hash": "7a67b3eed8dbadf862437405da1444b64f4a7104a07a32870263e254056bbee1",
+    "cost_usd": 0.0,
+    "error": null,
+    "fallback": false,
+    "finish_reason": "stop",
+    "is_mock": false,
+    "item_id": "auslex-2026-0010",
+    "latency_ms": 12158,
+    "model": "local",
+    "model_id": "ornith-agent-strix",
+    "ok": true,
+    "prompt_hash": "bbc2a82a347ea2a5baa98926171e1a1ff4c39735e4b56a5ae51278bf7c40436f",
+    "prompt_template_version": "1.0.0",
+    "prompt_tokens": 366,
+    "reasoning": null,
+    "rep": 0,
+    "run_id": "auslex-2026-09-14-ornith",
+    "seed": 0,
+    "system": "You are an experienced Australian lawyer. Answer the question below as if sitting a final-year law examination. Apply only Australian law as it stood on the stated date. Identify the issues, state the governing rules with pinpoint authority (statutory provisions and cases), apply the law to the facts, and reach a clear conclusion. Cite real Australian primary sources only; do not invent cases or provisions.",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "temperature": 0.0,
+    "text": "# Legitimate Expectations in Administrative Law\n\n## Issues\n\nThe question concerns the nature and effect of the doctrine of legitimate expectations in Commonwealth administrative law, where a public authority has made representations without any underlying statutory obligation. The key issue is whether the doctrine operates to *force* a particular outcome, to *constrain the manner* in which a decision is made, or to create some other effect.\n\n## Governing Rules\n\n**Nature of the doctrine.** The doctrine of legitimate expectations is a component of *procedural* natural justice, not a source of substantive rights. As Mason CJ, Brennan and Deane JJ stated in *Council of Civil Service Unions v Minister for the Civil Service* [1985] AC 374 at 410\u2013411 (applied in Australia): a legitimate expectation arises where a public authority, acting within its powers, makes a representation (a promise, or a practice it has consistently followed) that it will either confer a benefit or adopt a particular procedure, and it is then unfair for it to resile from that representation without affording an opportunity to be heard.\n\n**The classic Australian authority.** In *Waltons Stores (Interstate) Ltd v Maher* (1988) 164 CLR 387, the High Court recognised the doctrine (in the form of estoppel by encouragement) as a basis for enforcing a procedural expectation, though the majority ultimately decided the case on the basis of traditional estoppel. Deane J's judgment is the leading exposition of legitimate expectation as an independent doctrine, and it confirms that the expectation is *procedural* in nature.\n\n**The decisive limitation \u2014 no free-standing substantive right.** In *Minister for Immigration and Ethnic Affairs v Teo* (1990) 21 FCR 102, the Full Court of the Federal Court held that a legitimate expectation does **not** create a substantive right to obtain the benefit; it only entitles the claimant to the *procedural* benefit of being consulted or heard before the representation is departed from. This was reaffirmed in *Re Minister for Immigration and Multicultural Affairs; Ex parte* **Cohen** (2002) 192 ALR 199, where the Court confirmed that legitimate expectation operates procedurally and does not bind a decision-maker to reach a particular result.\n\n**Statutory context.** Under the *Administrative Decisions (Judicial Review) Act 1977* (Cth) (ADJR Act), a failure to observe a procedural expectation may render a decision procedurally defective (s 5(1)(b) \u2014 failure to observe a requirement imposed by law as to the procedure to be followed). But this is a review ground, not a source of a substantive entitlement.\n\n## Application to the Facts\n\nThe department has **no statutory obligation** to grant the permit; it has merely, historically, done so on the strength of representations. This is precisely the factual matrix in which legitimate expectation operates: a representation made without legal obligation, which the relying party has acted on.\n\n- **Option A** is wrong. The doctrine does not compel the department to grant the permit. There is no substantive right to the outcome; the department remains free to refuse.\n- **Option C** is wrong. There is no contract \u2014 no consideration, no intention to create legal relations in the permit context, and the doctrine is not contractual in nature.\n- **Option D** is wrong. The doctrine applies to *administrative* decisions and the exercise of discretionary public power; it is precisely concerned with the kind of conduct described here.\n- **Option B** is correct. The doctrine requires the decision-maker, having created a legitimate expectation, to either (i) honour the representation, or (ii) afford the relying party an opportunity to be heard / give reasons before departing from it. It is **not** a free-standing right to the outcome. This accords with *Teo* and *Ex parte Cohen*.\n\n## Conclusion\n\n**The correct answer is B.** The doctrine of legitimate expectations requires the decision-maker to act in accordance with its earlier representations, or at minimum to afford the relying party a hearing (and give a reasoned explanation) before departing from them. It is a procedural doctrine, not a free-standing substantive right to the permit, and it is not contractual.",
+    "timestamp": "2026-09-14T05:20:28.963260+00:00",
+    "total_tokens": 1275,
+    "vendor": "local"
+  }
+}

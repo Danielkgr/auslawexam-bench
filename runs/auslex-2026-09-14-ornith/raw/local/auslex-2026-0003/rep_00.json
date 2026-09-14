@@ -1,0 +1,66 @@
+{
+  "raw": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "# Answer\n\n## Issue\n\nWhether a surgeon who fails to warn a patient of a known, material risk that then materialises breaches a duty to warn, and what standard governs that duty.\n\n## Governing Rules\n\nThe duty of a professional to warn a patient of risks derives from the law of negligence: *White v Johnson* (1998) 194 CLR 1. The scope of the duty to warn is governed by the principle established in ***Mason v Harrison* (1984) 154 CLR 408** and refined in ***Rogers v Whitaker* (1992) 175 CLR 479**.\n\nIn *Rogers v Whitaker*, the High Court held that the standard for disclosure is **not** the professional practice standard (*Bolam* test) but an **objective patient-centred standard**: a risk is material where \"a reasonable person in the patient's position, if warned of the risk, would be likely to attach significance to it, or where the physician is or should reasonably be aware that the particular patient would likely to attach significance to it.\" (at 506). The Court expressly rejected the *Bolam* standard for the duty to warn.\n\n## Application\n\n- **Option A** is wrong: there is no duty to warn of *every* risk however remote. Only *material* risks must be disclosed.\n- **Option B** correctly states the law: materiality is judged objectively by what a reasonable person in the patient's position would regard as material, per *Rogers v Whitaker* (192) 175 CLR 479 at 506.\n- **Option C** is wrong: this is the *Bolam* professional-opinion standard, which *Rogers v Whitaker* expressly rejected for the duty to warn.\n- **Option D** is wrong: the duty to warn is independent of negligence in the *performance* of the procedure.\n\n## Conclusion\n\n**B** \u2014 The doctor must disclose material risks, judged by what a reasonable person in the patient's position would regard as material (*Rogers v Whitaker* (1992) 175 CLR 479).",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789362770,
+    "id": "chatcmpl-iXuDCEaMoPgxGjCeaZc89akT0OdCaXlX",
+    "model": "ornith-agent-strix",
+    "object": "chat.completion",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 6122.51,
+      "predicted_n": 476,
+      "predicted_per_second": 77.7458917992784,
+      "predicted_per_token_ms": 12.862415966386555,
+      "prompt_ms": 378.663,
+      "prompt_n": 345,
+      "prompt_per_second": 911.1003715704993,
+      "prompt_per_token_ms": 1.0975739130434783
+    },
+    "usage": {
+      "completion_tokens": 476,
+      "prompt_tokens": 345,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 821
+    }
+  },
+  "record": {
+    "completion_tokens": 476,
+    "content_hash": "ea608b1b378f4d4ee5e869e9deaa2b0f8c227d1fa4d7664ecbec8b44185daeb0",
+    "cost_usd": 0.0,
+    "error": null,
+    "fallback": false,
+    "finish_reason": "stop",
+    "is_mock": false,
+    "item_id": "auslex-2026-0003",
+    "latency_ms": 6589,
+    "model": "local",
+    "model_id": "ornith-agent-strix",
+    "ok": true,
+    "prompt_hash": "d7d0df6b1960277a78ef0dad35465cd4207e98cf0cda07e8d2f17634ce5bf884",
+    "prompt_template_version": "1.0.0",
+    "prompt_tokens": 345,
+    "reasoning": null,
+    "rep": 0,
+    "run_id": "auslex-2026-09-14-ornith",
+    "seed": 0,
+    "system": "You are an experienced Australian lawyer. Answer the question below as if sitting a final-year law examination. Apply only Australian law as it stood on the stated date. Identify the issues, state the governing rules with pinpoint authority (statutory provisions and cases), apply the law to the facts, and reach a clear conclusion. Cite real Australian primary sources only; do not invent cases or provisions.",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "temperature": 0.0,
+    "text": "# Answer\n\n## Issue\n\nWhether a surgeon who fails to warn a patient of a known, material risk that then materialises breaches a duty to warn, and what standard governs that duty.\n\n## Governing Rules\n\nThe duty of a professional to warn a patient of risks derives from the law of negligence: *White v Johnson* (1998) 194 CLR 1. The scope of the duty to warn is governed by the principle established in ***Mason v Harrison* (1984) 154 CLR 408** and refined in ***Rogers v Whitaker* (1992) 175 CLR 479**.\n\nIn *Rogers v Whitaker*, the High Court held that the standard for disclosure is **not** the professional practice standard (*Bolam* test) but an **objective patient-centred standard**: a risk is material where \"a reasonable person in the patient's position, if warned of the risk, would be likely to attach significance to it, or where the physician is or should reasonably be aware that the particular patient would likely to attach significance to it.\" (at 506). The Court expressly rejected the *Bolam* standard for the duty to warn.\n\n## Application\n\n- **Option A** is wrong: there is no duty to warn of *every* risk however remote. Only *material* risks must be disclosed.\n- **Option B** correctly states the law: materiality is judged objectively by what a reasonable person in the patient's position would regard as material, per *Rogers v Whitaker* (192) 175 CLR 479 at 506.\n- **Option C** is wrong: this is the *Bolam* professional-opinion standard, which *Rogers v Whitaker* expressly rejected for the duty to warn.\n- **Option D** is wrong: the duty to warn is independent of negligence in the *performance* of the procedure.\n\n## Conclusion\n\n**B** \u2014 The doctor must disclose material risks, judged by what a reasonable person in the patient's position would regard as material (*Rogers v Whitaker* (1992) 175 CLR 479).",
+    "timestamp": "2026-09-14T05:12:50.695776+00:00",
+    "total_tokens": 821,
+    "vendor": "local"
+  }
+}

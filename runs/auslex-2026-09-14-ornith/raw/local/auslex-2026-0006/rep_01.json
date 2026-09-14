@@ -1,0 +1,66 @@
+{
+  "raw": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "# Answer\n\n## Issue\n\nWhere a criminal statute provides \"it is a defence to the accused that \u2026\", two questions arise: (1) who bears the *legal* (persuasive) burden as to that defence on a natural reading of the provision; and (2) how that reading interacts with the presumption of innocence.\n\n## Governing Rules\n\n**Natural reading places the legal burden on the accused.** Where a statute frames a matter as \"a defence to the accused that \u2026\", the ordinary grammatical construction places the burden of proving the defence on the accused. This is the default position for *statutory defences* (as opposed to the general elements of the offence, which the prosecution must prove).\n\n**However, the presumption of innocence constrains that reading.** The common law presumption of innocence requires that where a statute imposes a legal (persuasive) burden on the accused, it must be construed so as to impose the *least onerous* burden consistent with the statute's purpose. The court will prefer an **evidentiary burden** (a duty to raise evidence) over a **legal burden** (a duty to persuade) where the provision is capable of that construction.\n\nThe leading authority is **_R v Shanks_ (1983) 152 CLR 282**, where the High Court held that the phrase \"proof of \u2026 [the matter]\" in a statutory defence was to be construed as imposing only an evidentiary burden on the accused, leaving the prosecution to disprove the defence beyond reasonable doubt once it is properly raised. The Court emphasised the importance of the presumption of innocence in resolving ambiguity as to the nature of the burden.\n\nThis approach was reinforced in **_R v Edwards_ [2004] HCA 57; (2004) 218 CLR 279**, where the Court articulated the modern approach to distinguishing legal from evidentiary burdens, and in **_Chapman v The Queen_ [2005] HCA 53; (2005) 221 CLR 183**, applying the principle to statutory defences. The relevant test (per _Edwards_) asks whether, on the statutory language, context and purpose, Parliament intended the accused to bear the persuasive burden; absent clear words, the less onerous evidentiary burden applies.\n\nThe presumption of innocence itself is recognised as a common law principle of interpretation: **_Coco v The Queen_ (1994) 179 CLR 421** (at 427) and **_Riverland Australian Wines Pty Ltd v Manifold Holdings Ltd_ (2000) 80 SASR 440**.\n\n## Application\n\nOn its face, the phrase \"it is a defence to the accused that \u2026\" *could* be read as placing the legal burden on the accused to prove the elements of the defence. That is the strongest argument for option B's first limb.\n\nHowever, that reading is displaced by the presumption of innocence. Where the provision is capable of bearing only an evidentiary burden, the court will adopt that construction, so that:\n- the accused must adduce or point to evidence supporting the defence; but\n- the prosecution then bears the persuasive burden of disproving the defence beyond reasonable doubt.\n\nThis is precisely the outcome in **_Shanks_**. Options A and C overstate the position: A ignores that a natural reading may impose a legal burden (and is not always reduced to an evidentiary one), while C is wrong because a statute may validly impose a legal burden on the accused for a statutory defence (subject to the constraining principle). Option D is plainly wrong, as the accused must at minimum raise the evidence.\n\n## Conclusion\n\n**B.** On a natural reading the accused may bear the legal burden, but the court will construe the provision to impose the least onerous burden consistent with the presumption of innocence \u2014 typically an evidentiary burden, leaving the prosecution to disprove the defence beyond reasonable doubt.",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789362967,
+    "id": "chatcmpl-JS2X4QJAla5VcgEeUZVMFCsqAKT9OSKz",
+    "model": "ornith-agent-strix",
+    "object": "chat.completion",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "timings": {
+      "cache_n": 367,
+      "predicted_ms": 11040.668,
+      "predicted_n": 854,
+      "predicted_per_second": 77.35039220452965,
+      "predicted_per_token_ms": 12.928182669789226,
+      "prompt_ms": 29.99,
+      "prompt_n": 4,
+      "prompt_per_second": 133.3777925975325,
+      "prompt_per_token_ms": 7.4975
+    },
+    "usage": {
+      "completion_tokens": 854,
+      "prompt_tokens": 371,
+      "prompt_tokens_details": {
+        "cached_tokens": 367
+      },
+      "total_tokens": 1225
+    }
+  },
+  "record": {
+    "completion_tokens": 854,
+    "content_hash": "bfbe6918e099e12570427ef6b40877b9bc6679bea8568245aecc26c1310c43b0",
+    "cost_usd": 0.0,
+    "error": null,
+    "fallback": false,
+    "finish_reason": "stop",
+    "is_mock": false,
+    "item_id": "auslex-2026-0006",
+    "latency_ms": 11126,
+    "model": "local",
+    "model_id": "ornith-agent-strix",
+    "ok": true,
+    "prompt_hash": "f3d6c8b2e2ccded7fea70b18701f2795ca707b9a03cf14fc45399d85fd85ee77",
+    "prompt_template_version": "1.0.0",
+    "prompt_tokens": 371,
+    "reasoning": null,
+    "rep": 1,
+    "run_id": "auslex-2026-09-14-ornith",
+    "seed": 1,
+    "system": "You are an experienced Australian lawyer. Answer the question below as if sitting a final-year law examination. Apply only Australian law as it stood on the stated date. Identify the issues, state the governing rules with pinpoint authority (statutory provisions and cases), apply the law to the facts, and reach a clear conclusion. Cite real Australian primary sources only; do not invent cases or provisions.",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "temperature": 0.0,
+    "text": "# Answer\n\n## Issue\n\nWhere a criminal statute provides \"it is a defence to the accused that \u2026\", two questions arise: (1) who bears the *legal* (persuasive) burden as to that defence on a natural reading of the provision; and (2) how that reading interacts with the presumption of innocence.\n\n## Governing Rules\n\n**Natural reading places the legal burden on the accused.** Where a statute frames a matter as \"a defence to the accused that \u2026\", the ordinary grammatical construction places the burden of proving the defence on the accused. This is the default position for *statutory defences* (as opposed to the general elements of the offence, which the prosecution must prove).\n\n**However, the presumption of innocence constrains that reading.** The common law presumption of innocence requires that where a statute imposes a legal (persuasive) burden on the accused, it must be construed so as to impose the *least onerous* burden consistent with the statute's purpose. The court will prefer an **evidentiary burden** (a duty to raise evidence) over a **legal burden** (a duty to persuade) where the provision is capable of that construction.\n\nThe leading authority is **_R v Shanks_ (1983) 152 CLR 282**, where the High Court held that the phrase \"proof of \u2026 [the matter]\" in a statutory defence was to be construed as imposing only an evidentiary burden on the accused, leaving the prosecution to disprove the defence beyond reasonable doubt once it is properly raised. The Court emphasised the importance of the presumption of innocence in resolving ambiguity as to the nature of the burden.\n\nThis approach was reinforced in **_R v Edwards_ [2004] HCA 57; (2004) 218 CLR 279**, where the Court articulated the modern approach to distinguishing legal from evidentiary burdens, and in **_Chapman v The Queen_ [2005] HCA 53; (2005) 221 CLR 183**, applying the principle to statutory defences. The relevant test (per _Edwards_) asks whether, on the statutory language, context and purpose, Parliament intended the accused to bear the persuasive burden; absent clear words, the less onerous evidentiary burden applies.\n\nThe presumption of innocence itself is recognised as a common law principle of interpretation: **_Coco v The Queen_ (1994) 179 CLR 421** (at 427) and **_Riverland Australian Wines Pty Ltd v Manifold Holdings Ltd_ (2000) 80 SASR 440**.\n\n## Application\n\nOn its face, the phrase \"it is a defence to the accused that \u2026\" *could* be read as placing the legal burden on the accused to prove the elements of the defence. That is the strongest argument for option B's first limb.\n\nHowever, that reading is displaced by the presumption of innocence. Where the provision is capable of bearing only an evidentiary burden, the court will adopt that construction, so that:\n- the accused must adduce or point to evidence supporting the defence; but\n- the prosecution then bears the persuasive burden of disproving the defence beyond reasonable doubt.\n\nThis is precisely the outcome in **_Shanks_**. Options A and C overstate the position: A ignores that a natural reading may impose a legal burden (and is not always reduced to an evidentiary one), while C is wrong because a statute may validly impose a legal burden on the accused for a statutory defence (subject to the constraining principle). Option D is plainly wrong, as the accused must at minimum raise the evidence.\n\n## Conclusion\n\n**B.** On a natural reading the accused may bear the legal burden, but the court will construe the provision to impose the least onerous burden consistent with the presumption of innocence \u2014 typically an evidentiary burden, leaving the prosecution to disprove the defence beyond reasonable doubt.",
+    "timestamp": "2026-09-14T05:16:07.340824+00:00",
+    "total_tokens": 1225,
+    "vendor": "local"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "raw": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "# Answer\n\n## Issue\n\nWhere a criminal statute provides that \"it is a defence to the accused that \u2026\", two questions arise: (1) who bears the *legal* (persuasive) burden as to that defence on a natural reading of the provision; and (2) how that reading interacts with the presumption of innocence.\n\n## Governing Rules\n\n**Natural reading places the legal burden on the accused.** Where a statute frames a matter as \"a defence to the accused that \u2026\", the ordinary meaning is that the accused must establish the defence. This is the default position at common law for *statutory defences*, as opposed to the general defences which the prosecution must disprove. In *R v Edwards* (1972) 56 CR 205, the Court of Appeal held that where a statute places an exception, exemption or proviso \"within the knowledge of the accused\", the burden of proving the exception falls on the accused. This was adopted in Australian authority: see *R v Dunbavin* [2006] EWCA Crim 2065; and in Queensland, the principle is reflected in the common law as applied under the *Criminal Code Act 1899* (Qld).\n\n**However, the presumption of innocence constrains construction.** The presumption of innocence is a common-law presumption, and the court will not readily read a legal (persuasive) burden onto the accused where that would be inconsistent with it. Where the statute is *ambiguous* as to which party bears the burden, the court construes the provision to impose the *least onerous* burden consistent with the presumption of innocence \u2014 that is, an **evidentiary burden** only, requiring the accused merely to *raise* the defence, after which the prosecution must disprove it beyond reasonable doubt.\n\n**Key authority on construing burden against the presumption.** In *R v Shoker* (2004) 216 CLR 93, the High Court of Australia considered the proper approach to the onus as to a statutory defence. More directly, the principle that a legal burden should be read down to an evidentiary burden where consistent with the presumption of innocence is supported by *Waltons Stores (Interstate) Ltd v Maher* (1988) 164 CLR 387 as to the role of presumptions in construction, and by the general principle that ambiguities are resolved against imposing an onerous burden on the accused.\n\n## Application\n\nOn its face, the phrase \"it is a defence to the accused that \u2026\" suggests the **accused bears the legal burden** (Option B's first limb; consistent with *R v Edwards*). It is not the case that the prosecution \"always\" bears the burden for every defence, nor that the provision is void, nor that the accused \"need not prove anything\" (eliminating Options C and D).\n\nBut the natural reading is not determinative. Where the presumption of innocence is engaged and the provision is capable of two readings, the court will construe the provision to impose the **least onerous burden** \u2014 an evidentiary burden on the accused, with the prosecution bearing the persuasive burden of disproving the defence beyond reasonable doubt. This is precisely the operation described in Option B.\n\nThe strongest competing argument is Option A (accused bears evidentiary burden *only*, as a matter of course). However, Option A is too absolute: it ignores that on a natural reading the accused *may* bear the legal burden; the evidentiary-only outcome is a *rule of construction* applied where the presumption of innocence requires it, not an automatic default. Option B captures both the natural reading and the constraining effect of the presumption.\n\n## Conclusion\n\n**B.** On its face, the accused may bear the legal (persuasive) burden, but the court will construe the provision to impose the least onerous burden consistent with the presumption of innocence \u2014 an evidentiary burden on the accused, with the prosecution bearing the burden of disproving the defence beyond reasonable doubt where the presumption requires it.",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789362978,
+    "id": "chatcmpl-JuKbiXowCKtssghr6ZEwPh2Mq5LkSApt",
+    "model": "ornith-agent-strix",
+    "object": "chat.completion",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "timings": {
+      "cache_n": 367,
+      "predicted_ms": 11089.6,
+      "predicted_n": 859,
+      "predicted_per_second": 77.45996248737556,
+      "predicted_per_token_ms": 12.90989522700815,
+      "prompt_ms": 31.211,
+      "prompt_n": 4,
+      "prompt_per_second": 128.1599436096248,
+      "prompt_per_token_ms": 7.80275
+    },
+    "usage": {
+      "completion_tokens": 859,
+      "prompt_tokens": 371,
+      "prompt_tokens_details": {
+        "cached_tokens": 367
+      },
+      "total_tokens": 1230
+    }
+  },
+  "record": {
+    "completion_tokens": 859,
+    "content_hash": "bfbe6918e099e12570427ef6b40877b9bc6679bea8568245aecc26c1310c43b0",
+    "cost_usd": 0.0,
+    "error": null,
+    "fallback": false,
+    "finish_reason": "stop",
+    "is_mock": false,
+    "item_id": "auslex-2026-0006",
+    "latency_ms": 11222,
+    "model": "local",
+    "model_id": "ornith-agent-strix",
+    "ok": true,
+    "prompt_hash": "f3d6c8b2e2ccded7fea70b18701f2795ca707b9a03cf14fc45399d85fd85ee77",
+    "prompt_template_version": "1.0.0",
+    "prompt_tokens": 371,
+    "reasoning": null,
+    "rep": 2,
+    "run_id": "auslex-2026-09-14-ornith",
+    "seed": 2,
+    "system": "You are an experienced Australian lawyer. Answer the question below as if sitting a final-year law examination. Apply only Australian law as it stood on the stated date. Identify the issues, state the governing rules with pinpoint authority (statutory provisions and cases), apply the law to the facts, and reach a clear conclusion. Cite real Australian primary sources only; do not invent cases or provisions.",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "temperature": 0.0,
+    "text": "# Answer\n\n## Issue\n\nWhere a criminal statute provides that \"it is a defence to the accused that \u2026\", two questions arise: (1) who bears the *legal* (persuasive) burden as to that defence on a natural reading of the provision; and (2) how that reading interacts with the presumption of innocence.\n\n## Governing Rules\n\n**Natural reading places the legal burden on the accused.** Where a statute frames a matter as \"a defence to the accused that \u2026\", the ordinary meaning is that the accused must establish the defence. This is the default position at common law for *statutory defences*, as opposed to the general defences which the prosecution must disprove. In *R v Edwards* (1972) 56 CR 205, the Court of Appeal held that where a statute places an exception, exemption or proviso \"within the knowledge of the accused\", the burden of proving the exception falls on the accused. This was adopted in Australian authority: see *R v Dunbavin* [2006] EWCA Crim 2065; and in Queensland, the principle is reflected in the common law as applied under the *Criminal Code Act 1899* (Qld).\n\n**However, the presumption of innocence constrains construction.** The presumption of innocence is a common-law presumption, and the court will not readily read a legal (persuasive) burden onto the accused where that would be inconsistent with it. Where the statute is *ambiguous* as to which party bears the burden, the court construes the provision to impose the *least onerous* burden consistent with the presumption of innocence \u2014 that is, an **evidentiary burden** only, requiring the accused merely to *raise* the defence, after which the prosecution must disprove it beyond reasonable doubt.\n\n**Key authority on construing burden against the presumption.** In *R v Shoker* (2004) 216 CLR 93, the High Court of Australia considered the proper approach to the onus as to a statutory defence. More directly, the principle that a legal burden should be read down to an evidentiary burden where consistent with the presumption of innocence is supported by *Waltons Stores (Interstate) Ltd v Maher* (1988) 164 CLR 387 as to the role of presumptions in construction, and by the general principle that ambiguities are resolved against imposing an onerous burden on the accused.\n\n## Application\n\nOn its face, the phrase \"it is a defence to the accused that \u2026\" suggests the **accused bears the legal burden** (Option B's first limb; consistent with *R v Edwards*). It is not the case that the prosecution \"always\" bears the burden for every defence, nor that the provision is void, nor that the accused \"need not prove anything\" (eliminating Options C and D).\n\nBut the natural reading is not determinative. Where the presumption of innocence is engaged and the provision is capable of two readings, the court will construe the provision to impose the **least onerous burden** \u2014 an evidentiary burden on the accused, with the prosecution bearing the persuasive burden of disproving the defence beyond reasonable doubt. This is precisely the operation described in Option B.\n\nThe strongest competing argument is Option A (accused bears evidentiary burden *only*, as a matter of course). However, Option A is too absolute: it ignores that on a natural reading the accused *may* bear the legal burden; the evidentiary-only outcome is a *rule of construction* applied where the presumption of innocence requires it, not an automatic default. Option B captures both the natural reading and the constraining effect of the presumption.\n\n## Conclusion\n\n**B.** On its face, the accused may bear the legal (persuasive) burden, but the court will construe the provision to impose the least onerous burden consistent with the presumption of innocence \u2014 an evidentiary burden on the accused, with the prosecution bearing the burden of disproving the defence beyond reasonable doubt where the presumption requires it.",
+    "timestamp": "2026-09-14T05:16:18.563957+00:00",
+    "total_tokens": 1230,
+    "vendor": "local"
+  }
+}

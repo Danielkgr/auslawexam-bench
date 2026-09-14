@@ -27,7 +27,32 @@ It is a working prototype.  The full pipeline runs offline on deterministic seed
 
 ## Results
 
-No real model has been scored yet.  The table below comes from a mock run of 16 questions and three repetitions with no API keys, so **every number in it is synthetic**.  It shows the metric working and says nothing about any real model.
+One real model has been scored so far: a local open-weight model on the local slot.  No commercial slot has been run, because there are no commercial API keys in the run environment.
+
+### A real run on the local slot
+
+Run `auslex-2026-09-14-ornith` put the 16 provisional items to a local model of about 35.5B parameters, served as GGUF by llama.cpp through an OpenAI-compatible endpoint (`ornith-agent-strix`, context window 131072).  The server does not report the exact quantisation.  It used the shared prompt template v1.0.0 at temperature 0, with three repetitions per item, for 48 completions: 48 ok and 0 errors.
+
+```bash
+AUSLEX_LOCAL_BASE_URL=http://localhost:10009/v1 \
+AUSLEX_LOCAL_MODEL=ornith-agent-strix \
+auslex run --models local --reps 3 --seed 0 --run-id auslex-2026-09-14-ornith
+```
+
+| Metric | Value (95% CI) | What it actually measures |
+|---|---|---|
+| Mean rubric item score (0 to 100) | **68.9** [57.8, 79.0] | The deterministic seeded rubric judge, not a human legal grade |
+| Citations: `on_point` / `known_other` / `fabricated` | **13 / 7 / 204** of 224 | Automated match against the item's required authorities and a 46-entry known corpus |
+| Fabricated-citation rate (upper bound) | **0.911** [0.878, 0.961] | Share of extracted citations the matcher could not confirm |
+
+> [!IMPORTANT]
+> The headline rate here reflects the matcher more than the model.  A manual review of the 204 unmatched citations found that about two thirds are bare pinpoint tails the extractor did not pair with a party name.  The model gives `Waltons Stores (Interstate) Ltd v Maher (1988) 164 CLR 387` in full once, then refers back with a bare `(1988) 164 CLR 387` or an abbreviated party, and the strict matcher counts those as unmatched even though the full citation is in the seed corpus.  The remaining third mixes real but uncatalogued Australian authorities with a small number of genuinely suspect citations.  **The true fabricated-citation rate is materially below 0.911 and is UNVERIFIED** until a citation-by-citation legal review is done.
+
+The raw outputs, scores, intervals, and rendered leaderboard for this run are committed under `runs/`, `scores/`, `stats/`, and `site/`, each in an `auslex-2026-09-14-ornith` folder.  Re-derive them with `auslex score`, `auslex stats`, and `auslex site` on `runs/auslex-2026-09-14-ornith`.
+
+### Mock run
+
+The table below comes from a mock run of 16 questions and three repetitions with no API keys, so **every number in it is synthetic**.  It shows the metric working and says nothing about any real model.
 
 | # | Slot | Mean score (95% CI) | Fabricated rate (95% CI) |
 |:--:|---|---|---|
@@ -50,7 +75,7 @@ For every answer, the harness extracts the citations and puts each one in a clas
 |---|---|
 | `on_point` | Matches one of the item's required authorities |
 | `known_other` | A real Australian authority from the corpus, but not one on this item's list |
-| `fabricated` | Looks like a citation but appears in neither list, which makes it an invented case or provision |
+| `fabricated` | Looks like a citation but appears in neither list, so the checker could not confirm it.  Because the known corpus is small, this class also collects real but uncatalogued or abbreviated citations, so it is an upper bound on invention rather than a direct count |
 
 ```text
 fabricated_rate = fabricated / total_citations

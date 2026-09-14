@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AusLawExam-Bench &middot; Leaderboard</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+         margin: 0; padding: 2rem; max-width: 960px; line-height: 1.5; }
+  h1 { margin-top: 0; font-size: 1.6rem; }
+  h2 { font-size: 1.15rem; margin-top: 2rem; border-bottom: 1px solid #8884; padding-bottom: .3rem; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .92rem; }
+  th, td { border: 1px solid #8885; padding: .45rem .6rem; text-align: left; }
+  th { background: #8881; }
+  tr:first-child td { font-weight: 600; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .muted { color: #888; font-size: .85rem; }
+  code { background: #8882; padding: .1rem .3rem; border-radius: 3px; font-size: .85em; }
+  .badge { font-size: .72rem; padding: .1rem .4rem; border-radius: 8px; background: #8883; }
+  .fab { color: #b23; }
+  .best { font-weight: 700; }
+  footer { margin-top: 2.5rem; font-size: .8rem; color: #888; border-top: 1px solid #8884; padding-top: 1rem; }
+</style>
+</head>
+<body>
+<h1>AusLawExam-Bench &middot; Leaderboard</h1>
+<p class="muted">A public, reproducible benchmark of Australian legal reasoning. 1 models &middot; 16 exam-style questions.</p>
+<h2>Item score (0&ndash;100) &amp; fabricated-citation rate</h2><table><thead><tr><th>#</th><th>Model</th><th class='num'>Mean score (95% CI)</th><th class='num'>Fabricated rate (95% CI)</th><th class='num'>Q</th></tr></thead><tbody><tr><td>1</td><td><span class="best">local</span></td><td class='num'>68.9 [57.8, 79.0]</td><td class='num fab'>0.911 [0.878, 0.961]</td><td class='num'>16</td></tr></tbody></table><p class='muted'>Lower fabricated-citation rate is better; the headline metric for a legal benchmark is the tendency to invent authority.</p>
+
+<h2>By difficulty</h2><table><thead><tr><th>Model</th><th class='num'>credit</th><th class='num'>distinction</th><th class='num'>high_distinction</th><th class='num'>pass</th></tr></thead><tbody><tr><td>local</td><td class='num'>68.55</td><td class='num'>62.53</td><td class='num'>91.1</td><td class='num'>67.61</td></tr></tbody></table>
+<footer>
+  <p><strong>Method.</strong> percentile bootstrap, n_boot=10000, question-level, seeded paired permutation (sign-flip), n_perm=10000, two-sided, seeded</p>
+  <p><strong>Contamination control.</strong> Every item embeds the global canary auslex:9f2c1a4e-7b3d plus a per-item canary derived from its id; reproducing either verbatim flags training-data contamination.</p>
+  <p><strong>Provenance.</strong> Sample items are provisional and require lawyer verification before publication.</p>
+  <p class="muted">Run <code>auslex-2026-09-14-ornith</code> &middot; 1 models &middot; 16 questions &middot; 2026-09-14T05:26:13.972406+00:00</p>
+</footer>
+</body>
+</html>

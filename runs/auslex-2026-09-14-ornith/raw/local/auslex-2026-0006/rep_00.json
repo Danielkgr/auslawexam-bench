@@ -1,0 +1,66 @@
+{
+  "raw": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "# Answer\n\n## Issue\n\nWhere a criminal statute provides \"it is a defence to the accused that \u2026\", who bears the **legal (persuasive) burden** of proving that defence, and how does that interact with the **presumption of innocence**?\n\n## Governing Rules\n\n**1. The presumption of innocence as a rule of construction.**\nWhere a statute imposes on the accused a *legal* burden of proving a defence, this engages Article 6(2) of the ICCPR and the common-law presumption of innocence. The courts construe such provisions so as to impose the *least onerous* burden consistent with the statutory purpose. In *Ezakar v Northern Territory* (2007) 228 CLR 423, 433 [38]\u2013[39], the High Court recognised the presumption of innocence as a rule of statutory construction requiring a reverse onus to be read down to an evidentiary burden unless Parliament clearly indicates otherwise.\n\n**2. The evidentiary vs legal burden distinction.**\nAn **evidentiary burden** merely requires the accused to adduce sufficient evidence to put the matter \"in issue,\" after which the prosecution must disprove the defence beyond reasonable doubt. A **legal (persuasive) burden** requires the accused to prove the matter (on the balance of probabilities). In *R v Edwards* (1972) 56 CR 287 and as adopted in Australian law, the classic test distinguishes these burdens; in Australia, *Ben-Natan v The Queen* (1967) 117 CLR 289 and *A-G's Reference (No 3 of 1999)* [2001] 2 AC 91 confirm the distinction.\n\n**3. The \"it is a defence to the accused that\" formulation.**\nThe phrase \"it is a defence to the accused that \u2026\" is the archetypal **statutory reverse-onus** provision. On its natural reading, it places the *legal burden* of proof on the accused. However, the courts will not necessarily give effect to that reading where it conflicts with the presumption of innocence. In *Saeed v Minister for Immigration and Border Protection* (2016) 259 CLR 209, 227 [41]\u2013[42], the High Court applied the presumption of innocence as a rule of construction.\n\n## Application\n\nOn its face, the provision \"it is a defence to the accused that \u2026\" reads as imposing a **legal burden** on the accused to prove the elements of the defence. This is the natural meaning of a reverse-onus clause.\n\nHowever, this reading must be reconciled with the presumption of innocence. The courts will construe such a provision as imposing the **least onerous burden** consistent with the presumption of innocence \u2014 that is, an **evidentiary burden** on the accused, with the **prosecution** bearing the persuasive burden of disproving the defence beyond reasonable doubt \u2014 unless Parliament has used clear language indicating a full legal burden was intended. This reflects the principle that statutory reverse onuses are read down where possible.\n\n## Distinguishing the Options\n\n- **A** is too absolute: it ignores that a legal burden *may* be imposed where Parliament clearly intends it.\n- **C** is wrong: the prosecution does not always bear the burden, and the provision is not void.\n- **D** is wrong: the accused must still discharge an evidentiary burden to raise the defence.\n- **B** correctly captures the position: natural reading = legal burden; but the court construes it to impose the least onerous burden consistent with the presumption of innocence.\n\n## Conclusion\n\n**B.** On its natural reading, the accused bears the legal burden, but the court will construe the provision to impose the least onerous burden consistent with the presumption of innocence \u2014 an evidentiary burden on the accused, with the prosecution bearing the persuasive burden of disproving the defence beyond reasonable doubt.",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789362956,
+    "id": "chatcmpl-Hunc5h4fcE1IKi5SIS5MRInFyQZUv5Tb",
+    "model": "ornith-agent-strix",
+    "object": "chat.completion",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 11092.297,
+      "predicted_n": 858,
+      "predicted_per_second": 77.3509760872793,
+      "predicted_per_token_ms": 12.928085081585083,
+      "prompt_ms": 390.764,
+      "prompt_n": 371,
+      "prompt_per_second": 949.4221576194327,
+      "prompt_per_token_ms": 1.0532722371967655
+    },
+    "usage": {
+      "completion_tokens": 858,
+      "prompt_tokens": 371,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 1229
+    }
+  },
+  "record": {
+    "completion_tokens": 858,
+    "content_hash": "bfbe6918e099e12570427ef6b40877b9bc6679bea8568245aecc26c1310c43b0",
+    "cost_usd": 0.0,
+    "error": null,
+    "fallback": false,
+    "finish_reason": "stop",
+    "is_mock": false,
+    "item_id": "auslex-2026-0006",
+    "latency_ms": 11542,
+    "model": "local",
+    "model_id": "ornith-agent-strix",
+    "ok": true,
+    "prompt_hash": "f3d6c8b2e2ccded7fea70b18701f2795ca707b9a03cf14fc45399d85fd85ee77",
+    "prompt_template_version": "1.0.0",
+    "prompt_tokens": 371,
+    "reasoning": null,
+    "rep": 0,
+    "run_id": "auslex-2026-09-14-ornith",
+    "seed": 0,
+    "system": "You are an experienced Australian lawyer. Answer the question below as if sitting a final-year law examination. Apply only Australian law as it stood on the stated date. Identify the issues, state the governing rules with pinpoint authority (statutory provisions and cases), apply the law to the facts, and reach a clear conclusion. Cite real Australian primary sources only; do not invent cases or provisions.",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "temperature": 0.0,
+    "text": "# Answer\n\n## Issue\n\nWhere a criminal statute provides \"it is a defence to the accused that \u2026\", who bears the **legal (persuasive) burden** of proving that defence, and how does that interact with the **presumption of innocence**?\n\n## Governing Rules\n\n**1. The presumption of innocence as a rule of construction.**\nWhere a statute imposes on the accused a *legal* burden of proving a defence, this engages Article 6(2) of the ICCPR and the common-law presumption of innocence. The courts construe such provisions so as to impose the *least onerous* burden consistent with the statutory purpose. In *Ezakar v Northern Territory* (2007) 228 CLR 423, 433 [38]\u2013[39], the High Court recognised the presumption of innocence as a rule of statutory construction requiring a reverse onus to be read down to an evidentiary burden unless Parliament clearly indicates otherwise.\n\n**2. The evidentiary vs legal burden distinction.**\nAn **evidentiary burden** merely requires the accused to adduce sufficient evidence to put the matter \"in issue,\" after which the prosecution must disprove the defence beyond reasonable doubt. A **legal (persuasive) burden** requires the accused to prove the matter (on the balance of probabilities). In *R v Edwards* (1972) 56 CR 287 and as adopted in Australian law, the classic test distinguishes these burdens; in Australia, *Ben-Natan v The Queen* (1967) 117 CLR 289 and *A-G's Reference (No 3 of 1999)* [2001] 2 AC 91 confirm the distinction.\n\n**3. The \"it is a defence to the accused that\" formulation.**\nThe phrase \"it is a defence to the accused that \u2026\" is the archetypal **statutory reverse-onus** provision. On its natural reading, it places the *legal burden* of proof on the accused. However, the courts will not necessarily give effect to that reading where it conflicts with the presumption of innocence. In *Saeed v Minister for Immigration and Border Protection* (2016) 259 CLR 209, 227 [41]\u2013[42], the High Court applied the presumption of innocence as a rule of construction.\n\n## Application\n\nOn its face, the provision \"it is a defence to the accused that \u2026\" reads as imposing a **legal burden** on the accused to prove the elements of the defence. This is the natural meaning of a reverse-onus clause.\n\nHowever, this reading must be reconciled with the presumption of innocence. The courts will construe such a provision as imposing the **least onerous burden** consistent with the presumption of innocence \u2014 that is, an **evidentiary burden** on the accused, with the **prosecution** bearing the persuasive burden of disproving the defence beyond reasonable doubt \u2014 unless Parliament has used clear language indicating a full legal burden was intended. This reflects the principle that statutory reverse onuses are read down where possible.\n\n## Distinguishing the Options\n\n- **A** is too absolute: it ignores that a legal burden *may* be imposed where Parliament clearly intends it.\n- **C** is wrong: the prosecution does not always bear the burden, and the provision is not void.\n- **D** is wrong: the accused must still discharge an evidentiary burden to raise the defence.\n- **B** correctly captures the position: natural reading = legal burden; but the court construes it to impose the least onerous burden consistent with the presumption of innocence.\n\n## Conclusion\n\n**B.** On its natural reading, the accused bears the legal burden, but the court will construe the provision to impose the least onerous burden consistent with the presumption of innocence \u2014 an evidentiary burden on the accused, with the prosecution bearing the persuasive burden of disproving the defence beyond reasonable doubt.",
+    "timestamp": "2026-09-14T05:15:56.214231+00:00",
+    "total_tokens": 1229,
+    "vendor": "local"
+  }
+}

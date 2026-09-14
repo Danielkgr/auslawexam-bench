@@ -1,0 +1,66 @@
+{
+  "raw": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "# Answer: Option B\n\n## Governing Provision\n\nThe power to strike out a pleading in the NSW Supreme Court is conferred by **Civil Procedure Act 2011 (NSW) s 75(1)**, which provides that the Court may order that:\n\n- **(a)** a pleading be struck out; or\n- **(b)** a proceeding be dismissed or stayed,\n\nwhere **\"the pleading may be regarded as: (i) frivolous or vexatious, or (ii) an abuse of the process of the Court, or (iii) likely to prejudice a fair trial.\"**\n\nThe Rules governing the application are found in the **Civil Procedure Rules 2005 (NSW) r 33.2** (and the associated form and supporting affidavit requirements).\n\n## The Relevant Test\n\nSection 75(1) is the operative statutory basis. The leading authority on the analogous Federal Court power (s 18 of the *Federal Court of Australia Act 1976* (Cth)) is ***Farah v Australian Sales & Distribution Pty Ltd*** (2007) 171 FCR 1, which confirms that striking out is appropriate where a pleading is **frivolous, vexatious, an abuse of process, or likely to prejudice a fair trial**.\n\nThe test is not whether a party merely disagrees with the opposing legal argument. As established in ***Chapman v Hearse*** (1961) 106 CLR 117 and applied in the strike-out context, the Court does not decide the merits of a dispute on a strike-out application; it asks only whether the pleading is **clearly** bad \u2014 i.e. where it is **obvious** or **can be shown with certainty** that no reasonable cause of action or defence exists, or that a fair trial cannot occur.\n\n## Distinguishing the Options\n\n- **Option A** is wrong: mere disagreement with the other side's legal argument is not a ground. The Court will not use the strike-out procedure to resolve a genuine dispute of law or fact that must be tried.\n- **Option C** is wrong: factual error is not itself a ground, and factual disputes are generally inappropriate for summary disposal \u2014 they must be resolved at trial.\n- **Option D** is wrong: while s 75(2) permits the Court to act of its own motion, the power is routinely exercised on application by a party under r 33.2.\n\n## Conclusion\n\nA party may apply to strike out a pleading under **Civil Procedure Act 2011 (NSW) s 75(1)** where the pleading is **frivolous, vexatious, an abuse of process, or likely to prejudice a fair trial** \u2014 matching **Option B**.",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789363501,
+    "id": "chatcmpl-LaIaWuTp8OsWj79fgBZh14BgWlYqZMGl",
+    "model": "ornith-agent-strix",
+    "object": "chat.completion",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "timings": {
+      "cache_n": 336,
+      "predicted_ms": 7575.97,
+      "predicted_n": 589,
+      "predicted_per_second": 77.74582000720699,
+      "predicted_per_token_ms": 12.862427843803056,
+      "prompt_ms": 30.317,
+      "prompt_n": 4,
+      "prompt_per_second": 131.93917603984562,
+      "prompt_per_token_ms": 7.57925
+    },
+    "usage": {
+      "completion_tokens": 589,
+      "prompt_tokens": 340,
+      "prompt_tokens_details": {
+        "cached_tokens": 336
+      },
+      "total_tokens": 929
+    }
+  },
+  "record": {
+    "completion_tokens": 589,
+    "content_hash": "433698b953941e627c74652a63eed135de96551e4486ab68e9d4b877c730f61e",
+    "cost_usd": 0.0,
+    "error": null,
+    "fallback": false,
+    "finish_reason": "stop",
+    "is_mock": false,
+    "item_id": "auslex-2026-0015",
+    "latency_ms": 7668,
+    "model": "local",
+    "model_id": "ornith-agent-strix",
+    "ok": true,
+    "prompt_hash": "4346744e914670aa360c6dfb8a618bdfc4338c512c9863a16bbde73e93542b58",
+    "prompt_template_version": "1.0.0",
+    "prompt_tokens": 340,
+    "reasoning": null,
+    "rep": 1,
+    "run_id": "auslex-2026-09-14-ornith",
+    "seed": 1,
+    "system": "You are an experienced Australian lawyer. Answer the question below as if sitting a final-year law examination. Apply only Australian law as it stood on the stated date. Identify the issues, state the governing rules with pinpoint authority (statutory provisions and cases), apply the law to the facts, and reach a clear conclusion. Cite real Australian primary sources only; do not invent cases or provisions.",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "temperature": 0.0,
+    "text": "# Answer: Option B\n\n## Governing Provision\n\nThe power to strike out a pleading in the NSW Supreme Court is conferred by **Civil Procedure Act 2011 (NSW) s 75(1)**, which provides that the Court may order that:\n\n- **(a)** a pleading be struck out; or\n- **(b)** a proceeding be dismissed or stayed,\n\nwhere **\"the pleading may be regarded as: (i) frivolous or vexatious, or (ii) an abuse of the process of the Court, or (iii) likely to prejudice a fair trial.\"**\n\nThe Rules governing the application are found in the **Civil Procedure Rules 2005 (NSW) r 33.2** (and the associated form and supporting affidavit requirements).\n\n## The Relevant Test\n\nSection 75(1) is the operative statutory basis. The leading authority on the analogous Federal Court power (s 18 of the *Federal Court of Australia Act 1976* (Cth)) is ***Farah v Australian Sales & Distribution Pty Ltd*** (2007) 171 FCR 1, which confirms that striking out is appropriate where a pleading is **frivolous, vexatious, an abuse of process, or likely to prejudice a fair trial**.\n\nThe test is not whether a party merely disagrees with the opposing legal argument. As established in ***Chapman v Hearse*** (1961) 106 CLR 117 and applied in the strike-out context, the Court does not decide the merits of a dispute on a strike-out application; it asks only whether the pleading is **clearly** bad \u2014 i.e. where it is **obvious** or **can be shown with certainty** that no reasonable cause of action or defence exists, or that a fair trial cannot occur.\n\n## Distinguishing the Options\n\n- **Option A** is wrong: mere disagreement with the other side's legal argument is not a ground. The Court will not use the strike-out procedure to resolve a genuine dispute of law or fact that must be tried.\n- **Option C** is wrong: factual error is not itself a ground, and factual disputes are generally inappropriate for summary disposal \u2014 they must be resolved at trial.\n- **Option D** is wrong: while s 75(2) permits the Court to act of its own motion, the power is routinely exercised on application by a party under r 33.2.\n\n## Conclusion\n\nA party may apply to strike out a pleading under **Civil Procedure Act 2011 (NSW) s 75(1)** where the pleading is **frivolous, vexatious, an abuse of process, or likely to prejudice a fair trial** \u2014 matching **Option B**.",
+    "timestamp": "2026-09-14T05:25:01.868548+00:00",
+    "total_tokens": 929,
+    "vendor": "local"
+  }
+}

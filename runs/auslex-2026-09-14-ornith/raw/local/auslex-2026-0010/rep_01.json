@@ -1,0 +1,66 @@
+{
+  "raw": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "# Legitimate Expectations\n\n## Issues\n\nWhether the doctrine of legitimate expectations operates as (A) a rule mandating a particular outcome, (B) a procedural protection requiring consistency or a hearing/explanation, (C) a contractual right, or (D) inapplicable to administrative decisions.\n\n## Governing Rules\n\nThe doctrine of legitimate expectations is a creature of **common law and equity**, operating within administrative law as a **procedural** doctrine rather than a source of substantive rights.\n\n**It is not a free-standing right to an outcome.** In *SZBEL v Minister for Immigration and Multicultural Affairs* (2006) 228 CLR 152, 161 [30]\u2013[32], the High Court held that a legitimate expectation does not confer a substantive entitlement; it requires only that the decision-maker afford an opportunity to be heard before departing from the expectation. Gaudron J at [107]\u2013[108] confirmed the expectation merely triggers the rules of natural justice.\n\n**The test for arising.** A legitimate expectation arises where a public authority makes a representation or adopts a practice, and it is fair and reasonable for the applicant to expect the authority will act consistently: *Minister for Immigration and Multicultural Affairs v Jankovic* (2000) 202 CLR 552, 571\u2013572 [51]\u2013[52] (Gaudron J).\n\n**Procedural, not substantive, enforcement.** In *Teoh* (1995) 183 CLR 273, 287, Mason CJ, Deane, Dawson and Gaudron JJ held that a legitimate expectation gives rise to a **procedural** legitimate expectation \u2014 the decision-maker must either honour the representation or afford a hearing; it does not force the promised outcome. This was subsequently curtailed by s 8 of the *Administrative Decisions (Judicial Review) Act 1977* (Cth), which provides that a person's expectations (including from international conventions) are **irrelevant** in determining what process is fair \u2014 *Teoh*'s effect in the Commonwealth jurisdiction.\n\n**Not contractual.** Legitimate expectation is distinct from contract; no bargain or consideration is required, and it does not create an enforceable contractual right: *Jankovic* (2000) 202 CLR 552.\n\n## Application\n\nThe department has **no statutory obligation** to grant the permit; the expectation derives solely from its historical practice and representations. This is precisely the factual matrix in which the doctrine operates procedurally. The relying party cannot compel grant of the permit (ruling out A and C), nor is the doctrine confined to legislative action (ruling out D \u2014 it applies to administrative/decisorial conduct). The doctrine requires the decision-maker to act consistently with the representation, or, failing that, to afford a hearing / give reasons before departing from it.\n\n## Conclusion\n\n**B** is correct. The doctrine of legitimate expectations imposes a procedural obligation \u2014 to act consistently with the representation or, at minimum, to afford a hearing and give a reasoned explanation before departing from it \u2014 and is not a free-standing right to the outcome.",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789363237,
+    "id": "chatcmpl-Cos0zl0PKpO8IUbH5FtMu6UI5NecTIgB",
+    "model": "ornith-agent-strix",
+    "object": "chat.completion",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "timings": {
+      "cache_n": 362,
+      "predicted_ms": 8842.329,
+      "predicted_n": 687,
+      "predicted_per_second": 77.69446262404396,
+      "predicted_per_token_ms": 12.870930131004366,
+      "prompt_ms": 30.755,
+      "prompt_n": 4,
+      "prompt_per_second": 130.06015282067958,
+      "prompt_per_token_ms": 7.68875
+    },
+    "usage": {
+      "completion_tokens": 687,
+      "prompt_tokens": 366,
+      "prompt_tokens_details": {
+        "cached_tokens": 362
+      },
+      "total_tokens": 1053
+    }
+  },
+  "record": {
+    "completion_tokens": 687,
+    "content_hash": "7a67b3eed8dbadf862437405da1444b64f4a7104a07a32870263e254056bbee1",
+    "cost_usd": 0.0,
+    "error": null,
+    "fallback": false,
+    "finish_reason": "stop",
+    "is_mock": false,
+    "item_id": "auslex-2026-0010",
+    "latency_ms": 8937,
+    "model": "local",
+    "model_id": "ornith-agent-strix",
+    "ok": true,
+    "prompt_hash": "bbc2a82a347ea2a5baa98926171e1a1ff4c39735e4b56a5ae51278bf7c40436f",
+    "prompt_template_version": "1.0.0",
+    "prompt_tokens": 366,
+    "reasoning": null,
+    "rep": 1,
+    "run_id": "auslex-2026-09-14-ornith",
+    "seed": 1,
+    "system": "You are an experienced Australian lawyer. Answer the question below as if sitting a final-year law examination. Apply only Australian law as it stood on the stated date. Identify the issues, state the governing rules with pinpoint authority (statutory provisions and cases), apply the law to the facts, and reach a clear conclusion. Cite real Australian primary sources only; do not invent cases or provisions.",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "temperature": 0.0,
+    "text": "# Legitimate Expectations\n\n## Issues\n\nWhether the doctrine of legitimate expectations operates as (A) a rule mandating a particular outcome, (B) a procedural protection requiring consistency or a hearing/explanation, (C) a contractual right, or (D) inapplicable to administrative decisions.\n\n## Governing Rules\n\nThe doctrine of legitimate expectations is a creature of **common law and equity**, operating within administrative law as a **procedural** doctrine rather than a source of substantive rights.\n\n**It is not a free-standing right to an outcome.** In *SZBEL v Minister for Immigration and Multicultural Affairs* (2006) 228 CLR 152, 161 [30]\u2013[32], the High Court held that a legitimate expectation does not confer a substantive entitlement; it requires only that the decision-maker afford an opportunity to be heard before departing from the expectation. Gaudron J at [107]\u2013[108] confirmed the expectation merely triggers the rules of natural justice.\n\n**The test for arising.** A legitimate expectation arises where a public authority makes a representation or adopts a practice, and it is fair and reasonable for the applicant to expect the authority will act consistently: *Minister for Immigration and Multicultural Affairs v Jankovic* (2000) 202 CLR 552, 571\u2013572 [51]\u2013[52] (Gaudron J).\n\n**Procedural, not substantive, enforcement.** In *Teoh* (1995) 183 CLR 273, 287, Mason CJ, Deane, Dawson and Gaudron JJ held that a legitimate expectation gives rise to a **procedural** legitimate expectation \u2014 the decision-maker must either honour the representation or afford a hearing; it does not force the promised outcome. This was subsequently curtailed by s 8 of the *Administrative Decisions (Judicial Review) Act 1977* (Cth), which provides that a person's expectations (including from international conventions) are **irrelevant** in determining what process is fair \u2014 *Teoh*'s effect in the Commonwealth jurisdiction.\n\n**Not contractual.** Legitimate expectation is distinct from contract; no bargain or consideration is required, and it does not create an enforceable contractual right: *Jankovic* (2000) 202 CLR 552.\n\n## Application\n\nThe department has **no statutory obligation** to grant the permit; the expectation derives solely from its historical practice and representations. This is precisely the factual matrix in which the doctrine operates procedurally. The relying party cannot compel grant of the permit (ruling out A and C), nor is the doctrine confined to legislative action (ruling out D \u2014 it applies to administrative/decisorial conduct). The doctrine requires the decision-maker to act consistently with the representation, or, failing that, to afford a hearing / give reasons before departing from it.\n\n## Conclusion\n\n**B** is correct. The doctrine of legitimate expectations imposes a procedural obligation \u2014 to act consistently with the representation or, at minimum, to afford a hearing and give a reasoned explanation before departing from it \u2014 and is not a free-standing right to the outcome.",
+    "timestamp": "2026-09-14T05:20:37.901681+00:00",
+    "total_tokens": 1053,
+    "vendor": "local"
+  }
+}

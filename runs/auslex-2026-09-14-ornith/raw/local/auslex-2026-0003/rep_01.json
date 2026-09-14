@@ -1,0 +1,66 @@
+{
+  "raw": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "# Duty to Warn of Material Risks\n\n## Issues\n\nWhether a surgeon breaches a duty to warn a patient of a material risk, and what standard governs that duty, where the risk materialises. The competing answers turn on whether the test is (B) an objective patient-centred \"material risk\" standard, or (C) a professional-opinion (Bolam) standard.\n\n## Governing Rules\n\n**Existence of a duty to warn.** A doctor owes a duty to warn of material risks inherent in a recommended treatment. This is a manifestation of the general duty of care, not a special medical rule. *May v Ward* and, authoritatively, **White v Petersen (1998) 194 CLR 666** confirmed the duty to warn exists at common law in Australia.\n\n**The standard \u2013 material risk, not professional opinion.** The High Court in **Meneling v Sullivan (1992) 175 CLR 41** held that the standard of disclosure is **not** governed by professional practice (rejecting the *Bolam* test for the duty to warn). The duty is to warn of a risk that is **material**. A risk is material where:\n\n> \"a reasonable person in the patient's position, if warned of the risk, would be likely to attach significance to it\" \u2013 *Meneling v Sullivan* (1992) 175 CLR 41 at 57\u201358; or where **the doctor knows or ought to know that the particular patient would be likely to attach significance to it** (subjective element).\n\n**Materiality and causation refined.** **Salter v Taylor (2007) 226 CLR 347** confirmed *Meneling* remains the law and clarified that materiality is judged objectively, with causation assessed subjectively by reference to what *this* patient would have done had they been warned.\n\n**Statutory context (VIC).** In Victoria, the relevant duty arises under the **Health Liability Act 2003 (VIC)** (effective 1 November 2005), Part 4, which abrogated the common-law *Bolam* test for the standard of care. Section 75 defines \"medical negligence\"; section 80 provides that the standard of care is \"objectively reasonable\" and s 81 addresses the risk of harm. While the Act governs the standard of care generally, the *Meneling* principle on materiality of warning survives as it concerns the objective reasonableness of disclosure to the patient.\n\n## Application\n\n- **Option A** is wrong: there is no duty to warn of *every* risk however remote. Only **material** risks must be disclosed (*Meneling v Sullivan* (1992) 175 CLR 41).\n- **Option C** is wrong: the professional-opinion (*Bolam*) standard does **not** govern the duty to warn. *Meneling v Sullivan* expressly rejected applying *Bolam* to disclosure, and *Salter v Taylor* (2007) 226 CLR 347 reaffirmed this.\n- **Option D** is wrong: the duty to warn is independent of negligence in the *performance* of the procedure. A failure to warn is itself a breach giving rise to liability where the risk is material and the patient is causatively harmed (*White v Petersen* (1998) 194 CLR 666).\n- **Option B** correctly states the law: the duty is to disclose **material risks**, judged objectively by what a reasonable person in the patient's position would regard as material, with a subjective element where the doctor knows the particular patient would attach significance.\n\n## Conclusion\n\n**B** is correct. The surgeon must disclose material risks, judged by what a reasonable person in the patient's position would regard as material (*Meneling v Sullivan* (1992) 175 CLR 41; *Salter v Taylor* (2007) 226 CLR 347). The professional-opinion standard (C) is rejected.",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789362782,
+    "id": "chatcmpl-on8KksqATtK4JKvNGkXudX2C8BQ2bbBu",
+    "model": "ornith-agent-strix",
+    "object": "chat.completion",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "timings": {
+      "cache_n": 341,
+      "predicted_ms": 11314.162,
+      "predicted_n": 878,
+      "predicted_per_second": 77.60185862638346,
+      "predicted_per_token_ms": 12.886289293849659,
+      "prompt_ms": 29.696,
+      "prompt_n": 4,
+      "prompt_per_second": 134.69827586206895,
+      "prompt_per_token_ms": 7.424
+    },
+    "usage": {
+      "completion_tokens": 878,
+      "prompt_tokens": 345,
+      "prompt_tokens_details": {
+        "cached_tokens": 341
+      },
+      "total_tokens": 1223
+    }
+  },
+  "record": {
+    "completion_tokens": 878,
+    "content_hash": "ea608b1b378f4d4ee5e869e9deaa2b0f8c227d1fa4d7664ecbec8b44185daeb0",
+    "cost_usd": 0.0,
+    "error": null,
+    "fallback": false,
+    "finish_reason": "stop",
+    "is_mock": false,
+    "item_id": "auslex-2026-0003",
+    "latency_ms": 11403,
+    "model": "local",
+    "model_id": "ornith-agent-strix",
+    "ok": true,
+    "prompt_hash": "d7d0df6b1960277a78ef0dad35465cd4207e98cf0cda07e8d2f17634ce5bf884",
+    "prompt_template_version": "1.0.0",
+    "prompt_tokens": 345,
+    "reasoning": null,
+    "rep": 1,
+    "run_id": "auslex-2026-09-14-ornith",
+    "seed": 1,
+    "system": "You are an experienced Australian lawyer. Answer the question below as if sitting a final-year law examination. Apply only Australian law as it stood on the stated date. Identify the issues, state the governing rules with pinpoint authority (statutory provisions and cases), apply the law to the facts, and reach a clear conclusion. Cite real Australian primary sources only; do not invent cases or provisions.",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "temperature": 0.0,
+    "text": "# Duty to Warn of Material Risks\n\n## Issues\n\nWhether a surgeon breaches a duty to warn a patient of a material risk, and what standard governs that duty, where the risk materialises. The competing answers turn on whether the test is (B) an objective patient-centred \"material risk\" standard, or (C) a professional-opinion (Bolam) standard.\n\n## Governing Rules\n\n**Existence of a duty to warn.** A doctor owes a duty to warn of material risks inherent in a recommended treatment. This is a manifestation of the general duty of care, not a special medical rule. *May v Ward* and, authoritatively, **White v Petersen (1998) 194 CLR 666** confirmed the duty to warn exists at common law in Australia.\n\n**The standard \u2013 material risk, not professional opinion.** The High Court in **Meneling v Sullivan (1992) 175 CLR 41** held that the standard of disclosure is **not** governed by professional practice (rejecting the *Bolam* test for the duty to warn). The duty is to warn of a risk that is **material**. A risk is material where:\n\n> \"a reasonable person in the patient's position, if warned of the risk, would be likely to attach significance to it\" \u2013 *Meneling v Sullivan* (1992) 175 CLR 41 at 57\u201358; or where **the doctor knows or ought to know that the particular patient would be likely to attach significance to it** (subjective element).\n\n**Materiality and causation refined.** **Salter v Taylor (2007) 226 CLR 347** confirmed *Meneling* remains the law and clarified that materiality is judged objectively, with causation assessed subjectively by reference to what *this* patient would have done had they been warned.\n\n**Statutory context (VIC).** In Victoria, the relevant duty arises under the **Health Liability Act 2003 (VIC)** (effective 1 November 2005), Part 4, which abrogated the common-law *Bolam* test for the standard of care. Section 75 defines \"medical negligence\"; section 80 provides that the standard of care is \"objectively reasonable\" and s 81 addresses the risk of harm. While the Act governs the standard of care generally, the *Meneling* principle on materiality of warning survives as it concerns the objective reasonableness of disclosure to the patient.\n\n## Application\n\n- **Option A** is wrong: there is no duty to warn of *every* risk however remote. Only **material** risks must be disclosed (*Meneling v Sullivan* (1992) 175 CLR 41).\n- **Option C** is wrong: the professional-opinion (*Bolam*) standard does **not** govern the duty to warn. *Meneling v Sullivan* expressly rejected applying *Bolam* to disclosure, and *Salter v Taylor* (2007) 226 CLR 347 reaffirmed this.\n- **Option D** is wrong: the duty to warn is independent of negligence in the *performance* of the procedure. A failure to warn is itself a breach giving rise to liability where the risk is material and the patient is causatively harmed (*White v Petersen* (1998) 194 CLR 666).\n- **Option B** correctly states the law: the duty is to disclose **material risks**, judged objectively by what a reasonable person in the patient's position would regard as material, with a subjective element where the doctor knows the particular patient would attach significance.\n\n## Conclusion\n\n**B** is correct. The surgeon must disclose material risks, judged by what a reasonable person in the patient's position would regard as material (*Meneling v Sullivan* (1992) 175 CLR 41; *Salter v Taylor* (2007) 226 CLR 347). The professional-opinion standard (C) is rejected.",
+    "timestamp": "2026-09-14T05:13:02.099489+00:00",
+    "total_tokens": 1223,
+    "vendor": "local"
+  }
+}

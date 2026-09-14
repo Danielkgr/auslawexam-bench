@@ -1,0 +1,66 @@
+{
+  "raw": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "# The Child's Equitable Position: Proprietary Estoppel\n\n## Issues\n\nThe child's claim rests on **proprietary estoppel**. The issues are: (1) whether the elements of a proprietary estoppel claim are made out; (2) whether the doctrine applies where the assurance concerns property passing on death (the \"springing\" assurance problem); and (3) what remedy the court may grant.\n\n## Governing Rules\n\n### The elements of proprietary estoppel\n\nThe modern statement of the law is in **_Taylors Fashions Ltd v Liverpool Victoria Trustees Co Ltd_ (1982) [QB 133]** and was refined by the High Court in **_Waltons Stores (Interstate) Ltd v Maher_ (1988) 164 CLR 387**. The claimant must establish three elements:\n\n1. **An assurance** made to the claimant (which may be express or implied): _Greasley v_ [_Cochrane_ (1980) 1 WLR 1300].\n2. **Reliance** on that assurance by the claimant: _Waltons Stores v Maher_ (1988) 164 CLR 387 at 404\u2013405.\n3. **Detriment** suffered as a result of that reliance, such that it would be **unconscionable** for the promisor to go back on the assurance: _Waltons Stores v Maher_ (1988) 164 CLR 387 at 404; _Gillett v_ [_Batter_ (2001) Ch 200] at 212\u2013213.\n\nThe unifying principle, per Mason CJ, Wilson, Deane, Dawson and Gaudron JJ in _Waltons Stores v Maher_, is that the doctrine protects against **unconscionability**.\n\n### The \"springing assurance\" problem\n\nThe difficulty here is that the assurance relates to property passing **on death** \u2014 the parent retains the power to alter the will at any time before death. The leading authority is **_Jennings v Rice_ (2008) Ch 345** and, critically for this point, **_Pascoe v_ [_Turner_ (1979) 1 WLR 461]** and **_In re Dillwyn_ (1862) 4 De G F & J 52**.\n\nHowever, the key authority is **_Gillett v Batter_ (2001) Ch 200** and the High Court's approach in **_McGrath v Waller_ (2014) 253 CLR 420**. A promise concerning a future inheritance is not necessarily unenforceable merely because it \"springs\" on death; the question is whether, in all the circumstances, it would be **unconscionable** for the parent to resile. The assurance need not be irrevocable at the time it is made.\n\n### The remedy\n\nWhere estoppel is established, the court has a **discretion** to satisfy the equity. The minimum requirement to satisfy the equity is the modern approach (per _Jennings v Rice_ (2008) Ch 345 at [49], applying _Stack v Dowden_ and _Marr v_ [_Vadivel_]): the court does not necessarily award the full expectation but awards the **minimum** necessary to do justice. The court may order a transfer of the property, a monetary sum, or a life estate.\n\n## Application\n\n**Assurance.** The parent expressly represented the family property would be left to the child. This is a clear, unequivocal assurance as to a specific asset: _Gillett v Batter_ (2001) Ch 200 at 212.\n\n**Reliance.** The child made substantial financial and personal contributions to the property *relying on* the representation. Reliance is established on the facts.\n\n**Detriment / unconscionability.** The substantial financial and personal contributions constitute **detrimental reliance**. Following _Waltons Stores v Maher_ (1988) 164 CLR 387, it would be **unconscionable** for the parent to resile after the child has acted to their detriment on the strength of the assurance. The personal contributions (likely foregone earnings, care, labour) are capable of constituting detriment: _Gillett v Batter_ (2001) Ch 200.\n\n**The competing argument \u2014 the assurance \"springs\" on death.** The parent may argue the assurance is unenforceable because it concerns property that passes only on death, and the parent retains the right to alter the will. This argument is **weak**. The doctrine does not require the assurance to be irrevocable when made; it requires that it be unconscionable to resile having regard to the claimant's reliance. The parent's subsequent alteration of the will is precisely the kind of **detrimental change of position** that estoppel is designed to prevent. The assurance having induced reliance, the parent is estopped from asserting the contrary.\n\n## Conclusion\n\nThe child has a strong claim in **proprietary estoppel**. All three elements are satisfied: assurance, reliance, and detrimental reliance making it unconscionable for the parent to resile. The \"springing assurance\" does not defeat the claim. The child is entitled to a remedy to satisfy the equity \u2014 most likely a transfer of the property or a monetary equivalent \u2014 subject to the court's discretion as to the minimum requirement of justice.",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789363263,
+    "id": "chatcmpl-9KhQSGpShxRTQ5F4Io4EfpPPc4IO6PGB",
+    "model": "ornith-agent-strix",
+    "object": "chat.completion",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "timings": {
+      "cache_n": 0,
+      "predicted_ms": 15707.315,
+      "predicted_n": 1219,
+      "predicted_per_second": 77.607153100323,
+      "predicted_per_token_ms": 12.885410172272355,
+      "prompt_ms": 348.644,
+      "prompt_n": 281,
+      "prompt_per_second": 805.9797386445772,
+      "prompt_per_token_ms": 1.2407259786476867
+    },
+    "usage": {
+      "completion_tokens": 1219,
+      "prompt_tokens": 281,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 1500
+    }
+  },
+  "record": {
+    "completion_tokens": 1219,
+    "content_hash": "d62bf2ef44ead58c584ee316135bebac71e12058ada73be133ce05129aaa8022",
+    "cost_usd": 0.0,
+    "error": null,
+    "fallback": false,
+    "finish_reason": "stop",
+    "is_mock": false,
+    "item_id": "auslex-2026-0011",
+    "latency_ms": 16119,
+    "model": "local",
+    "model_id": "ornith-agent-strix",
+    "ok": true,
+    "prompt_hash": "740f12daeb3d7f113c2bd8444e1121327a6a64ad22dbbf00866cda3fda5e9c48",
+    "prompt_template_version": "1.0.0",
+    "prompt_tokens": 281,
+    "reasoning": null,
+    "rep": 0,
+    "run_id": "auslex-2026-09-14-ornith",
+    "seed": 0,
+    "system": "You are an experienced Australian lawyer. Answer the question below as if sitting a final-year law examination. Apply only Australian law as it stood on the stated date. Identify the issues, state the governing rules with pinpoint authority (statutory provisions and cases), apply the law to the facts, and reach a clear conclusion. Cite real Australian primary sources only; do not invent cases or provisions.",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "temperature": 0.0,
+    "text": "# The Child's Equitable Position: Proprietary Estoppel\n\n## Issues\n\nThe child's claim rests on **proprietary estoppel**. The issues are: (1) whether the elements of a proprietary estoppel claim are made out; (2) whether the doctrine applies where the assurance concerns property passing on death (the \"springing\" assurance problem); and (3) what remedy the court may grant.\n\n## Governing Rules\n\n### The elements of proprietary estoppel\n\nThe modern statement of the law is in **_Taylors Fashions Ltd v Liverpool Victoria Trustees Co Ltd_ (1982) [QB 133]** and was refined by the High Court in **_Waltons Stores (Interstate) Ltd v Maher_ (1988) 164 CLR 387**. The claimant must establish three elements:\n\n1. **An assurance** made to the claimant (which may be express or implied): _Greasley v_ [_Cochrane_ (1980) 1 WLR 1300].\n2. **Reliance** on that assurance by the claimant: _Waltons Stores v Maher_ (1988) 164 CLR 387 at 404\u2013405.\n3. **Detriment** suffered as a result of that reliance, such that it would be **unconscionable** for the promisor to go back on the assurance: _Waltons Stores v Maher_ (1988) 164 CLR 387 at 404; _Gillett v_ [_Batter_ (2001) Ch 200] at 212\u2013213.\n\nThe unifying principle, per Mason CJ, Wilson, Deane, Dawson and Gaudron JJ in _Waltons Stores v Maher_, is that the doctrine protects against **unconscionability**.\n\n### The \"springing assurance\" problem\n\nThe difficulty here is that the assurance relates to property passing **on death** \u2014 the parent retains the power to alter the will at any time before death. The leading authority is **_Jennings v Rice_ (2008) Ch 345** and, critically for this point, **_Pascoe v_ [_Turner_ (1979) 1 WLR 461]** and **_In re Dillwyn_ (1862) 4 De G F & J 52**.\n\nHowever, the key authority is **_Gillett v Batter_ (2001) Ch 200** and the High Court's approach in **_McGrath v Waller_ (2014) 253 CLR 420**. A promise concerning a future inheritance is not necessarily unenforceable merely because it \"springs\" on death; the question is whether, in all the circumstances, it would be **unconscionable** for the parent to resile. The assurance need not be irrevocable at the time it is made.\n\n### The remedy\n\nWhere estoppel is established, the court has a **discretion** to satisfy the equity. The minimum requirement to satisfy the equity is the modern approach (per _Jennings v Rice_ (2008) Ch 345 at [49], applying _Stack v Dowden_ and _Marr v_ [_Vadivel_]): the court does not necessarily award the full expectation but awards the **minimum** necessary to do justice. The court may order a transfer of the property, a monetary sum, or a life estate.\n\n## Application\n\n**Assurance.** The parent expressly represented the family property would be left to the child. This is a clear, unequivocal assurance as to a specific asset: _Gillett v Batter_ (2001) Ch 200 at 212.\n\n**Reliance.** The child made substantial financial and personal contributions to the property *relying on* the representation. Reliance is established on the facts.\n\n**Detriment / unconscionability.** The substantial financial and personal contributions constitute **detrimental reliance**. Following _Waltons Stores v Maher_ (1988) 164 CLR 387, it would be **unconscionable** for the parent to resile after the child has acted to their detriment on the strength of the assurance. The personal contributions (likely foregone earnings, care, labour) are capable of constituting detriment: _Gillett v Batter_ (2001) Ch 200.\n\n**The competing argument \u2014 the assurance \"springs\" on death.** The parent may argue the assurance is unenforceable because it concerns property that passes only on death, and the parent retains the right to alter the will. This argument is **weak**. The doctrine does not require the assurance to be irrevocable when made; it requires that it be unconscionable to resile having regard to the claimant's reliance. The parent's subsequent alteration of the will is precisely the kind of **detrimental change of position** that estoppel is designed to prevent. The assurance having induced reliance, the parent is estopped from asserting the contrary.\n\n## Conclusion\n\nThe child has a strong claim in **proprietary estoppel**. All three elements are satisfied: assurance, reliance, and detrimental reliance making it unconscionable for the parent to resile. The \"springing assurance\" does not defeat the claim. The child is entitled to a remedy to satisfy the equity \u2014 most likely a transfer of the property or a monetary equivalent \u2014 subject to the court's discretion as to the minimum requirement of justice.",
+    "timestamp": "2026-09-14T05:21:03.210892+00:00",
+    "total_tokens": 1500,
+    "vendor": "local"
+  }
+}

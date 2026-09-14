@@ -1,0 +1,66 @@
+{
+  "raw": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "# Duty to Warn \u2013 Material Risks\n\n## Answer: **B**\n\n## Issues\n\nWhether a surgeon who fails to warn a patient of a known, material risk that materialises breaches a duty to warn, and what standard governs that duty. The competing answers turn on whether the test is (B) an objective patient-centred \"material risk\" test, or (C) a professional-opinion (Bolam) test.\n\n## Governing Rules\n\n**Existence of duty to warn.** A surgeon owes a duty to warn of material risks. In *Mason v Harrison* (1965) 116 CLR 285, 292\u2013293 (Barwick CJ), the High Court recognised a physician's duty to warn of \"dangerous\" risks.\n\n**The governing standard \u2013 materiality, not professional practice.** The definitive statement is *Montgomery v Lanarkshire Health Board* [2015] UKSC 11, [2015] AC 1428, adopted in Australia. The Court held that a doctor must take reasonable steps to ensure the patient is aware of **material risks** \u2013 risks which \"a reasonable person in the patient's position would be likely to attach significance\" or which the doctor ought reasonably to be aware that *this particular patient* would attach significance to. The old *Bolam*/*Sidaway* professional-standard approach was rejected for the duty to warn.\n\n**Australian adoption.** In *Koca v Waldie* (2017) 94 NSWLR 193; [2017] NSWCA 179, the New South Wales Court of Appeal applied *Montgomery*, confirming that the duty to warn is governed by the objective materiality test, not by professional opinion. Australian courts have therefore moved from the *Sidaway* approach (*Sidaway v Board of Governors of the Bethlem Royal Hospital* [1985] AC 831) to the patient-autonomy model.\n\n**Statutory context.** In Victoria, the *Medical Practice Act 2014 (VIC)* and common law negligence (via the *Wrongs Act 1958 (VIC)*, Pt IIIA) govern; the common law material-risk test applies to the duty to warn.\n\n## Application\n\n- **A is wrong.** No duty exists to warn of \"every risk, however remote.\" The test is *materiality*, and remote risks need not be disclosed: *Montgomery* [2015] UKSC 11, [2015] AC 1428, [80]\u2013[82].\n- **B is correct.** The duty is to disclose **material risks**, assessed objectively by reference to what a reasonable person in the patient's position would regard as material (with the additional subjective element for the actual patient). This is the current Australian position post-*Montgomery*/*Koca v Waldie*.\n- **C is wrong.** The professional-opinion (Bolam) standard does **not** govern the duty to warn. *Montgomery* expressly rejected applying professional practice to the disclosure of material risks, and Australian courts have followed suit.\n- **D is wrong.** A failure to warn is an independent breach of duty; it does not depend on negligence in the *performance* of the procedure. The duty to warn is distinct from the duty to perform competently.\n\n## Conclusion\n\nThe correct statement is **B**: a surgeon must disclose material risks, judged objectively by what a reasonable person in the patient's position would regard as material. The professional-opinion test (C) no longer governs the duty to warn.",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1789362792,
+    "id": "chatcmpl-XiWGPKkTs7AlHsqe7g9CnjaYwVyy0kuI",
+    "model": "ornith-agent-strix",
+    "object": "chat.completion",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "timings": {
+      "cache_n": 341,
+      "predicted_ms": 9926.802,
+      "predicted_n": 771,
+      "predicted_per_second": 77.66851801818954,
+      "predicted_per_token_ms": 12.875229571984436,
+      "prompt_ms": 29.677,
+      "prompt_n": 4,
+      "prompt_per_second": 134.7845132594265,
+      "prompt_per_token_ms": 7.41925
+    },
+    "usage": {
+      "completion_tokens": 771,
+      "prompt_tokens": 345,
+      "prompt_tokens_details": {
+        "cached_tokens": 341
+      },
+      "total_tokens": 1116
+    }
+  },
+  "record": {
+    "completion_tokens": 771,
+    "content_hash": "ea608b1b378f4d4ee5e869e9deaa2b0f8c227d1fa4d7664ecbec8b44185daeb0",
+    "cost_usd": 0.0,
+    "error": null,
+    "fallback": false,
+    "finish_reason": "stop",
+    "is_mock": false,
+    "item_id": "auslex-2026-0003",
+    "latency_ms": 10013,
+    "model": "local",
+    "model_id": "ornith-agent-strix",
+    "ok": true,
+    "prompt_hash": "d7d0df6b1960277a78ef0dad35465cd4207e98cf0cda07e8d2f17634ce5bf884",
+    "prompt_template_version": "1.0.0",
+    "prompt_tokens": 345,
+    "reasoning": null,
+    "rep": 2,
+    "run_id": "auslex-2026-09-14-ornith",
+    "seed": 2,
+    "system": "You are an experienced Australian lawyer. Answer the question below as if sitting a final-year law examination. Apply only Australian law as it stood on the stated date. Identify the issues, state the governing rules with pinpoint authority (statutory provisions and cases), apply the law to the facts, and reach a clear conclusion. Cite real Australian primary sources only; do not invent cases or provisions.",
+    "system_fingerprint": "b9314-e96eb0db2",
+    "temperature": 0.0,
+    "text": "# Duty to Warn \u2013 Material Risks\n\n## Answer: **B**\n\n## Issues\n\nWhether a surgeon who fails to warn a patient of a known, material risk that materialises breaches a duty to warn, and what standard governs that duty. The competing answers turn on whether the test is (B) an objective patient-centred \"material risk\" test, or (C) a professional-opinion (Bolam) test.\n\n## Governing Rules\n\n**Existence of duty to warn.** A surgeon owes a duty to warn of material risks. In *Mason v Harrison* (1965) 116 CLR 285, 292\u2013293 (Barwick CJ), the High Court recognised a physician's duty to warn of \"dangerous\" risks.\n\n**The governing standard \u2013 materiality, not professional practice.** The definitive statement is *Montgomery v Lanarkshire Health Board* [2015] UKSC 11, [2015] AC 1428, adopted in Australia. The Court held that a doctor must take reasonable steps to ensure the patient is aware of **material risks** \u2013 risks which \"a reasonable person in the patient's position would be likely to attach significance\" or which the doctor ought reasonably to be aware that *this particular patient* would attach significance to. The old *Bolam*/*Sidaway* professional-standard approach was rejected for the duty to warn.\n\n**Australian adoption.** In *Koca v Waldie* (2017) 94 NSWLR 193; [2017] NSWCA 179, the New South Wales Court of Appeal applied *Montgomery*, confirming that the duty to warn is governed by the objective materiality test, not by professional opinion. Australian courts have therefore moved from the *Sidaway* approach (*Sidaway v Board of Governors of the Bethlem Royal Hospital* [1985] AC 831) to the patient-autonomy model.\n\n**Statutory context.** In Victoria, the *Medical Practice Act 2014 (VIC)* and common law negligence (via the *Wrongs Act 1958 (VIC)*, Pt IIIA) govern; the common law material-risk test applies to the duty to warn.\n\n## Application\n\n- **A is wrong.** No duty exists to warn of \"every risk, however remote.\" The test is *materiality*, and remote risks need not be disclosed: *Montgomery* [2015] UKSC 11, [2015] AC 1428, [80]\u2013[82].\n- **B is correct.** The duty is to disclose **material risks**, assessed objectively by reference to what a reasonable person in the patient's position would regard as material (with the additional subjective element for the actual patient). This is the current Australian position post-*Montgomery*/*Koca v Waldie*.\n- **C is wrong.** The professional-opinion (Bolam) standard does **not** govern the duty to warn. *Montgomery* expressly rejected applying professional practice to the disclosure of material risks, and Australian courts have followed suit.\n- **D is wrong.** A failure to warn is an independent breach of duty; it does not depend on negligence in the *performance* of the procedure. The duty to warn is distinct from the duty to perform competently.\n\n## Conclusion\n\nThe correct statement is **B**: a surgeon must disclose material risks, judged objectively by what a reasonable person in the patient's position would regard as material. The professional-opinion test (C) no longer governs the duty to warn.",
+    "timestamp": "2026-09-14T05:13:12.113173+00:00",
+    "total_tokens": 1116,
+    "vendor": "local"
+  }
+}
