@@ -30,15 +30,22 @@ app.add_middleware(
 
 app.include_router(router)
 
-# Mount the frontend build output if it exists.
+# Mount the web client.  A local build in frontend/dist wins, and otherwise the
+# built copy that ships with the package is served, so Node.js is not needed.
 from pathlib import Path
 
+import auslex.publish
+
 FRONTEND_DIST = Path(__file__).resolve().parents[1] / "frontend" / "dist"
-if FRONTEND_DIST.exists():
-    app.mount("/", StaticFiles(directory=str(FRONTEND_DIST), html=True), name="frontend")
+PACKAGED_CLIENT = Path(auslex.publish.__file__).resolve().parent / "assets"
+CLIENT_DIR = FRONTEND_DIST if FRONTEND_DIST.exists() else PACKAGED_CLIENT
+if CLIENT_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(CLIENT_DIR), html=True), name="frontend")
 
 
 def main() -> None:
+    import uvicorn
+
     parser = argparse.ArgumentParser(description="Run the AusLawExam-Bench UI server.")
     parser.add_argument("--host", default="127.0.0.1", help="Bind address (default: 127.0.0.1)")
     parser.add_argument("--port", type=int, default=None, help="Port (default: AUSLEX_UI_PORT or 8000)")
