@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from unittest.mock import patch, MagicMock
@@ -208,6 +209,35 @@ class TestSecretsFunctions:
             secrets_file = tmp_path / "secrets" / "keys.json"
             mode = secrets_file.stat().st_mode
             assert mode & 0o777 == 0o600
+
+
+class TestWebClient:
+    def test_root_serves_the_web_client(self, client):
+        """Without a local frontend build, / serves the client shipped in the package."""
+        r = client.get("/")
+        assert r.status_code == 200
+        assert "AusLawExam-Bench" in r.text
+        assets = re.findall(r'(?:src|href)="(/assets/[^"]+)"', r.text)
+        assert assets
+        for asset in assets:
+            assert client.get(asset).status_code == 200
+
+
+class TestDefaultPaths:
+    def test_defaults_resolve_inside_the_repo(self, monkeypatch):
+        """The default question set and runs folder sit in this checkout, not above it."""
+        from backend.config import get_config
+
+        repo_root = Path(__file__).resolve().parents[1]
+        assert backend.api.ROOT == repo_root
+
+        monkeypatch.delenv("AUSLEX_QUESTIONS", raising=False)
+        monkeypatch.delenv("AUSLEX_OUT_ROOT", raising=False)
+        cfg = get_config()
+        questions = repo_root / "data" / "questions" / "auslex.jsonl"
+        assert Path(cfg["questions_path"]) == questions
+        assert questions.exists()
+        assert Path(cfg["out_root"]) == repo_root / "runs"
 
 
 class TestCLI:
