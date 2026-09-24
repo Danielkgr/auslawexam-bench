@@ -36,8 +36,8 @@ router = APIRouter(prefix="/api")
 # State
 # --------------------------------------------------------------------------- #
 
-# Project root is the parent of src/auslex/.
-ROOT = Path(__file__).resolve().parents[2]
+# Project root is the parent of backend/.
+ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_QUESTIONS = ROOT / "data" / "questions" / "auslex.jsonl"
 DEFAULT_OUT_ROOT = ROOT / "runs"
 
