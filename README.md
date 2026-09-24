@@ -4,7 +4,7 @@
 
 ### A reproducible benchmark of Australian legal reasoning for LLMs, scored on how often a model invents a citation
 
-![16 provisional questions](https://img.shields.io/badge/questions-16_provisional-9a6700?style=for-the-badge) ![85 tests](https://img.shields.io/badge/tests-85-0969da?style=for-the-badge) ![8 model slots](https://img.shields.io/badge/model_slots-8-0969da?style=for-the-badge) ![runs offline on mocks](https://img.shields.io/badge/runs-offline-8250df?style=for-the-badge) ![Apache-2.0 code, CC BY 4.0 data](https://img.shields.io/badge/licence-Apache--2.0_%2F_CC_BY_4.0-57606a?style=for-the-badge)
+![16 provisional questions](https://img.shields.io/badge/questions-16_provisional-9a6700?style=for-the-badge) ![87 tests](https://img.shields.io/badge/tests-87-0969da?style=for-the-badge) ![8 model slots](https://img.shields.io/badge/model_slots-8-0969da?style=for-the-badge) ![runs offline on mocks](https://img.shields.io/badge/runs-offline-8250df?style=for-the-badge) ![Apache-2.0 code, CC BY 4.0 data](https://img.shields.io/badge/licence-Apache--2.0_%2F_CC_BY_4.0-57606a?style=for-the-badge)
 
 </div>
 
@@ -96,7 +96,7 @@ That one command runs the whole pipeline offline.  It sends the shared prompt to
 python3 -m pytest
 ```
 
-The 85 tests across 12 files cover schema validation, canary derivation and detection, the Australian-jurisdiction filters, citation extraction and classification, the permutation test, content hashing, mock runner determinism, a full run from mock to site, CLI parsing, the FastAPI endpoints, and the secrets store.
+The 87 tests across 11 files cover schema validation, canary derivation and detection, the Australian-jurisdiction filters, citation extraction and classification, the permutation test, content hashing, mock runner determinism, a full run from mock to site, CLI parsing, the FastAPI endpoints, the served web client and its default paths, and the secrets store.
 
 <br>
 
@@ -207,7 +207,7 @@ frontend/          React and Vite dashboard
 data/              Question set, canaries, gold manifest
 paper/             Methodology, contamination statement, analysis plan
 tools/             author_samples.py, which regenerates the provisional questions
-tests/             85 tests
+tests/             87 tests
 ```
 
 <br>
