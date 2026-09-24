@@ -144,7 +144,7 @@ pip install -e ".[ui]"
 auslex-ui      # serves http://localhost:8000
 ```
 
-The UI is a FastAPI server with a React and Vite client.  API keys are stored in `~/.auslex-ui/keys.json` with mode 0600 and are never transmitted externally.  There is no telemetry.
+The UI is a FastAPI server with a React and Vite client.  A built copy of the client ships in `src/auslex/publish/assets`, so Node.js is not needed to run it.  After changing `frontend/`, run `npm install` and `npm run build` there, and the server serves that build in place of the shipped copy.  Copy `frontend/dist` over `src/auslex/publish/assets` to update the shipped copy.  API keys are stored in `~/.auslex-ui/keys.json` with mode 0600 and are never transmitted externally.  There is no telemetry.
 
 <br>
 
@@ -200,7 +200,7 @@ src/auslex/
   score/           Citation extraction and classification, rubric judge
   stats/           Bootstrap intervals, permutation tests, report renderer
   ingest/          Validation, Australian-jurisdiction rule, dedup, hash-lock
-  publish/         Static leaderboard site and Hugging Face export
+  publish/         Static leaderboard site, Hugging Face export, and the built web client
 
 backend/           FastAPI server for the web UI
 frontend/          React and Vite dashboard

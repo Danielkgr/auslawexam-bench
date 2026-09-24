@@ -33,11 +33,14 @@ ui = [
 auslex = "auslex.cli:main"
 auslex-ui = "backend.cli:main"
 
+# auslex lives under src/, and the backend for auslex-ui sits at the top level.
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["src", "."]
+include = ["auslex*", "backend*"]
 
+# The built web client, which auslex-ui serves when frontend/dist is absent.
 [tool.setuptools.package-data]
-"auslex.publish" = ["assets/*.css", "assets/*.js", "assets/*.html"]
+"auslex.publish" = ["assets/*.html", "assets/assets/*.css", "assets/assets/*.js"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
