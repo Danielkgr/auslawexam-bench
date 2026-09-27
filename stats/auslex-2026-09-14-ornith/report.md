@@ -1,8 +1,8 @@
-# AusLawExam-Bench — Run Report
+# AusLawExam-Bench: Run Report
 
 Run `auslex-2026-09-14-ornith` · 1 models · 16 questions.
 
-## Leaderboard (item score, 0–100, 95% CI)
+## Leaderboard (item score, 0-100, 95% CI)
 
 | Model | Mean score (95% CI) | Fabricated-citation rate (95% CI) | Questions |
 |---|---|---|---|
