@@ -23,6 +23,9 @@ auslex.local.json
 runs/*/
 !runs/.gitkeep
 site-out/
+scores/
+stats/
+site/
 hf-export/
 
 # OS
