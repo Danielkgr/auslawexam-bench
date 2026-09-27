@@ -27,11 +27,11 @@ It is a working prototype.  The full pipeline runs offline on deterministic seed
 
 ## Results
 
-One real model has been scored so far: a local open-weight model on the local slot.  No commercial slot has been run, because there are no commercial API keys in the run environment.
+One real model has been scored so far, a local open-weight model on the local slot.  No commercial slot has been run, because there are no commercial API keys in the run environment.
 
 ### A real run on the local slot
 
-Run `auslex-2026-09-14-ornith` put the 16 provisional items to a local model of about 35.5B parameters, served as GGUF by llama.cpp through an OpenAI-compatible endpoint (`ornith-agent-strix`, context window 131072).  The server does not report the exact quantisation.  It used the shared prompt template v1.0.0 at temperature 0, with three repetitions per item, for 48 completions: 48 ok and 0 errors.
+Run `auslex-2026-09-14-ornith` put the 16 provisional items to a local model of about 35.5B parameters, served as GGUF by llama.cpp through an OpenAI-compatible endpoint (`ornith-agent-strix`, context window 131072).  The server does not report the exact quantisation.  It used the shared prompt template v1.0.0 at temperature 0, with three repetitions per item, for 48 completions, of which 48 finished and 0 errored.
 
 ```bash
 AUSLEX_LOCAL_BASE_URL=http://localhost:10009/v1 \
@@ -42,7 +42,7 @@ auslex run --models local --reps 3 --seed 0 --run-id auslex-2026-09-14-ornith
 | Metric | Value (95% CI) | What it actually measures |
 |---|---|---|
 | Mean rubric item score (0 to 100) | **68.9** [57.8, 79.0] | The deterministic seeded rubric judge, not a human legal grade |
-| Citations: `on_point` / `known_other` / `fabricated` | **13 / 7 / 204** of 224 | Automated match against the item's required authorities and a 46-entry known corpus |
+| Citations by class, `on_point` / `known_other` / `fabricated` | **13 / 7 / 204** of 224 | Automated match against the item's required authorities and a 46-entry known corpus |
 | Fabricated-citation rate (upper bound) | **0.911** [0.878, 0.961] | Share of extracted citations the matcher could not confirm |
 
 > [!IMPORTANT]
