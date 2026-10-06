@@ -116,7 +116,7 @@ The mock judge is a seeded ensemble of three judges, so the whole pipeline runs 
 |---|---|
 | **One shared prompt** | No model gets its own prompt tuning.  Every model receives the identical versioned template, and `runs/<id>/meta.json` records the version. |
 | **Append-only runs** | Nothing in a run directory is ever rewritten, so any tampering would show. |
-| **Content-hashed items** | Each item is locked by its SHA-256 content hash and each output is addressed by that hash, so every score can be audited against the raw output it came from. |
+| **Content-hashed items** | Each item carries its SHA-256 content hash, `data/gold/manifest.json` records every hash, and every output records the hash and prompt of the item it answered, so every score can be audited against the raw output it came from. |
 | **Contamination canaries** | Every item carries a global canary (`auslex:9f2c1a4e-7b3d`) and a per-item canary derived from its id.  A model that reproduces either one verbatim has probably seen the item in training.  See [data/canary.txt](data/canary.txt). |
 
 <br>
@@ -146,7 +146,7 @@ The 114 tests across 13 files cover schema validation, canary derivation and det
 # Validate the question set (schema, Australian-jurisdiction rule, canary presence)
 auslex validate --questions data/questions/auslex.jsonl
 
-# Hash-lock the gold set and write the manifest
+# Stamp each item's content hash and write data/gold/manifest.json
 auslex validate --lock
 
 # View the leaderboard locally
@@ -197,12 +197,12 @@ Configuration lives in [src/auslex/config.py](src/auslex/config.py).  A config f
 |---|---|---|---|---|
 | gpt | OpenAI | gpt-5.6 | `OPENAI_API_KEY` is set | quality 0.86, fab 0.08 |
 | claude | Anthropic | claude-opus-5-5 | `ANTHROPIC_API_KEY` is set and the `claude` extra is installed | quality 0.83, fab 0.10 |
-| gemini | Google | gemini-2.0-flash | `GOOGLE_API_KEY` is set | quality 0.80, fab 0.13 |
-| groq | Groq | llama-3.3-70b-specdec | `GROQ_API_KEY` is set | quality 0.82, fab 0.10 |
+| gemini | Google | gemini-3.1-flash-lite | `GOOGLE_API_KEY` is set | quality 0.80, fab 0.13 |
+| groq | Groq | openai/gpt-oss-120b | `GROQ_API_KEY` is set | quality 0.82, fab 0.10 |
 | deepseek | DeepSeek | deepseek-chat | `DEEPSEEK_API_KEY` is set | quality 0.78, fab 0.12 |
 | mistral | Mistral | mistral-small-latest | `MISTRAL_API_KEY` is set | quality 0.75, fab 0.14 |
-| qwen | Qwen | qwen2.5-72b | `DASHSCOPE_API_KEY` is set | quality 0.76, fab 0.13 |
-| local | OpenAI-compatible | 14. Qwen3.8-27B (Q5_K_M) | `base_url` answers | quality 0.55, fab 0.25 |
+| qwen | Qwen | qwen3-max | `DASHSCOPE_API_KEY` is set | quality 0.76, fab 0.13 |
+| local | OpenAI-compatible | Set by `AUSLEX_LOCAL_MODEL` | The model is named and `base_url` answers | quality 0.55, fab 0.25 |
 
 ### Claude slot
 
@@ -222,12 +222,12 @@ The Claude slot runs on the official `anthropic` SDK.  Install it with `pip inst
 | Variable | Default | Purpose |
 |---|---|---|
 | `AUSLEX_LOCAL_BASE_URL` | `http://localhost:10000/v1` | OpenAI-compatible endpoint |
-| `AUSLEX_LOCAL_MODEL` | `14. Qwen3.8-27B (Q5_K_M)` | Loaded model name |
+| `AUSLEX_LOCAL_MODEL` | None, required | The model name the server exposes, as `auslex probe-local --list` shows it |
 | `AUSLEX_LOCAL_ENABLE_THINKING` | `0` | Off by default, because a thinking model spends its whole `max_tokens` budget in `reasoning_content`.  Set it to `1` to opt in. |
 
 ### Question set
 
-The 16 provisional items cover all four exam formats across Priestley 11 areas, in Commonwealth, New South Wales, Victorian, and Queensland law.  The areas so far include contract, tort, criminal, constitutional, and administrative law.
+The 16 provisional items cover all four exam formats and all eleven Priestley areas, in Commonwealth, New South Wales, Victorian, Queensland, and Western Australian law.  Each item is hash-locked: `auslex validate` fails if an item changes without a new lock, a version bump, and a changelog entry.
 
 | Type | Example question | Marks |
 |---|---|:--:|
