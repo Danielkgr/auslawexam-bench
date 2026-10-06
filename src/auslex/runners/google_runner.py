@@ -11,11 +11,8 @@ import os
 from typing import Any
 
 from ..config import ModelSpec
-from .base import RawResponse, Runner, estimate_cost_usd, http_json
-
-# Illustrative per-1M-token USD prices (Pro-class). Update before a live run.
-_IN_PER_MTOK = 1.25
-_OUT_PER_MTOK = 5.0
+from ..pricing import cost_usd
+from .base import RawResponse, Runner, http_json
 
 DEFAULT_BASE = "https://generativelanguage.googleapis.com/v1beta"
 
@@ -100,7 +97,7 @@ class GoogleRunner(Runner):
                 prompt_tokens=pt,
                 completion_tokens=ct,
                 latency_ms=latency_ms,
-                cost_usd=round(estimate_cost_usd(pt, ct, _IN_PER_MTOK, _OUT_PER_MTOK), 6),
+                cost_usd=cost_usd(self.spec.model, pt, ct),
                 model=self.spec.model,
                 is_mock=False,
                 raw=body,

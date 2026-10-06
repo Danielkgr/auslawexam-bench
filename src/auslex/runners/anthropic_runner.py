@@ -19,15 +19,8 @@ import time
 from typing import Any
 
 from ..config import ModelSpec
-from .base import RawResponse, Runner, estimate_cost_usd
-
-# Standard first-party prices in USD per million tokens, input then output.
-PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
-    "claude-opus-5-5": (4.0, 20.0),
-    "claude-sonnet-5-5": (2.0, 10.0),
-    "claude-haiku-4-5": (1.0, 5.0),
-    "claude-fable-5-1": (10.0, 50.0),
-}
+from ..pricing import cost_usd
+from .base import RawResponse, Runner
 
 # Exam answers are intelligence-sensitive work, so the default is "high".  A
 # slot can override it with ``extra={"effort": ...}``.
@@ -104,8 +97,6 @@ class AnthropicRunner(Runner):
         text = "".join(b.text for b in message.content if b.type == "text")
         pt = int(message.usage.input_tokens or 0)
         ct = int(message.usage.output_tokens or 0)
-        price = PRICES_PER_MTOK.get(self.spec.model)
-        cost = round(estimate_cost_usd(pt, ct, *price), 6) if price else None
 
         error: str | None = None
         if message.stop_reason == "refusal":
@@ -122,7 +113,7 @@ class AnthropicRunner(Runner):
             prompt_tokens=pt,
             completion_tokens=ct,
             latency_ms=latency_ms,
-            cost_usd=cost,
+            cost_usd=cost_usd(self.spec.model, pt, ct),
             model=message.model,
             is_mock=False,
             error=error,

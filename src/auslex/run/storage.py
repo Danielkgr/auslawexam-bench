@@ -18,6 +18,7 @@ new append, so the run is a permanent, replayable transcript.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -38,9 +39,13 @@ class RunStore:
 
     # -- config snapshot -------------------------------------------------- #
     def write_meta(self, meta: dict[str, Any]) -> None:
-        with open(self.meta_path, "w", encoding="utf-8") as fh:
+        # Written at the start of a run and again at the end, so write a temporary
+        # file and rename it: a reader never sees a half-written meta.json.
+        tmp = self.meta_path.with_suffix(".json.tmp")
+        with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(meta, fh, indent=2, sort_keys=True, default=str)
             fh.write("\n")
+        os.replace(tmp, self.meta_path)
 
     def read_meta(self) -> dict[str, Any]:
         with open(self.meta_path, encoding="utf-8") as fh:

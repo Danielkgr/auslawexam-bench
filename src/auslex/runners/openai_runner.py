@@ -11,12 +11,8 @@ import os
 from typing import Any
 
 from ..config import ModelSpec
-from .base import RawResponse, Runner, estimate_cost_usd, http_json
-
-# Illustrative per-1M-token USD prices. Update before any live run; cost is only
-# computed when a key is present (never in the offline demo).
-_IN_PER_MTOK = 2.5
-_OUT_PER_MTOK = 10.0
+from ..pricing import cost_usd
+from .base import RawResponse, Runner, http_json
 
 DEFAULT_BASE = "https://api.openai.com/v1"
 
@@ -93,7 +89,7 @@ class OpenAIRunner(Runner):
                 prompt_tokens=pt,
                 completion_tokens=ct,
                 latency_ms=latency_ms,
-                cost_usd=round(estimate_cost_usd(pt, ct, _IN_PER_MTOK, _OUT_PER_MTOK), 6),
+                cost_usd=cost_usd(self.spec.model, pt, ct),
                 system_fingerprint=body.get("system_fingerprint"),
                 model=body.get("model", self.spec.model),
                 is_mock=False,

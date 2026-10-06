@@ -142,3 +142,22 @@ def test_shipped_dataset_matches_its_committed_manifest():
     manifest = load_manifest(ROOT / "data" / "gold" / "manifest.json")
     assert check_lock(items, manifest) == [] and check_stamps(items) == []
     assert all(it["verification"].get("hash") for it in items)
+
+
+def test_estimate_prints_calls_and_cost(capsys):
+    assert main(["estimate", "--models", "claude,gpt", "--reps", "3"]) == 0
+    out = capsys.readouterr().out
+    assert out.startswith("ESTIMATE ONLY")
+    claude = next(line for line in out.splitlines() if line.startswith("claude"))
+    gpt = next(line for line in out.splitlines() if line.startswith("gpt"))
+    assert " 48 " in claude  # 16 items x 3 reps
+    calls, tok_in, tok_out, est, top = claude.split()[2:]
+    expected = (int(tok_in.replace(",", "")) * 4 + 48 * 1538 * 20) / 1_000_000
+    assert float(est) == round(expected, 2)
+    assert float(top) > float(est)
+    assert "unknown" in gpt and "gpt-5.6" in out.splitlines()[-1]
+
+
+def test_estimate_accepts_a_price(capsys):
+    assert main(["estimate", "--models", "gpt", "--reps", "1", "--price", "gpt-5.6=1,2"]) == 0
+    assert "unknown" not in capsys.readouterr().out.split("estimated total")[0]

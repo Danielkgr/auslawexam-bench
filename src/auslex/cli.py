@@ -469,6 +469,63 @@ def cmd_site(args: argparse.Namespace) -> int:
     return 0
 
 
+# Mean completion length of the committed local run, auslex-2026-09-14-ornith.
+DEFAULT_OUTPUT_TOKENS = 1538
+
+
+def cmd_estimate(args: argparse.Namespace) -> int:
+    """Print call counts and an estimated cost before a live run."""
+    from .pricing import price_for
+    from .prompts import build_prompt
+
+    items = _load_items(args.questions)
+    specs = _filter_models(args.models, args.config)
+    overrides: dict[str, tuple[float, float]] = {}
+    for entry in args.price or []:
+        model, _, value = entry.partition("=")
+        inp, _, out = value.partition(",")
+        overrides[model] = (float(inp), float(out))
+
+    # About four characters per token, so this is an approximation.
+    prompt_tokens = sum(len("".join(build_prompt(it))) for it in items) // 4
+    print("ESTIMATE ONLY.  Input tokens are approximated from prompt length at four characters")
+    print("per token.  Output assumes", args.output_tokens, "tokens per answer; thinking and")
+    print("reasoning tokens are billed as output and are not included, so the real cost can be")
+    print("higher.  The last column assumes every answer uses its full output budget.")
+    print()
+    print(
+        f"{'slot':<9}{'model':<24}{'calls':>6}{'input tok':>11}{'output tok':>12}"
+        f"{'est. USD':>11}{'max USD':>11}"
+    )
+    total = 0.0
+    for spec in specs:
+        calls = len(items) * args.reps
+        tok_in = prompt_tokens * args.reps
+        tok_out = calls * args.output_tokens
+        price = overrides.get(spec.model) or price_for(spec.model)
+        if price is None:
+            est = top = "unknown"
+        else:
+            cost = (tok_in * price[0] + tok_out * price[1]) / 1_000_000
+            worst = (tok_in * price[0] + calls * spec.max_tokens * price[1]) / 1_000_000
+            total += cost
+            est, top = f"{cost:.2f}", f"{worst:.2f}"
+        print(
+            f"{spec.name:<9}{spec.model[:23]:<24}{calls:>6}{tok_in:>11,}{tok_out:>12,}"
+            f"{est:>11}{top:>11}"
+        )
+    print()
+    print(f"estimated total for priced slots: about USD {total:.2f}")
+    unknown = [s.model for s in specs if s.model not in overrides and price_for(s.model) is None]
+    if unknown:
+        print(
+            "no confirmed price for: "
+            + ", ".join(unknown)
+            + "; pass --price MODEL=IN,OUT in USD per million tokens"
+        )
+    return 0
+
+
 def cmd_pages(args: argparse.Namespace) -> int:
     from .publish.pages import build_pages
 
@@ -598,6 +655,22 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     sp.add_argument("--seed", type=int, default=0)
     sp.set_defaults(func=cmd_site)
+
+    sp = sub.add_parser("estimate", help="print call counts and an estimated cost")
+    sp.add_argument("--questions", default=str(_default_questions()))
+    sp.add_argument("--models", default=None, help="comma-separated slots, e.g. 'claude,gpt'")
+    sp.add_argument("--reps", type=int, default=3)
+    sp.add_argument("--config", default=None)
+    sp.add_argument(
+        "--output-tokens",
+        type=int,
+        default=DEFAULT_OUTPUT_TOKENS,
+        help="assumed answer length (default: the committed local run's mean)",
+    )
+    sp.add_argument(
+        "--price", action="append", help="MODEL=IN,OUT in USD per million tokens; repeatable"
+    )
+    sp.set_defaults(func=cmd_estimate)
 
     sp = sub.add_parser("pages", help="build the public site from committed real runs only")
     sp.add_argument("--out", default="_site", help="output folder (default: _site)")
