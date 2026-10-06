@@ -38,11 +38,14 @@ def get_runner(spec: ModelSpec, *, allow_mock_fallback: bool = False) -> Runner:
     if kind == "mock":
         return MockRunner(spec)
     if kind == "local":
-        if spec.base_url:
+        if spec.base_url and spec.model:
             return LocalRunner(spec)
         if allow_mock_fallback:
             return MockRunner(spec)
-        raise RuntimeError(f"local runner {spec.name!r} has no base_url")
+        raise RuntimeError(
+            f"local runner {spec.name!r} needs a base_url and a model: "
+            "set AUSLEX_LOCAL_BASE_URL and AUSLEX_LOCAL_MODEL"
+        )
     if kind in _API_RUNNERS:
         if is_real(spec):
             return _API_RUNNERS[kind](spec)
