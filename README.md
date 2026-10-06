@@ -48,6 +48,14 @@ auslex run --models local --reps 3 --seed 0 --run-id auslex-2026-09-14-ornith
 > [!IMPORTANT]
 > The headline rate here reflects the small known corpus more than the model.  Of the 194 unmatched citations, 22 are bare report tails that the extractor could not pair with a party name.  The rest mix real but uncatalogued authorities, many of them English cases reported in the Appeal Cases, with citations that still need a legal check.  **The true fabricated-citation rate is materially below 0.906 and is UNVERIFIED** until a citation-by-citation legal review is done.
 
+<p align="center"><img src="docs/images/leaderboard-real.png" alt="Web UI leaderboard for the real local run" width="820"></p>
+
+*The web UI's leaderboard for run `auslex-2026-09-14-ornith`.  Its one row is real output from the local model, scored on the 12 items unchanged since the run.*
+
+<p align="center"><img src="docs/images/item-audit-real.png" alt="Web UI item audit for one real answer" width="820"></p>
+
+*The item audit for one real answer (item 0001, repetition 0): the question and its required authority, the model's answer, the seeded mock judge's rubric marks, and the class of every extracted citation.  A `fabricated` label means the matcher could not confirm the citation against its 48-entry corpus, so it is an upper bound, not a finding that the case is invented.*
+
 The raw outputs, scores, intervals, and rendered leaderboard for this run are committed under `runs/`, `scores/`, `stats/`, and `site/`, each in an `auslex-2026-09-14-ornith` folder.  Re-derive them with `auslex score`, `auslex stats`, and `auslex site` on `runs/auslex-2026-09-14-ornith`.
 
 ### Mock run
@@ -68,6 +76,10 @@ auslex run --reps 3 --mock --run-id auslex-mock --out-root /tmp/auslex-mock
 | 6 | qwen | 88.1 [87.2, 88.9] | 0.045 [0.000, 0.100] |
 | 7 | mistral | 86.6 [85.6, 87.5] | 0.060 [0.015, 0.113] |
 | 8 | local | 77.1 [72.5, 81.1] | 0.164 [0.109, 0.213] |
+
+<p align="center"><img src="docs/images/leaderboard-mock.png" alt="Web UI leaderboard for the mock run, every row synthetic" width="820"></p>
+
+*The same leaderboard for the mock run above.  Every row is mock, synthetic output, badged as such, and says nothing about any real model.*
 
 The mock runner seeds on the run seed, the slot, and the item id, so anyone can reproduce these exact numbers offline without an API key.  Every completion carries an `is_mock` flag from end to end, and the leaderboard labels mock rows as synthetic rather than presenting them as model output.
 
