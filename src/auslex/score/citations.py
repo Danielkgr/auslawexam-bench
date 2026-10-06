@@ -25,16 +25,30 @@ from typing import Any, Iterable, Optional
 # robust to parenthesised party names such as "Mabo v Queensland (No 2)" and
 # "Waltons Stores (Interstate) Ltd".
 _JUR = r"(Cth|VIC|NSW|QLD|WA|SA|TAS|NT|ACT)"
-_CASE_TAIL = re.compile(r"[\(\[]\s*(\d{4})\s*[\)\]]\s*(\d{1,4})\s+([A-Z]{2,6})(?:\s+\d+)?")
+# The tail is a year in brackets followed either by a volume and a report
+# series ("(1988) 164 CLR 387", "[1994] 2 VR 353") or, for year-ordered reports
+# and medium-neutral citations, by a series and a number ("[1932] AC 562",
+# "[2021] HCA 19").
+_CASE_TAIL = re.compile(
+    r"[\(\[]\s*(\d{4})\s*[\)\]]\s*"
+    r"(?:\d{1,4}\s+[A-Z]{2,7}(?:\s+\d+)?|[A-Z]{2,7}\s+\d+)"
+)
 _PARTY = r"[A-Z][\w'&.\-]*(?:\s*\([^)]*\))?"
 _SIDE = _PARTY + r"(?:\s+" + _PARTY + r")*"
 _CASE_HEAD = re.compile(r"(" + _SIDE + r"\s+v\.?\s+" + _SIDE + r")\s*$")
 
-# Statute citations: an "Act ... (jurisdiction) s N" anchor, with the Act's
-# proper name recovered from the words immediately before it.
+# Legislation citations: an "Act ... (jurisdiction) s N" or "Rules ...
+# (jurisdiction) r N" anchor, with the instrument's proper name recovered from
+# the words immediately before it.  Section and rule numbers may carry letters
+# and dotted parts, as in "s 74H" and "r 14.28".
 _STAT_ANCHOR = re.compile(
-    r"\bAct(?:\s+\d{4})?\s*\(\s*" + _JUR + r"\s*\)\s+s\.?\s*\d+(?:\s*\(\d+\))*"
+    r"\b(?:Act|Rules|Regulations?)(?:\s+\d{4})?\s*\(\s*"
+    + _JUR
+    + r"\s*\)\s+(?:ss?|rr?|regs?|cl)\.?\s*\d+[A-Z]{0,3}(?:\.\d+[A-Z]?)*(?:\s*\([0-9a-z]+\))*"
 )
+
+
+_CONNECTORS = ("and", "of", "or", "for", "the", "in", "to")
 
 
 def _statute_name(prefix: str) -> str:
@@ -45,13 +59,16 @@ def _statute_name(prefix: str) -> str:
         word = re.sub(r"[^A-Za-z&\-]", "", t)
         if not word:
             continue
-        if word[0].isupper() or word.lower() in ("and", "of", "or", "for", "the", "in", "to"):
+        if word[0].isupper() or word.lower() in _CONNECTORS:
             name.append(word)
-            if len(name) >= 4:
+            if len(name) >= 10:
                 break
         else:
             break
-    return " ".join(reversed(name))
+    words = list(reversed(name))
+    while words and words[0].lower() in _CONNECTORS:
+        words.pop(0)
+    return " ".join(words)
 
 
 def _norm(s: str) -> str:
@@ -124,77 +141,71 @@ def _matches(cite_norm: str, authority_norm: str) -> bool:
         return True
     # One contains the other (pinpoints / abbreviations), requiring the shorter
     # side to be substantial so we don't match on a lone party surname.
+    # Containment is checked on whole tokens, so "s 18" never matches "s 181"
+    # and "(1988) 164 CLR 38" never matches "(1988) 164 CLR 387".
     a, b = sorted((cite_norm, authority_norm), key=len)
-    return len(a) >= 12 and a in b
+    return len(a) >= 12 and f" {a} " in f" {b} "
 
 
-# Seed list of well-known real Australian authorities covering the Priestley 11.
-# These are not tied to any single item but are real cases/statutes that a
-# competent answer might cite. Without this seed, any real AU citation not
-# already in the item set would be miscounted as fabricated — the seed
-# tightens the fabricated-rate upper bound.
+# Seed list of real authorities that a competent answer might cite.  These are
+# not tied to any single item.  Without this seed, any real citation not
+# already in the item set would be miscounted as fabricated, so the seed
+# tightens the fabricated-rate upper bound.  Every entry was checked by web
+# search for dataset 0.2.0 (sources in data/CHANGELOG.md).  A few leading
+# English authorities that Australian courts routinely cite are included,
+# because citing them is not an invention.
 _SEED_AUTHORITIES: list[str] = [
     # Constitutional
-    "Pape v Commissioner of Taxation (2009) 243 CLR 336",
-    "Victoria v The Commonwealth (External Affairs) (1975) 134 CLR 135",
-    "New South Wales v Commonwealth (Seas Case) (1975) 134 CLR 337",
-    "Commonwealth v Tasmania (Tasmanian Dam Case) (1983) 158 CLR 1",
-    "Queensland v Commonwealth (Second Rainforest Case) (1989) 167 CLR 217",
-    "WorkChoices (AWU) v Commonwealth (2006) 229 CLR 1",
-    "Royall v The Queen (1991) 172 CLR 378",
+    "Pape v Commissioner of Taxation (2009) 238 CLR 1",
+    "New South Wales v Commonwealth (1975) 135 CLR 337",
+    "Commonwealth v Tasmania (1983) 158 CLR 1",
+    "Queensland v Commonwealth (1989) 167 CLR 232",
+    "Victoria v Commonwealth (1996) 187 CLR 416",
+    "New South Wales v Commonwealth (2006) 229 CLR 1",
     # Contract
     "Waltons Stores (Interstate) Ltd v Maher (1988) 164 CLR 387",
     "Codelfa Construction Pty Ltd v State Rail Authority of NSW (1982) 149 CLR 337",
-    "High Trees (1947) KB 130",
+    "Central London Property Trust Ltd v High Trees House Ltd [1947] KB 130",
     "Andrews v Australia and New Zealand Banking Group Ltd (2012) 247 CLR 205",
-    "Pacific Brands v Paterson (2001) 51 NSWLR 169",
     "Taylor v Johnson (1983) 151 CLR 422",
+    "Helby v Matthews [1895] AC 471",
     # Torts
     "Rogers v Whitaker (1992) 175 CLR 479",
-    "Caltex Oil (Australia) Pty Ltd v Davenport (1979) 144 CLR 397",
+    'Caltex Oil (Australia) Pty Ltd v The Dredge "Willemstad" (1976) 136 CLR 529',
+    "L Shaddock & Associates Pty Ltd v Parramatta City Council (No 1) (1981) 150 CLR 225",
+    "Esanda Finance Corporation Ltd v Peat Marwick Hungerfords (1997) 188 CLR 241",
     "Donoghue v Stevenson [1932] AC 562",
-    "Voli v Inglewood (1963) 110 CLR 107",
-    "Mutual Self Insurance Co Ltd v Sutherland Shire Council (1987) 10 NSWLR 359",
-    "Southern Cross Minerals NL v Australian Iron and Steel Pty Ltd (1975) 132 CLR 377",
     # Crime
-    "R v Cooper (2017) 259 CLR 500",
-    "He Kaw Teh v The Queen (1985) 155 CLR 623",
-    "R v Crabbe (1985) 159 CLR 45",
-    "The Queen v Brown (2017) 262 CLR 537",
-    "Lipinski v The Queen (2008) 236 CLR 223",
+    "Royall v The Queen (1991) 172 CLR 378",
+    "He Kaw Teh v The Queen (1985) 157 CLR 523",
+    "R v Crabbe (1985) 156 CLR 464",
+    "Green v The Queen (1971) 126 CLR 28",
     # Administrative
     "Kioa v West (1985) 159 CLR 550",
     "Minister for Aboriginal Affairs v Peko-Wallsend Ltd (1986) 162 CLR 24",
-    "Body Corporate 207624 v Quinn (1999) 198 CLR 667",
     "Craig v South Australia (1995) 184 CLR 163",
-    "Webb v R (1994) 181 CLR 41",
+    "Webb v The Queen (1994) 181 CLR 41",
     "Plaintiff S157/2002 v Commonwealth (2003) 211 CLR 476",
-    # Equity and Trusts
-    "Re Frame (1987) 163 CLR 147",
-    "Barnes v Tomasetti (1988) 13 NSWLR 676",
-    "Helby v Matthews [1895] AC 471",
-    "Charlie Kidd Holdings Pty Ltd v Commissioner of Stamp Duties (Qld) (1981) 146 CLR 411",
-    "Downsview v First City Corp [1993] AC 295",
+    "Haoucher v Minister for Immigration and Ethnic Affairs (1990) 169 CLR 648",
+    "Attorney-General (NSW) v Quin (1990) 170 CLR 1",
+    "Re Minister for Immigration and Multicultural Affairs; Ex parte Lam (2003) 214 CLR 1",
+    # Equity and trusts
+    "Giumelli v Giumelli (1999) 196 CLR 101",
+    "Sidhu v Van Dyke (2014) 251 CLR 505",
+    "Downsview Nominees Ltd v First City Corporation Ltd [1993] AC 295",
     # Property
     "Real Property Act 1900 (NSW) s 42",
-    " Bresstar Pty Ltd v State Savings Bank of NSW (1989) 17 NSWLR 45",
-    "ABM Investments Ltd v Riddell [1994] 2 VR 353",
     # Corporations
     "Corporations Act 2001 (Cth) s 181",
     "Corporations Act 2001 (Cth) s 184",
-    "AWA Ltd v Daniels (1992) 7 BPR 17,231",
-    "White Industries (USA) Inc v Flight Centre Pty Ltd (2005) 221 CLR 447",
-    "ASIC v Rich (2009) 72 ACSR 1",
+    "AWA Ltd v Daniels (1992) 7 ACSR 759",
+    "Daniels v Anderson (1995) 37 NSWLR 438",
+    "Australian Securities and Investments Commission v Rich (2009) 236 FLR 1",
     # Evidence
     "Evidence Act 1995 (Cth) s 58",
-    "Makey v The Queen (2015) 256 CLR 303",
-    "Pollie v The Queen (1993) 178 CLR 564",
-    # Civil Procedure
-    "Civil Procedure Act 2011 (NSW) s 56",
-    "Fournier v Taki (No 2) [2001] NSWCA 176",
-    # Ethics / Professional Conduct
-    "Legal Profession Act 2014 (NSW) s 267",
-    "R v Cook (1986) 43 SASR 290",
+    "Evidence Act 1995 (Cth) s 141",
+    # Civil procedure
+    "Civil Procedure Act 2005 (NSW) s 56",
 ]
 
 
@@ -208,7 +219,10 @@ def build_known_corpus(
     Australian citations are classified as ``known_other`` rather than
     ``fabricated``, tightening the fabricated-rate upper bound.
     """
-    corpus: set[str] = set(_SEED_AUTHORITIES)
+    # Normalise on entry: matching compares normalised strings, so a raw seed
+    # entry such as "Craig v South Australia (1995) 184 CLR 163" would never
+    # match and a real citation would be counted as fabricated.
+    corpus: set[str] = {_norm(a) for a in _SEED_AUTHORITIES}
     for it in items:
         for a in it.get("required_authorities", []):
             c = a.get("cite", "")
