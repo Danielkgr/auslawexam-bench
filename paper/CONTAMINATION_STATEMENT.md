@@ -85,6 +85,6 @@ run at ingestion/detection time and are reported in the run provenance.
 | Per-item canary | specific item in-training | verbatim only; misses semantic leakage |
 | Hard AU-jurisdiction lint | non-AU sources in gold data | is a lint, not a legal oracle |
 
-The prototype ships the first two rows as working code (with 66-test coverage
-of the canary layer) and the lint as the hard `GOLD_NON_AU` error. The semantic
+The prototype ships the first two rows as working code, with six tests on the
+canary layer, and the lint as the hard `GOLD_NON_AU` error. The semantic
 leakage mitigations are specified here and tracked in `ANALYSIS_PLAN.md`.

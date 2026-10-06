@@ -10,9 +10,7 @@ from __future__ import annotations
 
 import json
 import os
-import stat
 from pathlib import Path
-from typing import Optional
 
 SECRETS_DIR = Path.home() / ".auslex-ui"
 SECRETS_FILE = SECRETS_DIR / "keys.json"
@@ -27,7 +25,7 @@ def load_secrets() -> dict[str, str]:
     _ensure_dir()
     if not SECRETS_FILE.exists():
         return {}
-    with open(SECRETS_FILE, "r", encoding="utf-8") as fh:
+    with open(SECRETS_FILE, encoding="utf-8") as fh:
         return json.load(fh)
 
 
@@ -44,7 +42,7 @@ def save_secrets(secrets: dict[str, str]) -> None:
     os.chmod(SECRETS_FILE, 0o600)
 
 
-def get_key(provider: str) -> Optional[str]:
+def get_key(provider: str) -> str | None:
     """Retrieve a key by provider name ('openai', 'anthropic', 'google')."""
     env_var = {
         "openai": "OPENAI_API_KEY",

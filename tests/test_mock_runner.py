@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from conftest import make_item
+
 from auslex.config import ModelSpec
 from auslex.runners import MockRunner, get_runner, is_mock_runner
-from conftest import make_item
 
 
 def _mock_spec(**over):

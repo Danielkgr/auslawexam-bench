@@ -14,7 +14,7 @@ import urllib.error
 import urllib.request
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 from ..config import ModelSpec
 
@@ -24,17 +24,17 @@ class RawResponse:
     """One model call's auditable output."""
 
     text: str
-    reasoning: Optional[str] = None
+    reasoning: str | None = None
     finish_reason: str = "stop"
     prompt_tokens: int = 0
     completion_tokens: int = 0
     latency_ms: int = 0
-    cost_usd: Optional[float] = None
-    system_fingerprint: Optional[str] = None
-    model: Optional[str] = None
+    cost_usd: float | None = None
+    system_fingerprint: str | None = None
+    model: str | None = None
     is_mock: bool = False
-    error: Optional[str] = None
-    raw: Optional[dict[str, Any]] = field(default=None, repr=False)
+    error: str | None = None
+    raw: dict[str, Any] | None = field(default=None, repr=False)
 
     @property
     def ok(self) -> bool:
@@ -90,9 +90,7 @@ def estimate_cost_usd(
     out_per_mtok: float,
 ) -> float:
     """Rough USD cost from token counts and per-million-token prices."""
-    return (
-        prompt_tokens * in_per_mtok + completion_tokens * out_per_mtok
-    ) / 1_000_000
+    return (prompt_tokens * in_per_mtok + completion_tokens * out_per_mtok) / 1_000_000
 
 
 class Runner(ABC):
@@ -106,8 +104,8 @@ class Runner(ABC):
         self,
         messages: list[dict[str, str]],
         *,
-        seed: Optional[int] = None,
-        item: Optional[dict] = None,
+        seed: int | None = None,
+        item: dict | None = None,
     ) -> RawResponse:
         """Send one completion.
 

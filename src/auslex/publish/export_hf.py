@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 DEFAULT_LICENSE = "cc-by-4.0"
 LICENSES = ["cc-by-4.0"]
@@ -104,13 +104,19 @@ def build_hf_export(
     version: str = "0.1.0",
     license_: str = DEFAULT_LICENSE,
     provisional: bool = True,
-    tags: Optional[list[str]] = None,
+    tags: list[str] | None = None,
 ) -> HfExport:
     """Write the Hub-ready dataset folder and return the file manifest."""
     d = Path(dataset_dir)
     d.mkdir(parents=True, exist_ok=True)
-    tags = tags or ["law", "australia", "legal-reasoning", "benchmark",
-                    "exam", "contamination-canary"]
+    tags = tags or [
+        "law",
+        "australia",
+        "legal-reasoning",
+        "benchmark",
+        "exam",
+        "contamination-canary",
+    ]
     if provisional:
         tags = tags + ["provisional"]
 
@@ -127,8 +133,14 @@ def build_hf_export(
 
     readme = d / "README.md"
     readme.write_text(
-        _hf_readme(name, version=version, n_items=len(items),
-                   license_=license_, tags=tags, provisional=provisional),
+        _hf_readme(
+            name,
+            version=version,
+            n_items=len(items),
+            license_=license_,
+            tags=tags,
+            provisional=provisional,
+        ),
         encoding="utf-8",
     )
 
@@ -142,23 +154,23 @@ def build_hf_export(
                 "num_items": len(items),
                 "jurisdiction": "Australia",
             },
-            indent=2, sort_keys=True,
-        ) + "\n",
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
         encoding="utf-8",
     )
 
-    return HfExport(path=str(d), files=[str(questions), str(readme), str(info)],
-                    n_items=len(items))
+    return HfExport(path=str(d), files=[str(questions), str(readme), str(info)], n_items=len(items))
 
 
 def load_with_hf(dataset_dir: str | Path) -> Any:
     """Sanity-check that the folder loads as a HF Dataset (requires the
     optional ``datasets`` extra). Raises a helpful error if it's missing."""
     try:
-        from datasets import load_dataset  # type: ignore
+        from datasets import load_dataset
     except ImportError as e:  # pragma: no cover - optional dep
         raise RuntimeError(
-            "the 'datasets' package is not installed. Install with "
-            "`pip install 'auslex[hf]'`."
+            "the 'datasets' package is not installed. Install with `pip install 'auslex[hf]'`."
         ) from e
     return load_dataset("json", data_files=str(Path(dataset_dir) / "questions.jsonl"))

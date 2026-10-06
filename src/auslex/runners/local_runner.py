@@ -6,10 +6,10 @@ GGUF path in the raw payload), so runs are reproducible.
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from ..config import ModelSpec
-from .base import Runner, RawResponse, http_json
+from .base import RawResponse, Runner, http_json
 
 
 class LocalRunner(Runner):
@@ -24,15 +24,16 @@ class LocalRunner(Runner):
         self,
         messages: list[dict[str, str]],
         *,
-        seed: Optional[int] = None,
-        item: Optional[dict] = None,  # noqa: ARG002  (ignored by real runners)
+        seed: int | None = None,
+        item: dict | None = None,  # noqa: ARG002  (ignored by real runners)
     ) -> RawResponse:
         payload: dict[str, Any] = {
             "model": self.spec.model,
             "messages": messages,
-            "temperature": self.spec.temperature,
-            "max_tokens": self.spec.max_tokens,
+            self.spec.max_tokens_param: self.spec.max_tokens,
         }
+        if self.spec.temperature is not None:
+            payload["temperature"] = self.spec.temperature
         if seed is not None:
             # Some servers honour a top-level seed; harmless if ignored.
             payload["seed"] = seed
@@ -45,9 +46,9 @@ class LocalRunner(Runner):
             payload["chat_template_kwargs"] = ctk
 
         try:
-            body, latency_ms = self._timed(lambda: http_json(
-                self._url, payload, headers={}, timeout=self._timeout
-            ))
+            body, latency_ms = self._timed(
+                lambda: http_json(self._url, payload, headers={}, timeout=self._timeout)
+            )
         except RuntimeError as e:
             return RawResponse(text="", error=str(e), model=self.spec.model)
 
@@ -60,7 +61,9 @@ class LocalRunner(Runner):
             finish_reason = choice.get("finish_reason", "stop")
             # A thinking model that spent its whole budget in reasoning returns an
             # empty answer; surface that clearly so the transcript self-explains.
-            error: Optional[str] = None
+            error: str | None = None
+            if finish_reason == "length":
+                error = f"truncated: the answer hit max_tokens={self.spec.max_tokens}"
             if not text.strip() and (reasoning or "").strip():
                 error = (
                     f"empty answer: model produced only reasoning_content "
@@ -83,6 +86,8 @@ class LocalRunner(Runner):
             )
         except (KeyError, IndexError, TypeError) as e:
             return RawResponse(
-                text="", error=f"unexpected local response shape: {e}",
-                model=self.spec.model, raw=body,
+                text="",
+                error=f"unexpected local response shape: {e}",
+                model=self.spec.model,
+                raw=body,
             )

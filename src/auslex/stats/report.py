@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from .bootstrap import bootstrap_ci
-from .permutation import paired_permutation
+from .permutation import paired_permutation, paired_permutation_ratio
 
 
 def load_scored(path: str | Path) -> list[dict[str, Any]]:
@@ -38,9 +38,13 @@ def _mean(xs: list[float]) -> float:
     return sum(xs) / len(xs) if xs else 0.0
 
 
-def _question_level(
-    rows: list[dict[str, Any]], model: str, key: str
-) -> dict[str, float]:
+def _pooled_rate(units: Any) -> float:
+    """sum(fabricated) / sum(citations) over (fabricated, citations) units."""
+    total = sum(u[1] for u in units)
+    return sum(u[0] for u in units) / total if total else 0.0
+
+
+def _question_level(rows: list[dict[str, Any]], model: str, key: str) -> dict[str, float]:
     """Mean of ``key`` across reps, per (model, question)."""
     acc: dict[str, list[float]] = {}
     for r in rows:
@@ -76,90 +80,80 @@ def build_report(
     for m in models:
         q_scores[m] = _question_level(rows, m, "item_score_100")
 
-    # POOLED fabricated_rate per model: total_fabricated / total_citations.
-    fab_totals: dict[str, dict[str, int]] = {m: {"fab": 0, "total": 0} for m in models}
+    # Fabricated citations and all citations, summed over reps, per question.
+    # The headline rate is the pooled ratio sum(fabricated) / sum(citations),
+    # and its interval resamples questions and recomputes that same ratio, so
+    # the point estimate and the interval describe one statistic.
+    fab_counts: dict[str, dict[str, tuple[int, int]]] = {m: {} for m in models}
     for r in rows:
         m = r.get("model")
-        if m not in fab_totals:
+        if m not in fab_counts:
             continue
-        cites = (r.get("citations") or {})
-        fab_totals[m]["fab"] += int(cites.get("fabricated", 0))
-        fab_totals[m]["total"] += int(cites.get("total", 0))
+        cites = r.get("citations") or {}
+        f, t = fab_counts[m].get(r["item_id"], (0, 0))
+        fab_counts[m][r["item_id"]] = (
+            f + int(cites.get("fabricated", 0)),
+            t + int(cites.get("total", 0)),
+        )
 
     model_stats: list[dict[str, Any]] = []
     mock_models = {r["model"] for r in rows if r.get("is_mock")}
     for m in models:
         scores = list(q_scores[m].values())
-        ft = fab_totals[m]
-        total_cites = ft["total"] or 1
-        point_fab = ft["fab"] / total_cites
-        # Bootstrap CI on per-question mean-of-ratios for comparison with old behavior.
-        fabs: dict[str, list[float]] = {}
-        for r in rows:
-            if r.get("model") != m:
-                continue
-            fr = (r.get("citations") or {}).get("fabricated_rate", 0.0)
-            fabs.setdefault(r["item_id"], []).append(float(fr))
-        fabs_list = list(_mean(v) for v in fabs.values())
+        units = list(fab_counts[m].values())
         score_ci = bootstrap_ci(scores, n_boot=n_boot, ci=0.95, seed=seed)
-        fab_ci = bootstrap_ci(fabs_list, n_boot=n_boot, ci=0.95, seed=seed + 1)
-        model_stats.append({
-            "model": m,
-            "is_mock": m in mock_models,
-            "n_questions": len(scores),
-            "mean_item_score_100": {
-                "point": round(_mean(scores), 2),
-                "ci95": [round(score_ci.low, 2), round(score_ci.high, 2)],
-            },
-            "fabricated_rate": {
-                "point": round(point_fab, 4),
-                "ci95": [round(fab_ci.low, 4), round(fab_ci.high, 4)],
-            },
-            "per_difficulty": _group_means(rows, m, "difficulty"),
-            "per_priestley": _group_means(rows, m, "priestley_area"),
-            "ci_seed": score_ci.to_dict(),
-        })
+        fab_ci = bootstrap_ci(units, n_boot=n_boot, ci=0.95, seed=seed + 1, statistic=_pooled_rate)
+        model_stats.append(
+            {
+                "model": m,
+                "is_mock": m in mock_models,
+                "n_questions": len(scores),
+                "mean_item_score_100": {
+                    "point": round(score_ci.point, 2),
+                    "ci95": [round(score_ci.low, 2), round(score_ci.high, 2)],
+                },
+                "fabricated_rate": {
+                    "point": round(fab_ci.point, 4),
+                    "ci95": [round(fab_ci.low, 4), round(fab_ci.high, 4)],
+                    "fabricated": sum(u[0] for u in units),
+                    "citations": sum(u[1] for u in units),
+                },
+                "per_difficulty": _group_means(rows, m, "difficulty"),
+                "per_priestley": _group_means(rows, m, "priestley_area"),
+                "ci_seed": score_ci.to_dict(),
+            }
+        )
 
     # Pairwise permutation tests (leaderboard order: higher score first).
     order = sorted(model_stats, key=lambda x: -x["mean_item_score_100"]["point"])
     pairs: list[dict[str, Any]] = []
-    for i in range(len(order)):
-        for j in range(i + 1, len(order)):
-            ma, mb = order[i]["model"], order[j]["model"]
-            res = paired_permutation(
-                q_scores[ma], q_scores[mb],
-                a_name=ma, b_name=mb, n_perm=n_perm, seed=seed,
-            )
-            pairs.append(res.to_dict())
-
-    # Pairwise permutation tests on POOLED fabricated rates (lower is better).
     fab_pairs: list[dict[str, Any]] = []
     for i in range(len(order)):
         for j in range(i + 1, len(order)):
             ma, mb = order[i]["model"], order[j]["model"]
-            ft_a = fab_totals[ma]
-            ft_b = fab_totals[mb]
-            fab_rate_a = ft_a["fab"] / (ft_a["total"] or 1)
-            fab_rate_b = ft_b["fab"] / (ft_b["total"] or 1)
-            # Build per-item POOLED rates for permutation test.
-            item_fab: dict[str, list[float]] = {ma: [], mb: []}
-            item_ids = {r["item_id"] for r in rows if r.get("model") in (ma, mb)}
-            for item_id in sorted(item_ids):
-                item_rows = [r for r in rows if r["item_id"] == item_id and r.get("model") in (ma, mb)]
-                for item_row in item_rows:
-                    m_name = item_row.get("model")
-                    cites = (item_row.get("citations") or {})
-                    total = int(cites.get("total", 0)) or 1
-                    item_fab[m_name].append(int(cites.get("fabricated", 0)) / total)
-            if item_fab[ma] and item_fab[mb]:
-                mean_a = _mean(item_fab[ma])
-                mean_b = _mean(item_fab[mb])
-                res_fab = paired_permutation(
-                    {item_id: mean_a for item_id in item_ids},
-                    {item_id: mean_b for item_id in item_ids},
-                    a_name=ma, b_name=mb, n_perm=n_perm, seed=seed + 100,
-                )
-                fab_pairs.append(res_fab.to_dict())
+            if len(set(q_scores[ma]) & set(q_scores[mb])) < 2:
+                continue
+            pairs.append(
+                paired_permutation(
+                    q_scores[ma],
+                    q_scores[mb],
+                    a_name=ma,
+                    b_name=mb,
+                    n_perm=n_perm,
+                    seed=seed,
+                ).to_dict()
+            )
+            # The same pooled statistic as the headline rate (lower is better).
+            fab_pairs.append(
+                paired_permutation_ratio(
+                    fab_counts[ma],
+                    fab_counts[mb],
+                    a_name=ma,
+                    b_name=mb,
+                    n_perm=n_perm,
+                    seed=seed + 100,
+                ).to_dict()
+            )
 
     report = {
         "run_id": run_id,
@@ -169,7 +163,10 @@ def build_report(
         "pairwise_permutation": pairs,
         "fabricated_pairwise": fab_pairs,
         "method": {
-            "ci": f"percentile bootstrap, n_boot={n_boot}, question-level, seeded",
+            "ci": (
+                f"percentile bootstrap, n_boot={n_boot}, resampling questions; the "
+                "fabricated rate is the pooled ratio, recomputed on each resample"
+            ),
             "comparison": f"paired permutation (sign-flip), n_perm={n_perm}, two-sided, seeded",
             "seed": seed,
         },
@@ -184,12 +181,12 @@ def _fmt_ci(x: dict) -> str:
 
 def render_markdown(report: dict[str, Any]) -> str:
     lines = [
-        f"# AusLawExam-Bench — Run Report",
+        "# AusLawExam-Bench run report",
         "",
-        f"Run `{report['run_id']}` · {report['n_models']} models · "
+        f"Run `{report['run_id']}`, {report['n_models']} models, "
         f"{report['n_questions_total']} questions.",
         "",
-        "## Leaderboard (item score, 0–100, 95% CI)",
+        "## Leaderboard (item score 0 to 100, with 95% CI)",
         "",
         "| Model | Mean score (95% CI) | Fabricated-citation rate (95% CI) | Questions |",
         "|---|---|---|---|",
@@ -205,7 +202,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "## Pairwise significance (paired permutation, two-sided)",
         "",
-        "| Model A | Model B | Mean diff (A−B) | p-value | Significant (α=.05) |",
+        "| Model A | Model B | Mean diff (A - B) | p-value | Significant at 0.05 |",
         "|---|---|---|---|---|",
     ]
     for p in report["pairwise_permutation"]:
@@ -221,9 +218,7 @@ def render_markdown(report: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def write_report(
-    report: dict[str, Any], out_root: str | Path
-) -> dict[str, str]:
+def write_report(report: dict[str, Any], out_root: str | Path) -> dict[str, str]:
     stats_dir = Path(out_root) / "stats" / report["run_id"]
     stats_dir.mkdir(parents=True, exist_ok=True)
     stats_json = stats_dir / "stats.json"

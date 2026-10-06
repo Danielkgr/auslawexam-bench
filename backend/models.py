@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
-
 
 # --------------------------------------------------------------------------- #
 # Credentials & slots
@@ -13,12 +12,12 @@ from pydantic import BaseModel, Field
 
 
 class ApiKeyConfig(BaseModel):
-    openai_key: Optional[str] = None
-    anthropic_key: Optional[str] = None
-    google_key: Optional[str] = None
+    openai_key: str | None = None
+    anthropic_key: str | None = None
+    google_key: str | None = None
     # Local slot fields.
     local_base_url: str = "http://localhost:10000/v1"
-    local_model: str = "14. Qwen3.8-27B (Q5_K_M)"
+    local_model: str = ""
     local_enable_thinking: bool = False
 
 
@@ -28,15 +27,15 @@ class SlotStatus(BaseModel):
     model: str
     is_real: bool
     is_mock: bool
-    is_reachable: Optional[bool] = None
+    is_reachable: bool | None = None
     key_present: bool
-    base_url: Optional[str] = None
+    base_url: str | None = None
 
 
 class TestConnectionResult(BaseModel):
     ok: bool
     detail: str = ""
-    model_id: Optional[str] = None
+    model_id: str | None = None
 
 
 # --------------------------------------------------------------------------- #
@@ -48,11 +47,11 @@ class RunConfig(BaseModel):
     models: list[str] = Field(default_factory=lambda: ["gpt", "claude", "gemini", "local"])
     n_reps: int = Field(default=3, ge=1, le=20)
     base_seed: int = Field(default=0, ge=0)
-    run_id: Optional[str] = None  # optional explicit run id (auto-generated if omitted)
-    question_filter: Optional[str] = None  # comma-separated question IDs
-    priestley_filter: Optional[str] = None  # comma-separated area names
-    jurisdiction_filter: Optional[str] = None  # comma-separated jurisdictions
-    difficulty_filter: Optional[str] = None  # comma-separated difficulty levels
+    run_id: str | None = None  # optional explicit run id (auto-generated if omitted)
+    question_filter: str | None = None  # comma-separated question IDs
+    priestley_filter: str | None = None  # comma-separated area names
+    jurisdiction_filter: str | None = None  # comma-separated jurisdictions
+    difficulty_filter: str | None = None  # comma-separated difficulty levels
 
 
 # --------------------------------------------------------------------------- #
@@ -78,9 +77,9 @@ class RunStatus(BaseModel):
     n_ok: int
     n_error: int
     models: list[ModelProgress]
-    started_at: Optional[str] = None
-    finished_at: Optional[str] = None
-    error_msg: Optional[str] = None
+    started_at: str | None = None
+    finished_at: str | None = None
+    error_msg: str | None = None
 
 
 # --------------------------------------------------------------------------- #
@@ -108,7 +107,7 @@ class ItemResult(BaseModel):
     total_citations: int
     citations: list[CitationAudit]
     rubric: dict[str, float]
-    answer_text: Optional[str] = None
+    answer_text: str | None = None
     contamination_flag: bool = False
 
 
@@ -165,7 +164,7 @@ class RunSummary(BaseModel):
 class LocalProbeResult(BaseModel):
     reachable: bool
     models: list[dict[str, Any]] = Field(default_factory=list)
-    error: Optional[str] = None
+    error: str | None = None
 
 
 # --------------------------------------------------------------------------- #
@@ -184,8 +183,8 @@ class QuestionListItem(BaseModel):
 
 class QuestionDetail(QuestionListItem):
     question_text: str
-    facts: Optional[str] = None
-    instructions: Optional[str] = None
+    facts: str | None = None
+    instructions: str | None = None
     gold_answer: str
     required_authorities: list[dict[str, Any]]
     rubric: list[dict[str, Any]]

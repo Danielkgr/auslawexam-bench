@@ -14,8 +14,8 @@ reproducible.
 from __future__ import annotations
 
 import random
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Mapping
 
 
 @dataclass
@@ -23,13 +23,13 @@ class PermutationResult:
     a: str
     b: str
     n_pairs: int
-    mean_diff: float          # mean(a - b) over shared questions
-    p_value: float            # two-sided
+    mean_diff: float  # mean(a - b) over shared questions
+    p_value: float  # two-sided
     n_perm: int
     seed: int
 
-    @property
     def significant(self, alpha: float = 0.05) -> bool:
+        """True when the two-sided p-value is below ``alpha``."""
         return self.p_value < alpha
 
     def to_dict(self) -> dict:
@@ -41,13 +41,11 @@ class PermutationResult:
             "p_value": round(self.p_value, 5),
             "n_perm": self.n_perm,
             "seed": self.seed,
-            "significant_05": self.significant,
+            "significant_05": self.significant(0.05),
         }
 
 
-def _paired_diffs(
-    a: Mapping[str, float], b: Mapping[str, float]
-) -> list[float]:
+def _paired_diffs(a: Mapping[str, float], b: Mapping[str, float]) -> list[float]:
     common = [k for k in a if k in b]
     common.sort()  # deterministic ordering
     return [a[k] - b[k] for k in common]
@@ -85,6 +83,65 @@ def paired_permutation(
     # finite-sample estimate; avoids p == 0.
     p_value = (n_extreme + 1) / (n_perm + 1)
     return PermutationResult(
-        a=a_name, b=b_name, n_pairs=n, mean_diff=t_obs,
-        p_value=p_value, n_perm=n_perm, seed=seed,
+        a=a_name,
+        b=b_name,
+        n_pairs=n,
+        mean_diff=t_obs,
+        p_value=p_value,
+        n_perm=n_perm,
+        seed=seed,
+    )
+
+
+def _pooled(pairs: Sequence[tuple[float, float]]) -> float:
+    num = sum(p[0] for p in pairs)
+    den = sum(p[1] for p in pairs)
+    return num / den if den else 0.0
+
+
+def paired_permutation_ratio(
+    a: Mapping[str, tuple[float, float]],
+    b: Mapping[str, tuple[float, float]],
+    *,
+    a_name: str = "a",
+    b_name: str = "b",
+    n_perm: int = 10_000,
+    seed: int = 0,
+) -> PermutationResult:
+    """Two-sided paired permutation test on a pooled ratio such as a fabricated rate.
+
+    ``a`` and ``b`` map question_id -> (numerator, denominator) summed over
+    repetitions.  The statistic is the difference of pooled ratios,
+    sum(num) / sum(den) for each model, which is exactly the headline number.
+    Under the null of no difference, each question's pair of counts is equally
+    likely to belong to either model, so each permutation swaps the two models'
+    counts on a random subset of the shared questions.
+    """
+    common = sorted(k for k in a if k in b)
+    n = len(common)
+    if n < 2:
+        raise ValueError("need at least 2 shared questions for a permutation test")
+    pa = [a[k] for k in common]
+    pb = [b[k] for k in common]
+    t_obs = _pooled(pa) - _pooled(pb)
+    rng = random.Random(seed)
+    n_extreme = 0
+    for _ in range(n_perm):
+        xa, xb = [], []
+        for u, v in zip(pa, pb, strict=True):
+            if rng.random() < 0.5:
+                u, v = v, u
+            xa.append(u)
+            xb.append(v)
+        if abs(_pooled(xa) - _pooled(xb)) >= abs(t_obs) - 1e-12:
+            n_extreme += 1
+    p_value = (n_extreme + 1) / (n_perm + 1)
+    return PermutationResult(
+        a=a_name,
+        b=b_name,
+        n_pairs=n,
+        mean_diff=t_obs,
+        p_value=p_value,
+        n_perm=n_perm,
+        seed=seed,
     )
