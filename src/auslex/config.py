@@ -47,7 +47,9 @@ class ModelSpec:
     runner: str  # which runner implementation to use
     base_url: Optional[str] = None  # for local / OpenAI-compat endpoints
     api_key_env: Optional[str] = None
-    temperature: float = 0.0
+    # None means the request carries no temperature at all, which is required
+    # for models that reject it (current Claude and GPT reasoning models).
+    temperature: Optional[float] = 0.0
     max_tokens: int = 3000
     # Mock-only knobs: relative "competence" in [0,1] and fabrication tendency.
     mock_quality: float = 0.6
@@ -84,13 +86,17 @@ def default_models() -> list[ModelSpec]:
         ModelSpec(
             name="claude",
             vendor="anthropic",
-            model="claude-opus-5",
+            model="claude-opus-5-5",
             runner="anthropic",
             api_key_env="ANTHROPIC_API_KEY",
-            temperature=0.0,
-            max_tokens=3000,
+            # Current Claude models reject temperature, so the slot runs at the
+            # model default and the repetitions measure the variance.
+            temperature=None,
+            # Streamed, so an essay answer plus adaptive thinking has room.
+            max_tokens=32000,
             mock_quality=0.83,
             mock_fabricate_rate=0.10,
+            extra={"effort": "high"},
         ),
         ModelSpec(
             name="gemini",
