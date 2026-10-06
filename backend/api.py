@@ -28,6 +28,10 @@ from .models import (
 )
 from .run_state import RunManager, _apply_keys_to_env, _get_stored_key, _restore_env
 from auslex.run.orchestrator import probe_local, RunConfig as OrchestrationRunConfig
+from auslex.run.storage import RunStore
+from auslex.runners import get_runner
+from auslex.score.citations import _matches, _norm
+import dataclasses
 import re
 
 router = APIRouter(prefix="/api")
@@ -39,9 +43,22 @@ router = APIRouter(prefix="/api")
 # Project root is the parent of backend/.
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_QUESTIONS = ROOT / "data" / "questions" / "auslex.jsonl"
-DEFAULT_OUT_ROOT = ROOT / "runs"
+# The output root holds runs/, scores/, stats/, and site/, as for the CLI's
+# --out-root.  AUSLEX_OUT_ROOT moves all of them together.
+OUTPUT_ROOT = Path(os.environ.get("AUSLEX_OUT_ROOT") or ROOT)
 
-run_manager = RunManager(out_root=DEFAULT_OUT_ROOT)
+run_manager = RunManager(output_root=OUTPUT_ROOT)
+
+# The key store is per provider; the slots that provider's key unlocks.
+PROVIDER_SLOT = {"openai": "gpt", "anthropic": "claude", "google": "gemini"}
+
+
+def _runs_root() -> Path:
+    return OUTPUT_ROOT / "runs"
+
+
+def _scored_path(run_id: str) -> Path:
+    return OUTPUT_ROOT / "scores" / run_id / "scored.jsonl"
 
 
 # --------------------------------------------------------------------------- #
@@ -104,7 +121,7 @@ async def health() -> dict[str, str]:
 
 @router.get("/slots")
 async def get_slots() -> list[dict[str, Any]]:
-    """Return the 4 model slots with their real/mock status."""
+    """Return the eight model slots with their real or mock status."""
     from auslex.config import default_models
     specs = default_models()
     return [_spec_to_status(s).model_dump() for s in specs]
@@ -198,10 +215,8 @@ async def set_keys(cfg: ApiKeyConfig) -> dict[str, str]:
 async def test_connection(provider: str) -> TestConnectionResult:
     """Test a provider connection with a minimal completion."""
     from auslex.config import default_models
-    from auslex.runners import get_runner
 
-    KNOWN = {"openai", "anthropic", "google"}
-    if provider not in KNOWN:
+    if provider not in PROVIDER_SLOT:
         return TestConnectionResult(ok=False, detail=f"Unknown provider {provider!r}")
 
     key = _get_stored_key(provider)
@@ -216,17 +231,20 @@ async def test_connection(provider: str) -> TestConnectionResult:
         os.environ[env_var] = key
 
     try:
-        specs = default_models()
-        spec = next((s for s in specs if s.name == provider), None)
-        if spec is None:
-            return TestConnectionResult(ok=False, detail=f"unknown provider {provider!r}")
-
+        # The provider is "openai", "anthropic" or "google"; the slot that
+        # uses its key is named "gpt", "claude" or "gemini".
+        slot = PROVIDER_SLOT[provider]
+        spec = next(s for s in default_models() if s.name == slot)
+        # A short answer is enough to prove the key and the request work.
+        spec = dataclasses.replace(spec, max_tokens=1024, extra={**spec.extra, "effort": "low"})
         runner = get_runner(spec, allow_mock_fallback=False)
         msgs = [{"role": "user", "content": "Say: hello"}]
         resp = runner.complete(msgs, seed=0)
+        # A truncated reply still proves the connection works.
+        connected = resp.error is None or resp.error.startswith("truncated")
         return TestConnectionResult(
-            ok=resp.ok and bool(resp.text),
-            detail=resp.error or ("ok" if resp.ok else "empty response"),
+            ok=connected,
+            detail=resp.error or "ok",
             model_id=resp.model,
         )
     except Exception as e:
@@ -260,7 +278,7 @@ async def create_run(cfg: RunConfig) -> dict[str, str]:
             items=items,
             n_reps=cfg.n_reps,
             run_id=cfg.run_id,
-            out_root=DEFAULT_OUT_ROOT,
+            out_root=_runs_root(),
             base_seed=cfg.base_seed,
         )
         run_id = run_manager.start_run(run_cfg)
@@ -290,12 +308,11 @@ async def stream_run(run_id: str) -> StreamingResponse:
 @router.get("/runs")
 async def list_runs() -> list[dict[str, Any]]:
     """List all past runs."""
-    from auslex.run.storage import RunStore
-    store = RunStore(DEFAULT_OUT_ROOT, "")
-    run_ids = store.list_runs()
+    root = _runs_root()
+    run_ids = sorted(p.name for p in root.iterdir() if p.is_dir()) if root.exists() else []
     result = []
     for rid in reversed(run_ids):
-        s = RunStore(DEFAULT_OUT_ROOT, rid)
+        s = RunStore(root, rid, create_dirs=False)
         if s.meta_path.exists():
             meta = s.read_meta()
             result.append({
@@ -317,8 +334,7 @@ async def list_runs() -> list[dict[str, Any]]:
 async def get_report(run_id: str) -> dict[str, Any]:
     """Get the stats report for a run."""
     _validate_run_id(run_id)
-    from auslex.stats.report import load_scored
-    scored_path = DEFAULT_OUT_ROOT / "scores" / run_id / "scored.jsonl"
+    scored_path = _scored_path(run_id)
     if not scored_path.exists():
         raise HTTPException(status_code=404, detail=f"no scored data for run {run_id}")
     from auslex.stats.report import build_report
@@ -335,7 +351,7 @@ async def get_item_results(
     """Get per-item results for a run, with optional filters."""
     _validate_run_id(run_id)
     from auslex.score.citations import build_known_corpus
-    scored_path = DEFAULT_OUT_ROOT / "scores" / run_id / "scored.jsonl"
+    scored_path = _scored_path(run_id)
     if not scored_path.exists():
         raise HTTPException(status_code=404, detail=f"no scored data for run {run_id}")
     rows = read_jsonl(scored_path)
@@ -347,14 +363,23 @@ async def get_item_results(
     items = _load_questions()
     item_by_id = {it["id"]: it for it in items}
     corpus = build_known_corpus(items)
+    # The answer text lives in the run's own records, not in the scores.
+    store = RunStore(_runs_root(), run_id, create_dirs=False)
+    texts = {(r.get("model"), r.get("item_id"), r.get("rep")): r.get("text")
+             for r in store.records()}
 
     results = []
     for row in rows:
         item = item_by_id.get(row.get("item_id"))
         cites = row.get("citations", {})
-        # Classify each citation.
+        # Use the scorer's own class for each citation when it was recorded.
         citation_audits = []
-        if item and cites.get("citations"):
+        if cites.get("citations") and all(c.get("class") for c in cites["citations"]):
+            citation_audits = [
+                CitationAudit(kind=c["kind"], raw=c["raw"], classification=c["class"])
+                for c in cites["citations"]
+            ]
+        elif item and cites.get("citations"):
             req_cites = {
                 _norm(a.get("cite", ""))
                 for a in item.get("required_authorities", [])
@@ -363,7 +388,7 @@ async def get_item_results(
                 cn = _norm(c["raw"])
                 if any(_matches(cn, r) for r in req_cites):
                     cls = "on_point"
-                elif cn in corpus:
+                elif any(_matches(cn, ref) for ref in corpus):
                     cls = "known_other"
                 else:
                     cls = "fabricated"
@@ -376,7 +401,7 @@ async def get_item_results(
         if item:
             from auslex.canary import find_canaries, make_canary
             item_canary = make_canary(item["id"])
-            text = row.get("answer_text", "") or ""
+            text = texts.get((row.get("model"), row.get("item_id"), row.get("rep"))) or ""
             found = find_canaries(text)
             contamination = item_canary in found or any(item_canary in c for c in found)
 
@@ -394,7 +419,7 @@ async def get_item_results(
             "total_citations": cites.get("total", 0),
             "citations": [ca.model_dump() for ca in citation_audits],
             "rubric": row.get("rubric", {}),
-            "answer_text": row.get("answer_text"),
+            "answer_text": texts.get((row.get("model"), row.get("item_id"), row.get("rep"))),
             "contamination_flag": contamination,
         })
     return results
@@ -404,9 +429,7 @@ async def get_item_results(
 async def get_records(run_id: str) -> list[dict[str, Any]]:
     """Get raw records for a run."""
     _validate_run_id(run_id)
-    from auslex.run.storage import RunStore
-    store = RunStore(DEFAULT_OUT_ROOT, run_id)
-    return store.records()
+    return RunStore(_runs_root(), run_id, create_dirs=False).records()
 
 
 @router.get("/local/probe")
@@ -431,20 +454,20 @@ async def probe_local_endpoint() -> dict[str, Any]:
 async def export_site(run_id: str) -> dict[str, str]:
     """Re-render the static leaderboard site for a run."""
     from auslex.publish import publish_site
-    from auslex.run.storage import RunStore
     from auslex.stats.report import build_report
 
-    scored_path = DEFAULT_OUT_ROOT / "scores" / run_id / "scored.jsonl"
+    _validate_run_id(run_id)
+    scored_path = _scored_path(run_id)
     if not scored_path.exists():
         raise HTTPException(status_code=404, detail=f"no scored data for run {run_id}")
     report = build_report(scored_path, run_id=run_id)
-    store = RunStore(DEFAULT_OUT_ROOT, run_id)
+    store = RunStore(_runs_root(), run_id, create_dirs=False)
     meta = store.read_meta()
     meta["contamination_note"] = (
         f"Every item embeds the global canary plus a per-item canary derived "
         "from its id; reproducing either verbatim flags training-data contamination."
     )
-    site_dir = ROOT / "site" / run_id
+    site_dir = OUTPUT_ROOT / "site" / run_id
     index = publish_site(site_dir, report=report, meta=meta)
     return {"site_path": str(index)}
 
@@ -452,17 +475,15 @@ async def export_site(run_id: str) -> dict[str, str]:
 @router.post("/runs/{run_id}/export-hf")
 async def export_hf(run_id: str) -> dict[str, str]:
     """Export run outputs for Hugging Face."""
-    from auslex.run.storage import RunStore
-
-    # Validate that the run directory exists.
-    store = RunStore(DEFAULT_OUT_ROOT, run_id, create_dirs=False)
+    _validate_run_id(run_id)
+    store = RunStore(_runs_root(), run_id, create_dirs=False)
     if not store.run_dir.exists():
         raise HTTPException(status_code=404, detail=f"run {run_id} not found")
 
     from auslex.publish.export_hf import build_hf_export
 
     items = _load_questions()
-    out = ROOT / "export" / "hf" / run_id
+    out = OUTPUT_ROOT / "export" / "hf" / run_id
     exp = build_hf_export(out, items, name=f"auslex-{run_id}", version="0.1.0")
     return {"export_path": str(out), "n_items": str(exp.n_items), "files": ", ".join(exp.files)}
 
@@ -470,8 +491,8 @@ async def export_hf(run_id: str) -> dict[str, str]:
 @router.get("/runs/{run_id}/download")
 async def download_run(run_id: str) -> dict[str, str]:
     """Return paths for downloading raw run outputs."""
-    from auslex.run.storage import RunStore
-    store = RunStore(DEFAULT_OUT_ROOT, run_id, create_dirs=False)
+    _validate_run_id(run_id)
+    store = RunStore(_runs_root(), run_id, create_dirs=False)
     if not store.run_dir.exists():
         raise HTTPException(status_code=404, detail=f"run {run_id} not found")
     return {
@@ -480,20 +501,3 @@ async def download_run(run_id: str) -> dict[str, str]:
         "records": str(store.records_path),
         "raw_dir": str(store.raw_dir),
     }
-
-
-# --------------------------------------------------------------------------- #
-# Norm helpers (local copies to avoid import issues)
-# --------------------------------------------------------------------------- #
-
-
-def _norm(s: str) -> str:
-    import re
-    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9 ]", " ", s.lower())).strip()
-
-
-def _matches(cite_norm: str, authority_norm: str) -> bool:
-    if cite_norm == authority_norm:
-        return True
-    a, b = sorted((cite_norm, authority_norm), key=len)
-    return len(a) >= 12 and a in b
