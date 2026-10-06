@@ -204,3 +204,17 @@ def test_bare_back_reference_counts_once():
     )
     rep = assess_answer(item, text, build_known_corpus([item]))
     assert rep.total == 1 and rep.on_point == 1
+
+
+def test_lowercase_joining_words_stay_in_the_party_name():
+    raws = [
+        c.raw
+        for c in extract_citations(
+            "Commercial Bank of Australia Ltd v Amadio (1983) 151 CLR 447 and the decision of "
+            "Minister for Aboriginal Affairs v Peko-Wallsend Ltd (1986) 162 CLR 24."
+        )
+    ]
+    assert raws == [
+        "Commercial Bank of Australia Ltd v Amadio (1983) 151 CLR 447",
+        "Minister for Aboriginal Affairs v Peko-Wallsend Ltd (1986) 162 CLR 24",
+    ]

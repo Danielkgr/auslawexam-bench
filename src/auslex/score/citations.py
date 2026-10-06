@@ -36,7 +36,9 @@ _CASE_TAIL = re.compile(
 )
 # A party word starts with a capital and may hold "/", as in "Plaintiff S157/2002".
 _PARTY = r"[A-Z][\w'&.\-/]*(?:\s*\([^)]*\))?"
-_SIDE = _PARTY + r"(?:\s+" + _PARTY + r")*"
+# Lowercase joining words may sit between capitalised ones, as in
+# "Commercial Bank of Australia Ltd" or "Minister for Aboriginal Affairs".
+_SIDE = _PARTY + r"(?:\s+(?:(?:of|and|for|the|de|van|von)\s+)?" + _PARTY + r")*"
 _CASE_HEAD = re.compile(r"(" + _SIDE + r"\s+v\.?\s+" + _SIDE + r")\s*$")
 
 # Legislation citations: an "Act ... (jurisdiction) s N" or "Rules ...
