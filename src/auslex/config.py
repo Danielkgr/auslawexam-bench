@@ -22,9 +22,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
-# Discovered on this machine (llama.cpp / llama-swap, OpenAI-compatible).
 DEFAULT_LOCAL_BASE_URL = "http://localhost:10000/v1"
-DEFAULT_LOCAL_MODEL = "14. Qwen3.8-27B (Q5_K_M)"
+# No default: the local slot must name the model its server exposes, through
+# AUSLEX_LOCAL_MODEL or a config file, so a run never records a guessed name.
+DEFAULT_LOCAL_MODEL = ""
 
 
 def _local_enable_thinking() -> bool:
@@ -109,7 +110,8 @@ def default_models() -> list[ModelSpec]:
         ModelSpec(
             name="gemini",
             vendor="google",
-            model="gemini-2.0-flash",
+            # gemini-2.0-flash was shut down in June 2026.
+            model="gemini-3.1-flash-lite",
             runner="google",
             api_key_env="GOOGLE_API_KEY",
             temperature=0.0,
@@ -120,7 +122,8 @@ def default_models() -> list[ModelSpec]:
         ModelSpec(
             name="groq",
             vendor="openai",
-            model="llama-3.3-70b-specdec",
+            # Groq has retired its Llama 3.3 70B models.
+            model="openai/gpt-oss-120b",
             runner="openai",
             base_url="https://api.groq.com/openai/v1",
             api_key_env="GROQ_API_KEY",
@@ -156,7 +159,7 @@ def default_models() -> list[ModelSpec]:
         ModelSpec(
             name="qwen",
             vendor="openai",
-            model="qwen2.5-72b",
+            model="qwen3-max",
             runner="openai",
             base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
             api_key_env="DASHSCOPE_API_KEY",
@@ -236,9 +239,9 @@ def resolve_api_key(spec: ModelSpec) -> Optional[str]:
 
 
 def is_real(spec: ModelSpec) -> bool:
-    """True if this spec can run for real (local endpoint or an API key present)."""
+    """True if this spec can run for real: a local endpoint and model, or an API key."""
     if spec.vendor == "local":
-        return bool(spec.base_url)
+        return bool(spec.base_url) and bool(spec.model)
     return resolve_api_key(spec) is not None
 
 

@@ -18,7 +18,7 @@ class ApiKeyConfig(BaseModel):
     google_key: Optional[str] = None
     # Local slot fields.
     local_base_url: str = "http://localhost:10000/v1"
-    local_model: str = "14. Qwen3.8-27B (Q5_K_M)"
+    local_model: str = ""
     local_enable_thinking: bool = False
 
 

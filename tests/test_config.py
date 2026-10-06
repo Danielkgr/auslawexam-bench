@@ -43,9 +43,12 @@ def test_default_local_base_url(monkeypatch):
     assert local.base_url == DEFAULT_LOCAL_BASE_URL
 
 
-def test_is_real_local_needs_base_url():
-    specs = load_models()
-    local = next(s for s in specs if s.name == "local")
+def test_is_real_local_needs_base_url_and_model(monkeypatch):
+    monkeypatch.delenv("AUSLEX_LOCAL_MODEL", raising=False)
+    local = next(s for s in load_models() if s.name == "local")
+    assert is_real(local) is False  # no model named: never guess one
+    monkeypatch.setenv("AUSLEX_LOCAL_MODEL", "my-model")
+    local = next(s for s in load_models() if s.name == "local")
     assert is_real(local) is True
 
 

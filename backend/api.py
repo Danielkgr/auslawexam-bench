@@ -177,7 +177,7 @@ async def get_keys() -> ApiKeyConfig:
         anthropic_key=_get_stored_key("anthropic"),
         google_key=_get_stored_key("google"),
         local_base_url=os.environ.get("AUSLEX_LOCAL_BASE_URL", "http://localhost:10000/v1"),
-        local_model=os.environ.get("AUSLEX_LOCAL_MODEL", "14. Qwen3.8-27B (Q5_K_M)"),
+        local_model=os.environ.get("AUSLEX_LOCAL_MODEL", ""),
         local_enable_thinking=bool(int(os.environ.get("AUSLEX_LOCAL_ENABLE_THINKING", "0"))),
     )
 
