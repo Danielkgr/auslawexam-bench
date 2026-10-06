@@ -16,7 +16,7 @@
 
 ## What it is
 
-AusLawExam-Bench puts exam-style questions on Australian law to eight model slots, one each for GPT, Claude, Gemini, Groq, DeepSeek, Mistral, and Qwen, plus a local open-weight slot.  Every model gets the same versioned prompt, at temperature 0 where the model accepts it.  Current Claude and GPT reasoning models accept no temperature setting, so those slots run at the model default and the three repetitions measure the variance.  The harness extracts each citation from each answer, classifies it as real or fabricated, scores the answer against a rubric, and publishes the raw outputs next to the scores so anyone can audit a number end to end.
+AusLawExam-Bench puts exam-style questions on Australian law to eight model slots, one each for GPT, Claude, Gemini, Groq, DeepSeek, Mistral, and Qwen, plus a local open-weight slot.  Every model gets the same versioned prompt, at temperature 0 where the model accepts it.  Current Claude models reject a temperature setting and GPT reasoning models accept only the default, so those slots run at the model default and the three repetitions measure the variance.  The harness extracts each citation from each answer, classifies it as real or fabricated, scores the answer against a rubric, and publishes the raw outputs next to the scores so anyone can audit a number end to end.
 
 > [!CAUTION]
 > This is a benchmarking prototype and gives no legal advice.  It does not answer legal questions or verify legal propositions.  The 16 shipped questions are provisional drafts that no qualified Australian lawyer has reviewed, and their gold answers and required authorities may contain errors.  Do not rely on them, or on any model output the benchmark produces, for a real legal decision.
@@ -49,7 +49,7 @@ auslex run --models local --reps 3 --seed 0 --run-id auslex-2026-09-14-ornith
 | Fabricated-citation rate (upper bound) | **0.906** [0.817, 0.976] | Share of extracted citations the matcher could not confirm |
 
 > [!IMPORTANT]
-> The headline rate here reflects the small known corpus more than the model.  Of the 194 unmatched citations, 22 are bare report tails that the extractor could not pair with a party name.  The rest mix real but uncatalogued authorities, many of them English cases reported in the Appeal Cases, with citations that still need a legal check.  **The true fabricated-citation rate is materially below 0.906 and is UNVERIFIED** until a citation-by-citation legal review is done.
+> The headline rate here reflects the small known corpus more than the model.  Of the 194 unmatched citations, 22 are bare report tails that the extractor could not pair with a party name.  The rest mix real but uncatalogued authorities, including 28 English citations in series such as the Appeal Cases, with citations that still need a legal check.  **The true fabricated-citation rate is materially below 0.906 and is UNVERIFIED** until a citation-by-citation legal review is done.
 
 <p align="center"><img src="docs/images/leaderboard-real.png" alt="Web UI leaderboard for the real local run" width="820"></p>
 
@@ -110,7 +110,7 @@ For every answer, the harness extracts the citations and puts each one in a clas
 | Class | Meaning |
 |---|---|
 | `on_point` | Matches one of the item's required authorities |
-| `known_other` | A real Australian authority from the corpus, but not one on this item's list |
+| `known_other` | A real authority from the known corpus, but not one on this item's list |
 | `fabricated` | Looks like a citation but appears in neither list, so the checker could not confirm it.  Because the known corpus is small, this class also collects real but uncatalogued or abbreviated citations, so it is an upper bound on invention rather than a direct count |
 
 ```text
@@ -143,7 +143,7 @@ The mock judge is a seeded ensemble of three judges, so the whole pipeline runs 
 | Principle | What it means |
 |---|---|
 | **One shared prompt** | No model gets its own prompt tuning.  Every model receives the identical versioned template, and `runs/<id>/meta.json` records the version. |
-| **Append-only runs** | Nothing in a run directory is ever rewritten, so any tampering would show. |
+| **Append-only runs** | The record log is only ever appended to and each raw output is written once; only `meta.json` is finalised when the run ends, so any tampering would show. |
 | **Content-hashed items** | Each item carries its SHA-256 content hash, `data/gold/manifest.json` records every hash, and every output records the hash and prompt of the item it answered, so every score can be audited against the raw output it came from. |
 | **Contamination canaries** | Every item carries a global canary (`auslex:9f2c1a4e-7b3d`) and a per-item canary derived from its id.  A model that reproduces either one verbatim has probably seen the item in training.  See [data/canary.txt](data/canary.txt). |
 
@@ -156,7 +156,7 @@ pip install -e .
 auslex run --reps 3 --mock
 ```
 
-That one command runs the whole pipeline offline.  It sends the shared prompt to every configured slot through the seeded mock runner, scores citations and rubric items, computes the intervals and permutation tests, and renders a static leaderboard page.  No API keys are needed.  Without `--mock`, a slot with no API key, or a local endpoint that does not answer, is skipped rather than mocked.
+That one command runs the whole pipeline offline.  It sends the shared prompt to every configured slot through the seeded mock runner, scores citations and rubric items, computes the intervals and permutation tests, and renders a static leaderboard page.  No API keys are needed.  Without `--mock`, a slot with no API key, a local slot with no model named, or a local endpoint that does not answer, is skipped rather than mocked.
 
 ```bash
 pip install -e ".[dev,ui]"
@@ -223,7 +223,7 @@ pip install -e ".[ui]"
 auslex-ui      # serves http://localhost:8000
 ```
 
-The UI is a FastAPI server with a React and Vite client.  A built copy of the client ships in `src/auslex/publish/assets`, so Node.js is not needed to run it.  After changing `frontend/`, run `npm install` and `npm run build` there, and the server serves that build in place of the shipped copy.  Copy `frontend/dist` over `src/auslex/publish/assets` to update the shipped copy.  API keys are stored in `~/.auslex-ui/keys.json` with mode 0600 and are never transmitted externally.  There is no telemetry.
+The UI is a FastAPI server with a React and Vite client.  A built copy of the client ships in `src/auslex/publish/assets`, so Node.js is not needed to run it.  After changing `frontend/`, run `npm install` and `npm run build` there, and the server serves that build in place of the shipped copy.  Copy `frontend/dist` over `src/auslex/publish/assets` to update the shipped copy.  API keys are stored in `~/.auslex-ui/keys.json` with mode 0600 and are sent only to the provider each key belongs to.  There is no telemetry.
 
 <br>
 
@@ -284,6 +284,7 @@ The 16 provisional items cover all four exam formats and all eleven Priestley ar
 src/auslex/
   schema.py        Pydantic contract for the QuestionItem model
   config.py        Eight-slot roster, driven by config and environment
+  pricing.py       Confirmed model prices for cost reporting and estimates
   prompts.py       The single versioned prompt template
   canary.py        Contamination detection
   io.py            JSONL reading and writing, SHA-256 content hashing
@@ -292,11 +293,12 @@ src/auslex/
   score/           Citation extraction and classification, rubric judge
   stats/           Bootstrap intervals, permutation tests, report renderer
   ingest/          Validation, Australian-jurisdiction rule, dedup, hash-lock
-  publish/         Static leaderboard site, Hugging Face export, and the built web client
+  publish/         Static leaderboard site, GitHub Pages builder, Hugging Face export, built web client
 
 backend/           FastAPI server for the web UI
 frontend/          React and Vite dashboard
 data/              Question set, canaries, gold manifest
+docs/images/       README screenshots
 paper/             Methodology, contamination statement, analysis plan
 tests/             145 tests
 ```
