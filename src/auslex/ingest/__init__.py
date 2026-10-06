@@ -17,6 +17,7 @@ from .contamination import (
 )
 from .validate import (
     check_lock,
+    check_stamps,
     compute_manifest,
     load_manifest,
     lock_items,
@@ -38,6 +39,7 @@ __all__ = [
     "ngrams",
     "tokenize",
     "check_lock",
+    "check_stamps",
     "compute_manifest",
     "load_manifest",
     "lock_items",

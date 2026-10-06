@@ -167,3 +167,18 @@ def check_lock(
                 Issue("warning", "GONE_FROM_SET", f"locked item {iid!r} no longer in set", iid)
             )
     return issues
+
+
+def check_stamps(items: list[dict[str, Any]]) -> list[Issue]:
+    """Each item's stamped ``verification.hash`` must equal its content hash."""
+    issues: list[Issue] = []
+    for it in items:
+        stamp = (it.get("verification") or {}).get("hash")
+        if stamp and stamp != hash_item(it):
+            issues.append(Issue(
+                "error", "STALE_HASH",
+                "verification.hash no longer matches the item's content; "
+                "bump the version, add a changelog entry, and re-lock",
+                it.get("id"),
+            ))
+    return issues

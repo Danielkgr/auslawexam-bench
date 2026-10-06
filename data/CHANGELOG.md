@@ -68,6 +68,13 @@ Giumelli, Sidhu v Van Dyke (2014) 251 CLR 505, Haoucher, Quin, Re Minister for
 Immigration and Multicultural Affairs; Ex parte Lam (2003) 214 CLR 1, Victoria
 v Commonwealth (1996) 187 CLR 416, and Daniels v Anderson (1995) 37 NSWLR 438.
 
+### Added
+
+- A real hash lock.  `auslex validate --lock` stamps each item's SHA-256
+  content hash into `verification.hash` and writes `data/gold/manifest.json`,
+  and `auslex validate` now fails on any item that changed after the lock.
+  The 16 items are locked at this version.
+
 ### Removed
 
 - `tools/author_samples.py` and the `auslex author` command.  The script had
