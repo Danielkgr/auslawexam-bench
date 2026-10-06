@@ -10,9 +10,8 @@ interval.
 from __future__ import annotations
 
 import random
-from typing import Callable, Sequence
-
 from dataclasses import dataclass
+from typing import Any, Callable, Sequence
 
 
 @dataclass
@@ -51,18 +50,24 @@ def _percentile(xs: Sequence[float], q: float) -> float:
     return xs[lo] + (xs[hi] - xs[lo]) * frac
 
 
+def _mean(xs: Sequence[Any]) -> float:
+    return sum(xs) / len(xs)
+
+
 def bootstrap_ci(
-    values: Sequence[float],
+    values: Sequence[Any],
     *,
     n_boot: int = 10_000,
     ci: float = 0.95,
     seed: int = 0,
-    statistic: Callable[[Sequence[float]], float] = lambda xs: sum(xs) / len(xs),
+    statistic: Callable[[Sequence[Any]], float] = _mean,
 ) -> Interval:
-    """Bootstrap a statistic over ``values`` (one value per question).
+    """Bootstrap a statistic over ``values`` (one unit per question).
 
-    Resamples the *units* (questions) with replacement and recomputes the
-    statistic each draw. Returns the percentile CI and the point estimate.
+    Resamples the units (questions) with replacement and recomputes the same
+    statistic on each draw, so the point estimate and the interval always
+    describe the same quantity.  A unit can be a number or, for a pooled ratio,
+    a (numerator, denominator) pair.
     """
     vals = list(values)
     n = len(vals)
