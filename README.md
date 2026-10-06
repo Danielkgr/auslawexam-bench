@@ -231,7 +231,6 @@ backend/           FastAPI server for the web UI
 frontend/          React and Vite dashboard
 data/              Question set, canaries, gold manifest
 paper/             Methodology, contamination statement, analysis plan
-tools/             author_samples.py, which regenerates the provisional questions
 tests/             87 tests
 ```
 
