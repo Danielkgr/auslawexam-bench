@@ -1,0 +1,102 @@
+{
+  "generated_at": "2026-10-06T10:09:57.062554+00:00",
+  "global_canary": "auslex:9f2c1a4e-7b3d",
+  "items": {
+    "auslex-2026-0001": {
+      "hash": "4e7e1e1102ac2075bff605c9f51ccdb4e7d2946d2781b5f52439d5b1efbd0ec5",
+      "second_pass": false,
+      "verified_at": null,
+      "version": "0.1.0"
+    },
+    "auslex-2026-0002": {
+      "hash": "3e5c2e4f31cb9d43ded00447caff940d7c874a7649c30af9540e4c1ef0863b35",
+      "second_pass": false,
+      "verified_at": null,
+      "version": "0.1.0"
+    },
+    "auslex-2026-0003": {
+      "hash": "ea608b1b378f4d4ee5e869e9deaa2b0f8c227d1fa4d7664ecbec8b44185daeb0",
+      "second_pass": false,
+      "verified_at": null,
+      "version": "0.1.0"
+    },
+    "auslex-2026-0004": {
+      "hash": "dc829c1e538704424fe698ac7e1faa59ce2eb326f9d9f1893183e64215ad60f4",
+      "second_pass": false,
+      "verified_at": null,
+      "version": "0.2.0"
+    },
+    "auslex-2026-0005": {
+      "hash": "0a154059fc4de8b70e85a1be3a8f94a0487dd12284057921baf426d53dcadf6d",
+      "second_pass": false,
+      "verified_at": null,
+      "version": "0.2.0"
+    },
+    "auslex-2026-0006": {
+      "hash": "a22098abbffa4e0fc8b5d514fef9d1c8db59705525bc235d98015285c600c4e6",
+      "second_pass": false,
+      "verified_at": null,
+      "version": "0.2.0"
+    },
+    "auslex-2026-0007": {
+      "hash": "f0dd921da25440ed3636da6f3e4711cbeb8db498416a435acf5ddadb62f936c5",
+      "second_pass": false,
+      "verified_at": null,
+      "version": "0.2.0"
+    },
+    "auslex-2026-0008": {
+      "hash": "614c0535469ea019752d2456bf6202128ca80c15291ec36e138dbb0638ba3806",
+      "second_pass": false,
+      "verified_at": null,
+      "version": "0.2.0"
+    },
+    "auslex-2026-0009": {
+      "hash": "ae809d4a9be016e2bff2e9f3882987e634b6d02be511c019c0198709bfc993de",
+      "second_pass": false,
+      "verified_at": null,
+      "version": "0.1.0"
+    },
+    "auslex-2026-0010": {
+      "hash": "afd0c55f8f10c59898f574edb71434312ce89ec129fb29c7e8456f5b9eaa518c",
+      "second_pass": false,
+      "verified_at": null,
+      "version": "0.2.0"
+    },
+    "auslex-2026-0011": {
+      "hash": "af64f8757367cf980fea91321169fc7495c75b0397be664d909c09c9f557822b",
+      "second_pass": false,
+      "verified_at": null,
+      "version": "0.2.0"
+    },
+    "auslex-2026-0012": {
+      "hash": "8ef8abe91a459cacf7467f790802e2bcc4f6d1a43db7a474b4d085474723a515",
+      "second_pass": false,
+      "verified_at": null,
+      "version": "0.2.0"
+    },
+    "auslex-2026-0013": {
+      "hash": "afe9c4b3068e61dee8702e0204136a11632addb44ab880b8702cf9caf6fe21e3",
+      "second_pass": false,
+      "verified_at": null,
+      "version": "0.2.0"
+    },
+    "auslex-2026-0014": {
+      "hash": "6ccbcee8a6ddb0e9c63603b44a9749ee17748be422a16774c470c5cc01bfa22f",
+      "second_pass": false,
+      "verified_at": null,
+      "version": "0.2.0"
+    },
+    "auslex-2026-0015": {
+      "hash": "09d8287dea02e1ebc717fe74ac71429792aad10a5387a1afce1aad79bc180741",
+      "second_pass": false,
+      "verified_at": null,
+      "version": "0.2.0"
+    },
+    "auslex-2026-0016": {
+      "hash": "d426ca3ca43aeb366f51afc7239ff6ad4a77a07803afd1ea1eba3406a82442a2",
+      "second_pass": false,
+      "verified_at": null,
+      "version": "0.2.0"
+    }
+  }
+}

@@ -17,20 +17,28 @@ from __future__ import annotations
 
 import hashlib
 import random
-from typing import Optional
 
-from ..config import ModelSpec
-from .base import Runner, RawResponse
+from .base import RawResponse, Runner
 
 _FAKE_PARTIES = [
-    "Meridian", "Harbourlight", "Copperfield", "Redgum", "Saltwater",
-    "Ironbark", "Wattle", "Cairn", "Boulder", "Tarn", "Gulaga", "Orara",
+    "Meridian",
+    "Harbourlight",
+    "Copperfield",
+    "Redgum",
+    "Saltwater",
+    "Ironbark",
+    "Wattle",
+    "Cairn",
+    "Boulder",
+    "Tarn",
+    "Gulaga",
+    "Orara",
 ]
 _FAKE_RPT = ["ALR", "ALJR", "NSWR", "VLR", "SASR", "CrL R"]
 _FAKE_YEAR = [2019, 2021, 2022, 2023, 2024, 2025]
 
 
-def _seeded_rng(slot: str, item_id: str, seed: Optional[int]) -> random.Random:
+def _seeded_rng(slot: str, item_id: str, seed: int | None) -> random.Random:
     key = f"{slot}|{item_id}|{seed if seed is not None else 0}"
     h = int(hashlib.sha256(key.encode("utf-8")).hexdigest(), 16)
     return random.Random(h)
@@ -99,8 +107,8 @@ class MockRunner(Runner):
         self,
         messages: list[dict[str, str]],
         *,
-        seed: Optional[int] = None,
-        item: Optional[dict] = None,
+        seed: int | None = None,
+        item: dict | None = None,
     ) -> RawResponse:
         if item is None:
             # Degenerate: produce a short deterministic stub.

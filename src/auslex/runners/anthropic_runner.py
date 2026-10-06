@@ -1,87 +1,129 @@
-"""Anthropic Messages API runner (real, stdlib-only).
+"""Claude runner on the official Anthropic Python SDK.
 
-The Anthropic API takes the system prompt as a top-level ``system`` field (not
-in ``messages``) and requires ``max_tokens``. When no key is present the
-orchestrator substitutes the mock runner.
+The request carries no sampling parameters.  Current Claude models such as
+``claude-opus-5-5`` reject ``temperature``, ``top_p`` and ``top_k`` with HTTP
+400, so the Claude slot runs at the model's own sampling and the benchmark's
+repetitions measure the run-to-run variance instead.  Thinking cannot be turned
+off on Opus 5.5, so depth is set explicitly through ``output_config.effort``.
+
+The answer is streamed, because an essay answer plus adaptive thinking can need
+far more output tokens than a non-streaming request can safely wait for.
+
+The SDK is an optional dependency: ``pip install "auslex[claude]"``.
 """
 
 from __future__ import annotations
 
 import os
-from typing import Any, Optional
+import time
+from typing import Any
 
 from ..config import ModelSpec
-from .base import Runner, RawResponse, estimate_cost_usd, http_json
+from ..pricing import cost_usd
+from .base import RawResponse, Runner
 
-# Illustrative per-1M-token USD prices (Opus-class). Update before a live run.
-_IN_PER_MTOK = 15.0
-_OUT_PER_MTOK = 75.0
+# Exam answers are intelligence-sensitive work, so the default is "high".  A
+# slot can override it with ``extra={"effort": ...}``.
+DEFAULT_EFFORT = "high"
 
-DEFAULT_BASE = "https://api.anthropic.com/v1"
+
+def _require_sdk() -> Any:
+    try:
+        import anthropic
+    except ImportError as exc:  # pragma: no cover - exercised only without the extra
+        raise RuntimeError(
+            'the Claude slot needs the Anthropic SDK: pip install "auslex[claude]"'
+        ) from exc
+    return anthropic
 
 
 class AnthropicRunner(Runner):
-    def __init__(self, spec: ModelSpec, *, timeout: float = 600.0):
-        super().__init__(spec)
-        self._timeout = timeout
-        self._base = (spec.base_url or DEFAULT_BASE).rstrip("/")
-        self._url = self._base + "/messages"
-        self._key = os.environ.get(self.spec.api_key_env or "")
-        if not self._key:
-            raise RuntimeError(
-                f"no API key for {spec.name!r}: set {spec.api_key_env} to run "
-                "live (otherwise the mock runner is used)"
-            )
+    """Send one exam question to Claude and record exactly what came back."""
 
-    def _split(self, messages: list[dict[str, str]]):
-        system_parts = [m["content"] for m in messages if m.get("role") == "system"]
-        rest = [m for m in messages if m.get("role") != "system"]
-        return "\n\n".join(system_parts), rest
+    def __init__(self, spec: ModelSpec, *, client: Any = None, timeout: float = 900.0):
+        super().__init__(spec)
+        self._sdk = _require_sdk()
+        if client is None:
+            key = os.environ.get(spec.api_key_env or "")
+            if not key:
+                raise RuntimeError(
+                    f"no API key for {spec.name!r}: set {spec.api_key_env} to run live"
+                )
+            client = self._sdk.Anthropic(
+                api_key=key, timeout=timeout, base_url=spec.base_url or None
+            )
+        self._client = client
+
+    def _params(self, messages: list[dict[str, str]]) -> dict[str, Any]:
+        system = "\n\n".join(m["content"] for m in messages if m.get("role") == "system")
+        turns = [
+            {"role": m["role"], "content": m["content"]}
+            for m in messages
+            if m.get("role") != "system"
+        ]
+        # Deliberately absent: temperature, top_p and top_k, which current
+        # models reject.  Also deliberately absent: server-side fallbacks.  A
+        # fallback would answer a refused request with a different model, which
+        # would silently change the model under test.  A refusal is recorded as
+        # its own outcome instead.
+        return {
+            "model": self.spec.model,
+            "max_tokens": self.spec.max_tokens,
+            "system": system,
+            "messages": turns,
+            "output_config": {"effort": self.spec.extra.get("effort", DEFAULT_EFFORT)},
+        }
 
     def complete(
-        self, messages, *, seed: Optional[int] = None, item: Optional[dict] = None
-    ) -> RawResponse:  # noqa: ARG002
-        system, msgs = self._split(messages)
-        payload: dict[str, Any] = {
-            "model": self.spec.model,
-            "system": system,
-            "messages": msgs,
-            "temperature": self.spec.temperature,
-            "max_tokens": self.spec.max_tokens,
-        }
-        if seed is not None:
-            payload["random_seed"] = seed
-        headers = {
-            "x-api-key": self._key,
-            "anthropic-version": "2023-06-01",
-            "Content-Type": "application/json",
-        }
+        self,
+        messages: list[dict[str, str]],
+        *,
+        seed: int | None = None,  # Claude has no seed parameter; recorded only
+        item: dict[str, Any] | None = None,
+    ) -> RawResponse:
+        sdk = self._sdk
+        t0 = time.perf_counter()
         try:
-            body, latency_ms = self._timed(lambda: http_json(
-                self._url, payload, headers, timeout=self._timeout
-            ))
-        except RuntimeError as e:
-            return RawResponse(text="", error=str(e), model=self.spec.model)
+            with self._client.messages.stream(**self._params(messages)) as stream:
+                message = stream.get_final_message()
+        except sdk.RateLimitError as exc:
+            return self._failed(f"rate limited (HTTP 429): {exc.message}", t0)
+        except sdk.APIStatusError as exc:
+            return self._failed(f"HTTP {exc.status_code}: {exc.message}", t0)
+        except sdk.APIConnectionError as exc:
+            return self._failed(f"connection error: {exc}", t0)
+        latency_ms = int((time.perf_counter() - t0) * 1000)
 
-        try:
-            blocks = body.get("content", [])
-            text = "".join(b.get("text", "") for b in blocks if b.get("type") == "text")
-            usage = body.get("usage", {}) or {}
-            pt = int(usage.get("input_tokens", 0))
-            ct = int(usage.get("output_tokens", 0))
-            return RawResponse(
-                text=text,
-                finish_reason=body.get("stop_reason", "stop"),
-                prompt_tokens=pt,
-                completion_tokens=ct,
-                latency_ms=latency_ms,
-                cost_usd=round(estimate_cost_usd(pt, ct, _IN_PER_MTOK, _OUT_PER_MTOK), 6),
-                model=body.get("model", self.spec.model),
-                is_mock=False,
-                raw=body,
-            )
-        except (KeyError, IndexError, TypeError) as e:
-            return RawResponse(
-                text="", error=f"unexpected Anthropic response shape: {e}",
-                model=self.spec.model, raw=body,
-            )
+        text = "".join(b.text for b in message.content if b.type == "text")
+        pt = int(message.usage.input_tokens or 0)
+        ct = int(message.usage.output_tokens or 0)
+
+        error: str | None = None
+        if message.stop_reason == "refusal":
+            # stop_details is populated only for a refusal, so read it only here.
+            details = message.stop_details
+            category = getattr(details, "category", None) if details else None
+            error = f"refusal: the model declined to answer (category={category})"
+        elif message.stop_reason == "max_tokens":
+            error = f"truncated: the answer hit max_tokens={self.spec.max_tokens}"
+
+        return RawResponse(
+            text=text,
+            finish_reason=message.stop_reason or "",
+            prompt_tokens=pt,
+            completion_tokens=ct,
+            latency_ms=latency_ms,
+            cost_usd=cost_usd(self.spec.model, pt, ct),
+            model=message.model,
+            is_mock=False,
+            error=error,
+            raw=message.to_dict(),
+        )
+
+    def _failed(self, error: str, t0: float) -> RawResponse:
+        return RawResponse(
+            text="",
+            error=error,
+            model=self.spec.model,
+            latency_ms=int((time.perf_counter() - t0) * 1000),
+        )

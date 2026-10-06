@@ -1,13 +1,6 @@
 """Ingestion: the hard jurisdiction rule, contamination controls, and the
 schema/hash-lock gate that everything downstream trusts."""
 
-from .issues import Issue, Report
-from .filters import (
-    check_item,
-    find_non_au,
-    lint_gold_answer,
-    lint_question,
-)
 from .contamination import (
     check_against_corpus,
     dedup_items,
@@ -15,8 +8,16 @@ from .contamination import (
     ngrams,
     tokenize,
 )
+from .filters import (
+    check_item,
+    find_non_au,
+    lint_gold_answer,
+    lint_question,
+)
+from .issues import Issue, Report
 from .validate import (
     check_lock,
+    check_stamps,
     compute_manifest,
     load_manifest,
     lock_items,
@@ -38,6 +39,7 @@ __all__ = [
     "ngrams",
     "tokenize",
     "check_lock",
+    "check_stamps",
     "compute_manifest",
     "load_manifest",
     "lock_items",

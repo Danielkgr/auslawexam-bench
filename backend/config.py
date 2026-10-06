@@ -10,7 +10,8 @@ from typing import Any
 def get_config() -> dict[str, Any]:
     """Return backend configuration from environment."""
     return {
-        "out_root": os.environ.get("AUSLEX_OUT_ROOT", str(Path(__file__).resolve().parents[1] / "runs")),
+        # Holds runs/, scores/, stats/, and site/, as for `auslex run --out-root`.
+        "out_root": os.environ.get("AUSLEX_OUT_ROOT", str(Path(__file__).resolve().parents[1])),
         "port": int(os.environ.get("AUSLEX_UI_PORT", "8000")),
         "questions_path": os.environ.get(
             "AUSLEX_QUESTIONS",

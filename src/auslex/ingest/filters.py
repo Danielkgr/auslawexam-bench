@@ -62,10 +62,9 @@ NON_AU_PHRASES: list[re.Pattern[str]] = [
 ]
 
 # All compiled patterns with a label for reporting.
-_ALL_PATTERNS: list[tuple[str, re.Pattern[str]]] = (
-    [(f"report:{p.pattern}", p) for p in NON_AU_REPORT_SERIES]
-    + [(f"phrase:{p.pattern}", p) for p in NON_AU_PHRASES]
-)
+_ALL_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
+    (f"report:{p.pattern}", p) for p in NON_AU_REPORT_SERIES
+] + [(f"phrase:{p.pattern}", p) for p in NON_AU_PHRASES]
 
 
 def find_non_au(text: str) -> list[dict[str, Any]]:
@@ -85,7 +84,7 @@ def find_non_au(text: str) -> list[dict[str, Any]]:
 
 def _issues_for(text: str, level: str, item_id: str | None, code_prefix: str) -> list[Issue]:
     out: list[Issue] = []
-    seen: set[str] = set()
+    seen: set[tuple[str, str]] = set()
     for hit in find_non_au(text):
         key = (code_prefix, hit["match"])
         if key in seen:

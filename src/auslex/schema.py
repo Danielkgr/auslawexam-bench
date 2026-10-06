@@ -9,13 +9,11 @@ from __future__ import annotations
 
 import datetime as _dt
 import re
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-Jurisdiction = Literal[
-    "Cth", "VIC", "NSW", "QLD", "WA", "SA", "TAS", "NT", "ACT"
-]
+Jurisdiction = Literal["Cth", "VIC", "NSW", "QLD", "WA", "SA", "TAS", "NT", "ACT"]
 ItemKind = Literal["short_answer", "hypothetical", "essay", "mcq"]
 Tier = Literal["A", "B", "C", "D"]
 Difficulty = Literal["pass", "credit", "distinction", "high_distinction"]
@@ -56,11 +54,11 @@ class Authority(BaseModel):
 
     kind: AuthorityKind
     cite: str
-    point_in_time: Optional[str] = None
+    point_in_time: str | None = None
 
     @field_validator("point_in_time")
     @classmethod
-    def _check_date(cls, v: Optional[str]) -> Optional[str]:
+    def _check_date(cls, v: str | None) -> str | None:
         if v is not None and not _is_iso_date(v):
             raise ValueError(f"point_in_time must be YYYY-MM-DD, got {v!r}")
         return v
@@ -71,7 +69,7 @@ class RubricCriterion(BaseModel):
 
     criterion: str
     max: int = Field(gt=0)
-    weight: Optional[float] = Field(default=None, gt=0)
+    weight: float | None = Field(default=None, gt=0)
 
     @field_validator("criterion")
     @classmethod
@@ -84,21 +82,21 @@ class RubricCriterion(BaseModel):
 class Provenance(BaseModel):
     tier: Tier
     author: str
-    style_ref: Optional[str] = None
+    style_ref: str | None = None
     # Sample items shipped with the prototype are provisional (not yet
     # lawyer-verified). Flipping this to False is part of the verification gate.
     provisional: bool = True
 
 
 class Verification(BaseModel):
-    verifier: Optional[str] = None
-    verified_at: Optional[str] = None
+    verifier: str | None = None
+    verified_at: str | None = None
     second_pass: bool = False
-    hash: Optional[str] = None
+    hash: str | None = None
 
     @field_validator("verified_at")
     @classmethod
-    def _check_date(cls, v: Optional[str]) -> Optional[str]:
+    def _check_date(cls, v: str | None) -> str | None:
         if v is not None and not _is_iso_date(v):
             raise ValueError(f"verified_at must be YYYY-MM-DD, got {v!r}")
         return v
@@ -126,8 +124,8 @@ class QuestionItem(BaseModel):
     canary: str
 
     # MCQ-only fields.
-    mcq_options: Optional[list[str]] = None
-    mcq_correct: Optional[int] = None
+    mcq_options: list[str] | None = None
+    mcq_correct: int | None = None
 
     @field_validator("id")
     @classmethod
@@ -172,12 +170,10 @@ class QuestionItem(BaseModel):
         return v
 
     @model_validator(mode="after")
-    def _cross_checks(self) -> "QuestionItem":
+    def _cross_checks(self) -> QuestionItem:
         rubric_total = sum(c.max for c in self.rubric)
         if rubric_total != self.marks:
-            raise ValueError(
-                f"rubric maxes must sum to marks ({self.marks}); got {rubric_total}"
-            )
+            raise ValueError(f"rubric maxes must sum to marks ({self.marks}); got {rubric_total}")
         if self.type == "mcq":
             if not self.mcq_options or self.mcq_correct is None:
                 raise ValueError("mcq items require mcq_options and mcq_correct")

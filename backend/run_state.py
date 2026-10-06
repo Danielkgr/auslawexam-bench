@@ -7,24 +7,26 @@ records are written to the append-only log.
 from __future__ import annotations
 
 import asyncio
-import json
+import logging
 import os
 import threading
 import time
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any
+
+from fastapi import HTTPException
 
 from auslex.canary import GLOBAL_CANARY
-from auslex.config import ModelSpec, default_models, load_models, resolve_api_key, is_real
-from auslex.io import read_jsonl
-from auslex.run.orchestrator import RunConfig, RunReport, probe_local
+from auslex.run.orchestrator import RunConfig, RunReport
 from auslex.run.storage import RunStore
 from auslex.score.score import score_run
 from auslex.stats.report import build_report, write_report
 
 from .secrets import load_secrets
-from fastapi import HTTPException
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -37,8 +39,10 @@ class InFlightRun:
 class RunManager:
     """Singleton managing in-flight and completed runs."""
 
-    def __init__(self, out_root: Path = Path("runs")):
-        self.out_root = out_root
+    def __init__(self, output_root: Path = Path(".")):
+        # The output root holds runs/, scores/, stats/, and site/.
+        self.output_root = Path(output_root)
+        self.out_root = self.output_root / "runs"
         self._runs: dict[str, InFlightRun] = {}
         self._lock = threading.Lock()
         self._record_waiters: dict[str, list[asyncio.Future]] = {}
@@ -49,11 +53,22 @@ class RunManager:
         run_id = cfg.run_id or f"auslex-{int(time.time())}"
         cfg.run_id = run_id  # ensure cfg carries the id into the worker
         with self._lock:
-            self._runs[run_id] = InFlightRun(run_id=run_id, report=RunReport(
-                run_id=run_id, run_dir="", n_models=0, n_items=len(cfg.items),
-                n_reps=cfg.n_reps, n_completions=0, n_ok=0, n_error=0,
-                models=[], started_at="", finished_at="",
-            ))
+            self._runs[run_id] = InFlightRun(
+                run_id=run_id,
+                report=RunReport(
+                    run_id=run_id,
+                    run_dir="",
+                    n_models=0,
+                    n_items=len(cfg.items),
+                    n_reps=cfg.n_reps,
+                    n_completions=0,
+                    n_ok=0,
+                    n_error=0,
+                    models=[],
+                    started_at="",
+                    finished_at="",
+                ),
+            )
             self._record_count[run_id] = 0
         t = threading.Thread(target=self._run_worker, args=(cfg,), daemon=True)
         t.start()
@@ -62,20 +77,13 @@ class RunManager:
     def _run_worker(self, cfg: RunConfig) -> None:
         """Execute the run, then score and stats."""
         from auslex.run.orchestrator import run
-        from auslex.io import read_jsonl
-        from auslex.score.score import score_run
-        from auslex.stats.report import build_report, write_report
 
-        run_id = cfg.run_id  # must match the key in self._runs
-        debug_log = Path(f"/tmp/run_worker_{run_id}.log")
-
-        def log(msg):
-            with open(debug_log, "a") as f:
-                f.write(f"[{run_id}] {msg}\n")
+        run_id = cfg.run_id or ""  # start_run always sets it; must match self._runs
+        saved_env: dict[str, str] = {}
 
         try:
             # Load items (filter if requested).
-            log("start_load_items")
+            log.debug("run %s: loading items", run_id)
             items = list(cfg.items)
             if cfg.question_filter:
                 ids = {s.strip() for s in cfg.question_filter.split(",") if s.strip()}
@@ -91,7 +99,6 @@ class RunManager:
                 items = [it for it in items if it.get("difficulty") in diffs]
 
             # Override env vars for keys during the run.
-            saved_env: dict[str, str] = {}
             key_map = {
                 "openai": "OPENAI_API_KEY",
                 "anthropic": "ANTHROPIC_API_KEY",
@@ -103,11 +110,11 @@ class RunManager:
                     saved_env[env_var] = os.environ.get(env_var, "")
                     os.environ[env_var] = val
 
-            log("calling_run")
+            log.debug("run %s: calling the models", run_id)
             report = run(cfg)
-            log(f"run_done n_ok={report.n_ok}")
-        except Exception as exc:
-            log(f"run_exception: {exc}")
+            log.debug("run %s: done, n_ok=%d", run_id, report.n_ok)
+        except Exception:
+            log.exception("run %s failed", run_id)
             raise
         finally:
             for env_var, old in saved_env.items():
@@ -124,20 +131,19 @@ class RunManager:
             # Notify waiters.
             self._notify_waiters(run_id)
 
-            log("score_run")
-            scored_path = Path(report.run_dir) / "records.jsonl"
-            srep = score_run(report.run_dir, items)
-            log("score_done")
+            srep = score_run(report.run_dir, items, out_root=self.output_root / "scores")
+            log.debug("run %s: scored %d completions", run_id, srep.n_scored)
 
-            # Stats.
-            stats_dir = Path(self.out_root) / "scores" / report.run_id
-            stats_scored = stats_dir / "scored.jsonl"
+            # Stats, read from the scores the scorer just wrote.
             report_stats = build_report(
-                stats_scored, run_id=report.run_id,
-                n_boot=cfg.n_reps * 1000, n_perm=cfg.n_reps * 1000, seed=cfg.base_seed,
+                Path(srep.scores_dir) / "scored.jsonl",
+                run_id=report.run_id,
+                n_boot=cfg.n_reps * 1000,
+                n_perm=cfg.n_reps * 1000,
+                seed=cfg.base_seed,
             )
-            write_report(report_stats, self.out_root)
-            log("stats_done")
+            write_report(report_stats, self.output_root)
+            log.debug("run %s: statistics written", run_id)
 
             # Write contamination note to meta.
             store = RunStore(cfg.out_root, report.run_id)
@@ -154,16 +160,23 @@ class RunManager:
                 if r:
                     r.report = report
 
-        except Exception as e:
-            import traceback; traceback.print_exc()
+        except Exception:
+            log.exception("run %s: scoring failed", run_id)
             with self._lock:
                 if run_id in self._runs:
                     r = self._runs[run_id]
                     r.report = RunReport(
-                        run_id=run_id, run_dir="", n_models=len(cfg.models),
-                        n_items=len(cfg.items), n_reps=cfg.n_reps,
-                        n_completions=0, n_ok=0, n_error=0,
-                        models=[], started_at="", finished_at="",
+                        run_id=run_id,
+                        run_dir="",
+                        n_models=len(cfg.models),
+                        n_items=len(cfg.items),
+                        n_reps=cfg.n_reps,
+                        n_completions=0,
+                        n_ok=0,
+                        n_error=0,
+                        models=[],
+                        started_at="",
+                        finished_at="",
                     )
 
         self._notify_waiters(run_id)
@@ -181,20 +194,20 @@ class RunManager:
 
         Each event is a JSON line with the current record count.
         """
-        store = RunStore(self.out_root, run_id)
+        store = RunStore(self.out_root, run_id, create_dirs=False)
         last_count = 0
         while True:
             if self.stop_event_is_set(run_id):
-                yield f"data: {{\"type\": \"done\"}}\n\n"
+                yield 'data: {"type": "done"}\n\n'
                 return
             records = store.records()
             count = len(records)
             if count != last_count:
-                yield f"data: {{\"type\": \"progress\", \"count\": {count}, \"total\": {self._total_completions(run_id)}}}\n\n"
+                yield f'data: {{"type": "progress", "count": {count}, "total": {self._total_completions(run_id)}}}\n\n'
                 last_count = count
                 self._record_count[run_id] = count
             if self.is_done(run_id):
-                yield f"data: {{\"type\": \"done\"}}\n\n"
+                yield 'data: {"type": "done"}\n\n'
                 return
             await asyncio.sleep(0.5)
 
@@ -222,14 +235,16 @@ class RunManager:
             r = self._runs.get(run_id)
         if not r:
             # Check disk.
-            store = RunStore(self.out_root, run_id)
+            store = RunStore(self.out_root, run_id, create_dirs=False)
             if store.meta_path.exists():
                 meta = store.read_meta()
                 return {
                     "run_id": run_id,
                     "status": "done" if meta.get("finished_at") else "running",
                     "n_completions": meta.get("n_completions", 0),
-                    "n_total": meta.get("n_reps", 3) * len(meta.get("items", [])) * len(meta.get("models", [])),
+                    "n_total": meta.get("n_reps", 3)
+                    * len(meta.get("items", []))
+                    * len(meta.get("models", [])),
                     "n_ok": meta.get("n_ok", 0),
                     "n_error": meta.get("n_error", 0),
                     "models": meta.get("models", []),
@@ -253,7 +268,9 @@ class RunManager:
                     "n_total": rp.n_items * rp.n_reps,
                     "n_ok": m.n_ok,
                     "n_error": m.n_error,
-                    "status": "done" if (m.n_ok + m.n_error) >= rp.n_items * rp.n_reps else "running",
+                    "status": "done"
+                    if (m.n_ok + m.n_error) >= rp.n_items * rp.n_reps
+                    else "running",
                 }
                 for m in rp.models
             ],
@@ -267,7 +284,7 @@ class RunManager:
 # --------------------------------------------------------------------------- #
 
 
-def _get_stored_key(provider: str) -> Optional[str]:
+def _get_stored_key(provider: str) -> str | None:
     """Get a key from env or the secrets store."""
     env_var = {
         "openai": "OPENAI_API_KEY",
@@ -281,7 +298,7 @@ def _get_stored_key(provider: str) -> Optional[str]:
     return load_secrets().get(provider)
 
 
-def _apply_keys_to_env(cfg: RunConfig) -> dict[str, str]:
+def _apply_keys_to_env(cfg: object = None) -> dict[str, str]:
     """Temporarily set API keys from the secrets store into env."""
     saved: dict[str, str] = {}
     key_map = {

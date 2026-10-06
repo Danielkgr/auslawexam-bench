@@ -30,7 +30,7 @@ _CANARY_RE = re.compile(r"auslex:[0-9a-f]{6,40}(?:-[0-9a-f]{4,16})?")
 
 def make_canary(item_id: str) -> str:
     """Deterministic per-item canary derived from the item id."""
-    digest = hashlib.sha256(f"{PREFIX}{item_id}".encode("utf-8")).hexdigest()
+    digest = hashlib.sha256(f"{PREFIX}{item_id}".encode()).hexdigest()
     return f"{PREFIX}{digest[:12]}"
 
 

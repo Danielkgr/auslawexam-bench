@@ -11,7 +11,7 @@ from __future__ import annotations
 import html
 import json
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 _PAGE = """<!DOCTYPE html>
 <html lang="en">
@@ -66,7 +66,11 @@ def _leaderboard_table(report: dict[str, Any]) -> str:
         sc = m["mean_item_score_100"]
         fr = m["fabricated_rate"]
         rank = report["models"].index(m)
-        name = f'<span class="best">{_esc(m["model"])}</span>' if m["model"] == best else _esc(m["model"])
+        name = (
+            f'<span class="best">{_esc(m["model"])}</span>'
+            if m["model"] == best
+            else _esc(m["model"])
+        )
         mock = ' <span class="badge">mock</span>' if m.get("is_mock") else ""
         rows.append(
             f"<tr><td>{rank + 1}</td><td>{name}{mock}</td>"
@@ -100,8 +104,7 @@ def _pairwise_table(report: dict[str, Any]) -> str:
         "<h2>Pairwise significance</h2>"
         "<table><thead><tr><th>Model A</th><th>Model B</th>"
         "<th class='num'>Mean diff (A&minus;B)</th><th class='num'>p-value</th>"
-        "<th>Two-sided, &alpha;=.05</th></tr></thead><tbody>"
-        + "".join(rows) + "</tbody></table>"
+        "<th>Two-sided, &alpha;=.05</th></tr></thead><tbody>" + "".join(rows) + "</tbody></table>"
         "<p class='muted'>Paired permutation test over the shared question set.</p>"
     )
 
@@ -115,13 +118,13 @@ def _difficulty_table(report: dict[str, Any]) -> str:
                 diffs.append(d)
     if not diffs:
         return ""
-    head = "<tr><th>Model</th>" + "".join(f"<th class='num'>{_esc(d)}</th>" for d in diffs) + "</tr>"
+    head = (
+        "<tr><th>Model</th>" + "".join(f"<th class='num'>{_esc(d)}</th>" for d in diffs) + "</tr>"
+    )
     body = []
     for m in report["models"]:
         pd = m.get("per_difficulty", {})
-        cells = "".join(
-            f"<td class='num'>{pd[d] if d in pd else '&mdash;'}</td>" for d in diffs
-        )
+        cells = "".join(f"<td class='num'>{pd[d] if d in pd else '&mdash;'}</td>" for d in diffs)
         body.append(f"<tr><td>{_esc(m['model'])}</td>{cells}</tr>")
     return (
         "<h2>By difficulty</h2>"
@@ -129,29 +132,38 @@ def _difficulty_table(report: dict[str, Any]) -> str:
     )
 
 
-def build_leaderboard_html(
-    report: dict[str, Any], *, meta: Optional[dict[str, Any]] = None
-) -> str:
+def build_leaderboard_html(report: dict[str, Any], *, meta: dict[str, Any] | None = None) -> str:
     meta = meta or {}
     models = [m["model"] for m in report.get("models", [])]
-    mock_note = " (some slots ran as offline mocks &mdash; no API key configured)" \
-        if any(m.get("is_mock") for m in report.get("models", [])) else ""
+    mock_note = (
+        " (some slots ran as offline mocks &mdash; no API key configured)"
+        if any(m.get("is_mock") for m in report.get("models", []))
+        else ""
+    )
     return _PAGE.format(
         subtitle=f"A public, reproducible benchmark of Australian legal reasoning. "
-                 f"{len(models)} models &middot; {report.get('n_questions_total', 0)} "
-                 f"exam-style questions{mock_note}.",
+        f"{len(models)} models &middot; {report.get('n_questions_total', 0)} "
+        f"exam-style questions{mock_note}.",
         leaderboard=_leaderboard_table(report),
         pairwise=_pairwise_table(report),
         bydifficulty=_difficulty_table(report),
-        method=_esc(report.get("method", {}).get("ci", "")) + " "
-               + _esc(report.get("method", {}).get("comparison", "")),
-        contamination=_esc(meta.get("contamination_note",
-                                     "BIG-bench-style canary strings are embedded in each "
-                                     "item's gold answer to detect training-data "
-                                     "contamination of model outputs.")),
-        provenance=_esc(meta.get("provenance_note",
-                                 "Sample items are provisional and require lawyer "
-                                 "verification before publication.")),
+        method=_esc(report.get("method", {}).get("ci", ""))
+        + " "
+        + _esc(report.get("method", {}).get("comparison", "")),
+        contamination=_esc(
+            meta.get(
+                "contamination_note",
+                "BIG-bench-style canary strings are embedded in each "
+                "item's gold answer to detect training-data "
+                "contamination of model outputs.",
+            )
+        ),
+        provenance=_esc(
+            meta.get(
+                "provenance_note",
+                "Sample items are provisional and require lawyer verification before publication.",
+            )
+        ),
         run_id=_esc(report.get("run_id", "")),
         models=len(models),
         nq=report.get("n_questions_total", 0),
@@ -163,7 +175,7 @@ def publish_site(
     out_dir: str | Path,
     *,
     report: dict[str, Any],
-    meta: Optional[dict[str, Any]] = None,
+    meta: dict[str, Any] | None = None,
 ) -> str:
     """Write the static site into ``out_dir`` and return the index.html path."""
     out = Path(out_dir)

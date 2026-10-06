@@ -2,57 +2,45 @@
   "judge": "mock-ensemble",
   "models": [
     {
-      "avg_citations": 4.67,
-      "fabricated_rate": 0.9107,
+      "avg_citations": 5.94,
+      "fabricated_rate": 0.9065,
       "is_mock": false,
-      "mean_item_score_100": 68.86,
+      "mean_item_score_100": 70.35,
       "model": "local",
       "model_id": "ornith-agent-strix",
-      "n_completed": 48,
+      "n_completed": 36,
       "n_error": 0,
-      "n_items": 16,
-      "on_point_rate": 0.058,
+      "n_items": 12,
+      "on_point_rate": 0.0421,
       "per_difficulty": {
         "credit": {
-          "mean_item_score_100": 68.55,
-          "n": 21
+          "mean_item_score_100": 71.73,
+          "n": 18
         },
         "distinction": {
-          "mean_item_score_100": 62.53,
+          "mean_item_score_100": 66.26,
           "n": 6
         },
-        "high_distinction": {
-          "mean_item_score_100": 91.1,
-          "n": 3
-        },
         "pass": {
-          "mean_item_score_100": 67.61,
-          "n": 18
+          "mean_item_score_100": 70.33,
+          "n": 12
         }
       },
       "per_priestley": {
         "admin": {
-          "mean_item_score_100": 56.6,
-          "n": 6
-        },
-        "civil_procedure": {
-          "mean_item_score_100": 88.73,
+          "mean_item_score_100": 77.6,
           "n": 3
-        },
-        "constitutional": {
-          "mean_item_score_100": 85.18,
-          "n": 6
         },
         "contract": {
           "mean_item_score_100": 74.15,
           "n": 6
         },
         "corporations": {
-          "mean_item_score_100": 84.89,
+          "mean_item_score_100": 85.35,
           "n": 3
         },
         "crime": {
-          "mean_item_score_100": 39.34,
+          "mean_item_score_100": 54.27,
           "n": 6
         },
         "equity_trusts": {
@@ -60,11 +48,11 @@
           "n": 3
         },
         "ethics": {
-          "mean_item_score_100": 87.75,
+          "mean_item_score_100": 86.37,
           "n": 3
         },
         "evidence": {
-          "mean_item_score_100": 93.56,
+          "mean_item_score_100": 94.81,
           "n": 3
         },
         "property": {
@@ -72,12 +60,19 @@
           "n": 3
         },
         "torts": {
-          "mean_item_score_100": 54.58,
+          "mean_item_score_100": 58.08,
           "n": 6
         }
       }
     }
   ],
-  "n_scored": 48,
-  "run_id": "auslex-2026-09-14-ornith"
+  "n_scored": 36,
+  "n_stale": 12,
+  "run_id": "auslex-2026-09-14-ornith",
+  "stale_items": [
+    "auslex-2026-0007",
+    "auslex-2026-0008",
+    "auslex-2026-0010",
+    "auslex-2026-0015"
+  ]
 }

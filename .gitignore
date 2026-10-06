@@ -35,3 +35,6 @@ hf-export/
 # OS
 .DS_Store
 node_modules/
+
+# GitHub Pages build output
+_site/

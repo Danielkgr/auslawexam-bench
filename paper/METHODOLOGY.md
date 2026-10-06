@@ -9,7 +9,7 @@ and the rendered leaderboard are all published, so a third party can re-run the
 pipeline bit-for-bit and recompute every number.
 
 This document describes the prototype methodology at the current scale
-(16 provisional questions, 4 model slots, 3 reps). It is deliberately written
+(16 provisional questions, 8 model slots, 3 reps). It is deliberately written
 so the *method* survives the current small scale: the same pipeline will be
 run unchanged when the question set grows to the 100-200 target and becomes
 lawyer-verified.
@@ -23,47 +23,57 @@ lawyer-verified.
 2. **One shared prompt for all models.** No per-model prompt tuning, no
    per-model system prompts. Every model receives the identical, **versioned**
    prompt template. The prompt version is recorded in `runs/<id>/meta.json`.
-3. **Zero temperature, multiple reps.** Generation is `temperature=0` for
-   determinism; `n_reps` (default 3) repeated completions per
-   (model, question) capture residual non-determinism and give per-item
-   variance for the stats.
+3. **Temperature 0 where accepted, multiple reps.** Generation uses
+   `temperature=0` for every slot whose model accepts it.  Current Claude
+   models (`claude-opus-5-5`) and GPT-5-family reasoning models reject a
+   temperature setting, so those slots send none and run at the model
+   default.  `n_reps` (default 3) repeated completions per (model, question)
+   measure the run-to-run variance, which for those slots is the main source
+   of spread, and give per-item variance for the stats.
 4. **Append-only, content-hashed provenance.** Runs are never rewritten.
    Items are locked by content hash; outputs are addressed by content hash.
    This makes the benchmark tamper-evident.
-5. **Offline-reproducible by construction.** The three commercial slots run as
-   deterministic seeded mocks when no API key is present, so the full pipeline
-   (run → score → stats → leaderboard) is reproducible with zero external
-   services. Real commercial runs are a config change, not a code change.
+5. **Offline-reproducible by construction.** With `--mock`, the seven
+   commercial slots run as deterministic seeded mocks when no API key is
+   present, so the full pipeline (run, score, stats, leaderboard) is
+   reproducible with no external services. Real commercial runs are a key and
+   config change, not a code change.
 
 ## 3. The item schema (the contract)
 
 Each item is a validated Pydantic model (`src/auslex/schema.py`) with:
 
 - `id` (canonical, e.g. `auslex-2026-0001`), `version` (semver),
-- `type` ∈ {`hypothetical`, `short_answer`, `mcq`, `essay`},
-- `jurisdiction` (list; Australian codes - `Cth`, `NSW`, `VIC`, …),
-- `priestley_area` (the Priestley 11: `contract`, `tort`, `property`, `criminal`,
-  `equity_trusts`, `constitutional`, `corporate`, `administrative`, `family`,
-  `intellectual_property`, `environmental`),
-- `question_text`, `facts`, `instructions`,
-- `required_authorities` (list of typed AU authorities: case or statute),
-- `gold_answer` (may reference only Australian primary sources - see §6),
-- `rubric` (a list of `(aspect, marks)` that must sum to `marks`),
+- `type`, one of `hypothetical`, `short_answer`, `mcq`, `essay`,
+- `jurisdiction` (a list of Australian codes: `Cth`, `NSW`, `VIC`, `QLD`,
+  `WA`, `SA`, `TAS`, `NT`, `ACT`),
+- `priestley_area`, one of the Priestley 11 as the schema names them
+  (`contract`, `torts`, `crime`, `constitutional`, `admin`, `equity_trusts`,
+  `property`, `corporations`, `evidence`, `civil_procedure`, `ethics`) or the
+  extra `statutory` bucket,
+- `question_text`, and for multiple choice `mcq_options` and `mcq_correct`,
+- `required_authorities` (a list of typed authorities: `case`, `statute`,
+  `regulation`, or `other`),
+- `gold_answer` (may reference only Australian primary sources, see section 6),
+- `rubric` (a list of `{criterion, max}` whose maxima sum to `marks`),
 - `marks`, `difficulty`,
 - `canary` (per-item leak-detection string - §7),
 - `provenance` (tier, author, provisional flag) and `verification` (who/when,
   with a self-content-hash written at lock time).
 
 Validation (`auslex validate`) enforces the schema, the hard AU-jurisdiction
-rule, canary presence, and id/duplicate hygiene, and can hash-lock the gold
-set (`--lock`).
+rule, canary presence, and id and duplicate hygiene.  `auslex validate --lock`
+stamps each item's SHA-256 content hash into `verification.hash` and writes
+`data/gold/manifest.json`; every later `auslex validate` fails with
+`HASH_MISMATCH` if an item changed after the lock.
 
 ## 4. The model roster and the run protocol
 
-Four fixed slots (`src/auslex/config.py`): `gpt`, `claude`, `gemini`
-(commercial) and `local` (open-weight, the llama.cpp / Qwen3 endpoint). Each
-has an `is_mock` flag that is recorded on every completion and propagated to
-the leaderboard, where mock rows are explicitly labelled "synthetic".
+Eight slots (`src/auslex/config.py`): seven commercial slots, `gpt`,
+`claude`, `gemini`, `groq`, `deepseek`, `mistral`, and `qwen`, and one
+open-weight `local` slot served by any OpenAI-compatible endpoint. Each has an
+`is_mock` flag that is recorded on every completion and propagated to the
+leaderboard, where mock rows are explicitly labelled "synthetic".
 
 For each (model, question, rep):
 
@@ -97,8 +107,9 @@ answer and classifies each against a **known-authorities corpus**:
 - `known_other` - a real AU authority elsewhere in the corpus;
 - `fabricated` - in neither.
 
-The corpus is built by unioning every item's `required_authorities`
-(`build_known_corpus`), so at 16 items it is a small set of real authorities.
+The corpus is the union of every item's `required_authorities` and a seed
+list of 41 authorities, each verified by web search (`build_known_corpus`),
+48 entries in all, so it is still a small set of real authorities.
 `fabricated_rate = fabricated / total_citations` is the headline number.
 
 > **Limitation (restated, and central to interpretation).** Because the corpus
@@ -172,8 +183,8 @@ and the site from an existing run without touching the model APIs.
 - **Small known-authorities corpus** → fabricated rate is an upper bound.
 - **Mock judge** (seeded ensemble) rather than a real LLM judge → item scores
   are a stand-in for judge quality, not a calibrated rubric measurement.
-- **Mock commercial slots** when no key is set → three of four rows are
-  synthetic (and labelled as such).
+- **Mock commercial slots** when no key is set, so with `--mock` seven of
+  eight rows are synthetic and labelled as such.
 - **No cross-model judge** - the judge is per-item, not a comparative ranking.
 
 The plan to close each of these, and what the numbers will mean once they are

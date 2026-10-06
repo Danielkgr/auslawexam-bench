@@ -2,18 +2,18 @@
 
 from __future__ import annotations
 
+from conftest import make_item
+
 from auslex.score.citations import (
     assess_answer,
     build_known_corpus,
     extract_citations,
 )
-from conftest import make_item
 
 
 def test_extract_case_and_statute():
     text = (
-        "The rule is in Smith v Jones (2020) 270 ALR 1 and the "
-        "Civil Liability Act 2002 (Cth) s 5."
+        "The rule is in Smith v Jones (2020) 270 ALR 1 and the Civil Liability Act 2002 (Cth) s 5."
     )
     cites = extract_citations(text)
     kinds = {c.kind for c in cites}
@@ -77,3 +77,144 @@ def test_default_corpus_is_single_item():
     # Without passing a corpus, only this item's authorities are "known".
     rep = assess_answer(item, "See Smith v Jones (2020) 270 ALR 1.")
     assert rep.on_point >= 1
+
+
+# --- regression: the corpus must recognise its own authorities ------------- #
+
+from auslex.cli import ROOT  # noqa: E402
+from auslex.io import read_jsonl  # noqa: E402
+from auslex.score.citations import _SEED_AUTHORITIES  # noqa: E402
+
+_ITEMS = read_jsonl(ROOT / "data" / "questions" / "auslex.jsonl")
+_CORPUS = build_known_corpus(_ITEMS)
+
+
+def test_every_seed_authority_echoed_is_known_not_fabricated():
+    """A model that cites a seed authority verbatim is citing a real case.
+
+    Regression: the seed list used to enter the corpus un-normalised, so
+    "Craig v South Australia (1995) 184 CLR 163" was classed as fabricated.
+    """
+    for cite in _SEED_AUTHORITIES:
+        for item in _ITEMS:
+            rep = assess_answer(item, f"The rule is stated in {cite}.", _CORPUS)
+            assert rep.total >= 1, f"not extracted: {cite}"
+            assert rep.fabricated == 0, f"{cite} classed as fabricated for {item['id']}"
+
+
+def test_every_gold_authority_echoed_is_on_point_for_its_item():
+    for item in _ITEMS:
+        for auth in item["required_authorities"]:
+            rep = assess_answer(item, f"See {auth['cite']}.", _CORPUS)
+            assert rep.total >= 1, f"not extracted: {auth['cite']}"
+            assert rep.on_point == rep.total, f"{auth['cite']} not on point for {item['id']}"
+
+
+def test_matching_respects_token_boundaries():
+    item = make_item(
+        required_authorities=[
+            {"kind": "statute", "cite": "Corporations Act 2001 (Cth) s 181"},
+            {"kind": "case", "cite": "Waltons Stores (Interstate) Ltd v Maher (1988) 164 CLR 387"},
+        ]
+    )
+    corpus = build_known_corpus([item])
+    # s 18 is a different provision from s 181, and page 38 is not page 387.
+    rep = assess_answer(item, "See the Corporations Act 2001 (Cth) s 18.", corpus)
+    assert rep.fabricated == 1
+    rep = assess_answer(item, "See (1988) 164 CLR 38.", corpus)
+    assert rep.fabricated == 1
+    # A subsection of the required section is still the required section.
+    rep = assess_answer(item, "See the Corporations Act 2001 (Cth) s 181(1).", corpus)
+    assert rep.on_point == 1
+
+
+def test_lettered_sections_and_rules_are_extracted():
+    text = (
+        "A caveat takes effect under the Real Property Act 1900 (NSW) s 74H, and a pleading "
+        "may be struck out under the Uniform Civil Procedure Rules 2005 (NSW) r 14.28."
+    )
+    raws = [c.raw for c in extract_citations(text)]
+    assert any(r.endswith("s 74H") for r in raws), raws
+    assert any(r.endswith("r 14.28") for r in raws), raws
+
+
+# --- extraction of real-world citation forms -------------------------------- #
+
+
+def _waltons_item():
+    return make_item(
+        required_authorities=[
+            {"kind": "case", "cite": "Waltons Stores (Interstate) Ltd v Maher (1988) 164 CLR 387"},
+        ]
+    )
+
+
+def test_markdown_italic_case_names_are_paired_with_their_report():
+    raws = [
+        c.raw
+        for c in extract_citations(
+            "The leading case is *Waltons Stores (Interstate) Ltd v Maher* (1988) 164 CLR 387."
+        )
+    ]
+    assert raws == ["Waltons Stores (Interstate) Ltd v Maher (1988) 164 CLR 387"]
+
+
+def test_medium_neutral_and_volume_less_citations_are_extracted():
+    raws = [
+        c.raw
+        for c in extract_citations(
+            "See Love v Commonwealth [2020] HCA 3 and Donoghue v Stevenson [1932] AC 562."
+        )
+    ]
+    assert "Love v Commonwealth [2020] HCA 3" in raws
+    assert "Donoghue v Stevenson [1932] AC 562" in raws
+
+
+def test_slash_in_a_party_name_keeps_the_whole_name():
+    raws = [
+        c.raw
+        for c in extract_citations(
+            "In Plaintiff S157/2002 v Commonwealth (2003) 211 CLR 476 the Court held..."
+        )
+    ]
+    assert raws == ["Plaintiff S157/2002 v Commonwealth (2003) 211 CLR 476"]
+
+
+def test_abbreviated_party_name_on_the_right_report_is_on_point():
+    item = _waltons_item()
+    rep = assess_answer(
+        item, "Waltons Stores v Maher (1988) 164 CLR 387 applies.", build_known_corpus([item])
+    )
+    assert rep.on_point == 1 and rep.fabricated == 0
+
+
+def test_invented_parties_on_a_real_report_page_are_fabricated():
+    item = _waltons_item()
+    rep = assess_answer(
+        item, "Smith v Jones (1988) 164 CLR 387 applies.", build_known_corpus([item])
+    )
+    assert rep.fabricated == 1
+
+
+def test_bare_back_reference_counts_once():
+    item = _waltons_item()
+    text = (
+        "Waltons Stores (Interstate) Ltd v Maher (1988) 164 CLR 387 is the source. "
+        "As held in (1988) 164 CLR 387, reliance matters."
+    )
+    rep = assess_answer(item, text, build_known_corpus([item]))
+    assert rep.total == 1 and rep.on_point == 1
+
+
+def test_lowercase_joining_words_stay_in_the_party_name():
+    raws = [
+        c.raw
+        for c in extract_citations(
+            "Commercial Bank of Australia Ltd v Amadio (1983) 151 CLR 447 and the decision of "
+            "Minister for Aboriginal Affairs v Peko-Wallsend Ltd (1986) 162 CLR 24."
+        )
+    ]
+    assert raws == [
+        "Commercial Bank of Australia Ltd v Amadio (1983) 151 CLR 447",
+        "Minister for Aboriginal Affairs v Peko-Wallsend Ltd (1986) 162 CLR 24",
+    ]

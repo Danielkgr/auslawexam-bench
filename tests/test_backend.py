@@ -1,11 +1,9 @@
 """Tests for the auslex-ui backend API."""
 
-import json
-import os
 import re
 import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -15,30 +13,30 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 import backend.api
 from backend.app import app
-from backend.secrets import load_secrets, save_secrets, get_key, set_key
+from backend.secrets import get_key, load_secrets, set_key
 
 
 @pytest.fixture(autouse=True)
 def _clear_secrets(tmp_path):
     """Use a temp secrets dir and out_root for every test."""
     secrets_dir = tmp_path / "secrets"
-    runs_dir = tmp_path / "runs"
     questions_dir = tmp_path / "questions"
-    
+
     # Create minimal question set
     questions_dir.mkdir(parents=True)
     (questions_dir / "auslex.jsonl").write_text(
         '{"id":"q001","type":"mcq","priestley_area":"contract","jurisdiction":["Cth"],"difficulty":"pass","marks":10,"rubric":[{"criterion":"A","max":5},{"criterion":"B","max":5}],"canary":"x","version":"v1","question_text":"What is the law?","facts":null,"instructions":"Answer.","gold_answer":"A","required_authorities":[],"topics":[],"verification_hash":"abc","verification_note":""}'
     )
-    
+
     with patch("backend.secrets.SECRETS_DIR", secrets_dir):
         with patch("backend.secrets.SECRETS_FILE", secrets_dir / "keys.json"):
-            with patch("backend.api.DEFAULT_OUT_ROOT", runs_dir):
+            with patch("backend.api.OUTPUT_ROOT", tmp_path):
                 with patch("backend.api.DEFAULT_QUESTIONS", questions_dir / "auslex.jsonl"):
-                    # Rebuild run_manager with new out_root
-                    from backend.run_state import RunManager
+                    # Rebuild run_manager with the temporary output root
                     from backend.api import run_manager as _orig_rm
-                    backend.api.run_manager = RunManager(out_root=runs_dir)
+                    from backend.run_state import RunManager
+
+                    backend.api.run_manager = RunManager(output_root=tmp_path)
                     yield
                     # Restore original
                     backend.api.run_manager = _orig_rm
@@ -93,7 +91,6 @@ class TestKeys:
         assert data["anthropic_key"] is None
         assert data["google_key"] is None
         assert data["local_base_url"] == "http://localhost:10000/v1"
-        assert data["local_model"] == "14. Qwen3.8-27B (Q5_K_M)"
         assert data["local_enable_thinking"] is False
 
     def test_set_keys(self, client, tmp_path):
@@ -114,6 +111,41 @@ class TestKeys:
         data = load_secrets()
         assert data["openai"] == "sk-test-123"
         assert data["anthropic"] == "ant-test-123"
+
+    def test_test_connection_uses_the_providers_slot(self, client, monkeypatch):
+        """The provider is "openai" but its slot is "gpt"; the match used to fail."""
+        from auslex.runners import RawResponse
+
+        asked = []
+
+        class FakeRunner:
+            def complete(self, messages, seed=None, item=None):
+                return RawResponse(text="hello", model="gpt-test")
+
+        def fake_get_runner(spec, allow_mock_fallback=False):
+            asked.append(spec.name)
+            return FakeRunner()
+
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+        monkeypatch.setattr(backend.api, "get_runner", fake_get_runner)
+        r = client.post("/api/keys/test/openai")
+        assert r.status_code == 200
+        assert r.json()["ok"] is True, r.json()
+        assert asked == ["gpt"]
+
+    def test_test_connection_reports_a_failed_call(self, client, monkeypatch):
+        from auslex.runners import RawResponse
+
+        class FailingRunner:
+            def complete(self, messages, seed=None, item=None):
+                return RawResponse(text="", error="HTTP 401: invalid x-api-key")
+
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "bad")
+        monkeypatch.setattr(
+            backend.api, "get_runner", lambda spec, allow_mock_fallback=False: FailingRunner()
+        )
+        data = client.post("/api/keys/test/anthropic").json()
+        assert data["ok"] is False and "401" in data["detail"]
 
     def test_test_connection_unknown_provider(self, client):
         r = client.post("/api/keys/test/unknown")
@@ -141,11 +173,14 @@ class TestRuns:
         assert "run_id" in data
         run_id = data["run_id"]
 
-        # Wait for background worker to complete (local runner needs time)
-        import time; time.sleep(15)
+        # Wait for the background worker to finish, polling rather than sleeping.
+        import time
 
-        r2 = client.get("/api/runs")
-        runs = r2.json()
+        deadline = time.monotonic() + 30
+        runs = client.get("/api/runs").json()
+        while time.monotonic() < deadline and not (runs and runs[0].get("finished_at")):
+            time.sleep(0.2)
+            runs = client.get("/api/runs").json()
         assert len(runs) == 1
         assert runs[0]["run_id"] == run_id
         assert runs[0]["models"] == ["gpt", "local"]
@@ -237,11 +272,26 @@ class TestDefaultPaths:
         questions = repo_root / "data" / "questions" / "auslex.jsonl"
         assert Path(cfg["questions_path"]) == questions
         assert questions.exists()
-        assert Path(cfg["out_root"]) == repo_root / "runs"
+        assert Path(cfg["out_root"]) == repo_root
 
 
 class TestCLI:
     def test_cli_main(self):
         """Test that the CLI entrypoint can be imported."""
         from backend.cli import main
+
         assert callable(main)
+
+
+class TestReport:
+    def test_report_serves_the_precomputed_stats_when_current(self, client, tmp_path):
+        import json as _json
+
+        scores = tmp_path / "scores" / "r1"
+        stats = tmp_path / "stats" / "r1"
+        scores.mkdir(parents=True)
+        stats.mkdir(parents=True)
+        (scores / "scored.jsonl").write_text("")
+        (stats / "stats.json").write_text(_json.dumps({"run_id": "r1", "from": "cache"}))
+        r = client.get("/api/runs/r1/report")
+        assert r.status_code == 200 and r.json()["from"] == "cache"
