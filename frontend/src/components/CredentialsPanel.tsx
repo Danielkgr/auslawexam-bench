@@ -4,7 +4,7 @@ import { api } from '../api'
 export default function CredentialsPanel({ onRefresh }: { onRefresh: () => void }) {
   const [keys, setKeys] = useState({ openai: '', anthropic: '', google: '' })
   const [localUrl, setLocalUrl] = useState('http://localhost:10000/v1')
-  const [localModel, setLocalModel] = useState('14. Qwen3.8-27B (Q5_K_M)')
+  const [localModel, setLocalModel] = useState('')
   const [enableThinking, setEnableThinking] = useState(false)
   const [testing, setTesting] = useState<string | null>(null)
   const [testResult, setTestResult] = useState<Record<string, { ok: boolean; detail: string }>>({})

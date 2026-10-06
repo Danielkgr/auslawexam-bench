@@ -32,12 +32,20 @@ export default function Leaderboard({ report, onOpenAudit }: Props) {
                 <tr key={m.model} className="border-t border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/30">
                   <td className="px-4 py-3 text-gray-500 dark:text-slate-400 font-mono text-xs">{i + 1}</td>
                   <td className="px-4 py-3">
-                    <span className={`font-medium ${i === 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-900 dark:text-white'}`}>
+                    <button
+                      onClick={() => onOpenAudit(report.run_id, m.model, '')}
+                      title="Open this slot's answers in the item audit"
+                      className={`font-medium hover:underline ${i === 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-900 dark:text-white'}`}
+                    >
                       {m.model}
-                    </span>
-                    {m.is_mock && (
+                    </button>
+                    {m.is_mock ? (
                       <span className="ml-2 text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded">
-                        mock
+                        mock, synthetic
+                      </span>
+                    ) : (
+                      <span className="ml-2 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded">
+                        real model
                       </span>
                     )}
                   </td>
@@ -121,10 +129,10 @@ export default function Leaderboard({ report, onOpenAudit }: Props) {
                 <tr key={m.model} className="border-t border-gray-100 dark:border-slate-700">
                   <td className="px-4 py-2 text-gray-900 dark:text-white font-medium">{m.model}</td>
                   {['pass', 'credit', 'distinction', 'high_distinction'].map(d => {
-                    const v = m.per_difficulty[d] as { n: number; mean_item_score_100: number } | undefined
+                    const v = m.per_difficulty[d]
                     return (
                       <td key={d} className="px-4 py-2 text-right font-mono text-xs text-gray-600 dark:text-slate-300">
-                        {v ? `${v.mean_item_score_100.toFixed(1)} (n=${v.n})` : '—'}
+                        {typeof v === 'number' ? v.toFixed(1) : '-'}
                       </td>
                     )
                   })}
@@ -155,10 +163,10 @@ export default function Leaderboard({ report, onOpenAudit }: Props) {
                 <tr key={m.model} className="border-t border-gray-100 dark:border-slate-700">
                   <td className="px-4 py-2 text-gray-900 dark:text-white font-medium">{m.model}</td>
                   {Object.keys(m.per_priestley).map(area => {
-                    const v = m.per_priestley[area] as { n: number; mean_item_score_100: number } | undefined
+                    const v = m.per_priestley[area]
                     return (
                       <td key={area} className="px-4 py-2 text-right font-mono text-xs text-gray-600 dark:text-slate-300">
-                        {v ? `${v.mean_item_score_100.toFixed(1)} (n=${v.n})` : '—'}
+                        {typeof v === 'number' ? v.toFixed(1) : '-'}
                       </td>
                     )
                   })}

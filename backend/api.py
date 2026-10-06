@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import dataclasses
+import json
 import os
 import re
 from collections.abc import AsyncIterator
@@ -344,10 +345,15 @@ async def get_report(run_id: str) -> dict[str, Any]:
     scored_path = _scored_path(run_id)
     if not scored_path.exists():
         raise HTTPException(status_code=404, detail=f"no scored data for run {run_id}")
+    # The statistics take 10,000 resamples per slot, so serve the stats.json
+    # that `auslex stats` wrote when it is at least as new as the scores.
+    stats_json = OUTPUT_ROOT / "stats" / run_id / "stats.json"
+    if stats_json.exists() and stats_json.stat().st_mtime >= scored_path.stat().st_mtime:
+        cached: dict[str, Any] = json.loads(stats_json.read_text(encoding="utf-8"))
+        return cached
     from auslex.stats.report import build_report
 
-    report = build_report(scored_path, run_id=run_id)
-    return report
+    return build_report(scored_path, run_id=run_id)
 
 
 @router.get("/runs/{run_id}/item-results")

@@ -103,8 +103,9 @@ export interface LeaderboardModel {
   n_questions: number
   mean_item_score_100: { point: number; ci95: [number, number] }
   fabricated_rate: { point: number; ci95: [number, number] }
-  per_difficulty: Record<string, { n: number; mean_item_score_100: number }>
-  per_priestley: Record<string, { n: number; mean_item_score_100: number }>
+  // Mean item score (0 to 100) per difficulty level and per Priestley area.
+  per_difficulty: Record<string, number>
+  per_priestley: Record<string, number>
 }
 
 export interface PairwiseResult {
