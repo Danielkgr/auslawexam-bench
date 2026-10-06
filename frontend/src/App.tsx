@@ -127,7 +127,7 @@ export default function App() {
           </div>
           <nav className="flex gap-1 ml-auto">
             {([
-              ['configure', 'Configure &amp; Run'],
+              ['configure', 'Configure and run'],
               ['results', 'Results'],
               ['audit', 'Item Audit'],
               ['history', 'Runs'],
@@ -213,8 +213,10 @@ export default function App() {
         {activeTab === 'audit' && currentRunId && (
           <ItemAudit
             runId={currentRunId}
+            models={report?.models.map(m => m.model) ?? []}
             selectedItem={selectedItem}
             selectedModel={selectedModel}
+            onSelect={(model, item) => { setSelectedModel(model); setSelectedItem(item) }}
             onBack={() => setActiveTab('results')}
           />
         )}

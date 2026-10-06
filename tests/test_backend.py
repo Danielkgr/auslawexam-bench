@@ -281,3 +281,17 @@ class TestCLI:
         from backend.cli import main
 
         assert callable(main)
+
+
+class TestReport:
+    def test_report_serves_the_precomputed_stats_when_current(self, client, tmp_path):
+        import json as _json
+
+        scores = tmp_path / "scores" / "r1"
+        stats = tmp_path / "stats" / "r1"
+        scores.mkdir(parents=True)
+        stats.mkdir(parents=True)
+        (scores / "scored.jsonl").write_text("")
+        (stats / "stats.json").write_text(_json.dumps({"run_id": "r1", "from": "cache"}))
+        r = client.get("/api/runs/r1/report")
+        assert r.status_code == 200 and r.json()["from"] == "cache"
