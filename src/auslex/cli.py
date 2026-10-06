@@ -19,6 +19,7 @@ The canonical demo is::
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import sys
 from pathlib import Path
@@ -144,11 +145,11 @@ def cmd_import(args: argparse.Namespace) -> int:
     if not inp.exists():
         sys.exit(f"error: input file not found: {inp}")
 
-    fmt = args.format or (".csv" if inp.suffix.lower() == ".csv" else "jsonl")
+    fmt = args.format or ("csv" if inp.suffix.lower() == ".csv" else "jsonl")
     items: list[dict[str, Any]] = []
+    year = dt.datetime.now(dt.timezone.utc).strftime("%Y")
 
     if fmt == "csv":
-        import datetime as _dt  # noqa: PLC0415
         with open(inp, "r", encoding="utf-8") as fh:
             reader = _csv.DictReader(fh)
             for row in reader:
@@ -156,7 +157,7 @@ def cmd_import(args: argparse.Namespace) -> int:
                     item = _parse_csv_row(row)
                     # Generate id and canary for imported items.
                     if "id" not in item:
-                        item["id"] = f"auslex-{_dt.datetime.now(_dt.timezone.utc).strftime('%Y')}-{len(items)+1:04d}"
+                        item["id"] = f"auslex-{year}-{len(items)+1:04d}"
                     if "canary" not in item:
                         item["canary"] = make_canary(item["id"])
                     items.append(item)
@@ -166,7 +167,7 @@ def cmd_import(args: argparse.Namespace) -> int:
         # JSONL — each line is either a full item or a dict missing id/canary.
         for line in read_jsonl(inp):
             if "id" not in line or not line["id"].startswith("auslex-"):
-                line["id"] = f"auslex-{dt.datetime.now(dt.timezone.utc).strftime('%Y')}-{len(items)+1:04d}"
+                line["id"] = f"auslex-{year}-{len(items)+1:04d}"
             if "canary" not in line or not line["canary"].startswith("auslex:"):
                 line["canary"] = make_canary(line["id"])
             line.setdefault("version", "0.1.0")
@@ -203,8 +204,8 @@ def cmd_import(args: argparse.Namespace) -> int:
     return 0
 
 
-def _filter_models(names: Optional[str]) -> list:
-    specs = load_models()
+def _filter_models(names: Optional[str], config: Optional[str] = None) -> list:
+    specs = load_models(config)
     if not names:
         return specs
     wanted = [n.strip() for n in names.split(",") if n.strip()]
@@ -292,7 +293,7 @@ def cmd_probe_local(args: argparse.Namespace) -> int:
 def _run_pipeline(args: argparse.Namespace) -> str:
     """Execute run -> (score -> stats -> site). Returns the run_id."""
     items = _load_items(args.questions)
-    specs = _filter_models(getattr(args, "models", None))
+    specs = _filter_models(getattr(args, "models", None), getattr(args, "config", None))
 
     print("== auslex run =======================================================")
     print(f"questions : {args.questions}  ({len(items)} items)")
@@ -307,7 +308,7 @@ def _run_pipeline(args: argparse.Namespace) -> str:
         items=items,
         n_reps=args.reps,
         run_id=args.run_id,
-        out_root=Path(args.out_root),
+        out_root=Path(args.out_root) / "runs",
         base_seed=args.seed,
         allow_mock_fallback=getattr(args, "mock", False),
     )
@@ -325,7 +326,8 @@ def _run_pipeline(args: argparse.Namespace) -> str:
         return rep.run_id
 
     # Score.
-    srep = score_run(rep.run_dir, items)
+    out_root = Path(args.out_root)
+    srep = score_run(rep.run_dir, items, out_root=out_root / "scores")
     print(f"scored: {srep.n_scored} completions -> {srep.scores_dir}")
     print(f"  leaderboard (mean item score / fabricated-citation rate):")
     for m in srep.models:
@@ -341,19 +343,19 @@ def _run_pipeline(args: argparse.Namespace) -> str:
     scored = Path(srep.scores_dir) / "scored.jsonl"
     report = build_report(scored, run_id=rep.run_id,
                           n_boot=args.n_boot, n_perm=args.n_perm, seed=args.seed)
-    paths = write_report(report, ROOT)
+    paths = write_report(report, out_root)
     print(f"stats   : {paths['stats_json']}")
     print(f"report  : {paths['report_md']}")
     print()
 
     # Publish the leaderboard site.
-    store = RunStore(Path(args.out_root), rep.run_id)
+    store = RunStore(out_root / "runs", rep.run_id)
     meta = store.read_meta()
     meta["contamination_note"] = (
         f"Every item embeds the global canary {GLOBAL_CANARY} plus a per-item "
         "canary derived from its id; reproducing either verbatim flags "
         "training-data contamination.")
-    site_dir = ROOT / "site" / rep.run_id
+    site_dir = out_root / "site" / rep.run_id
     index = publish_site(site_dir, report=report, meta=meta)
     print(f"site    : {index}")
     print()
@@ -363,14 +365,15 @@ def _run_pipeline(args: argparse.Namespace) -> str:
 
 
 def cmd_run(args: argparse.Namespace) -> int:
-    return _run_pipeline(args)
+    _run_pipeline(args)
+    return 0
 
 
-def _resolve_run_dir(run_dir: str) -> Path:
+def _resolve_run_dir(run_dir: str, out_root: Optional[str] = None) -> Path:
     p = Path(run_dir)
     if not p.exists():
-        # Allow passing just the run id under the default out root.
-        alt = ROOT / "runs" / run_dir
+        # Allow passing just the run id under the output root.
+        alt = Path(out_root or ROOT) / "runs" / run_dir
         if alt.exists():
             p = alt
         else:
@@ -378,10 +381,17 @@ def _resolve_run_dir(run_dir: str) -> Path:
     return p
 
 
+def _output_root(args: argparse.Namespace, run_dir: Path) -> Path:
+    """The folder holding runs/, scores/, stats/, and site/ for this run."""
+    if getattr(args, "out_root", None):
+        return Path(args.out_root)
+    return run_dir.resolve().parent.parent
+
+
 def cmd_score(args: argparse.Namespace) -> int:
-    run_dir = _resolve_run_dir(args.run_dir)
+    run_dir = _resolve_run_dir(args.run_dir, args.out_root)
     items = _load_items(args.questions)
-    srep = score_run(run_dir, items)
+    srep = score_run(run_dir, items, out_root=_output_root(args, run_dir) / "scores")
     print(f"scored: {srep.n_scored} completions -> {srep.scores_dir}")
     if srep.n_stale:
         print(f"  left out {srep.n_stale} completions whose item text has changed since "
@@ -394,14 +404,15 @@ def cmd_score(args: argparse.Namespace) -> int:
 
 
 def cmd_stats(args: argparse.Namespace) -> int:
-    run_dir = _resolve_run_dir(args.run_dir)
+    run_dir = _resolve_run_dir(args.run_dir, args.out_root)
     run_id = run_dir.name
-    scored = ROOT / "scores" / run_id / "scored.jsonl"
+    out_root = _output_root(args, run_dir)
+    scored = out_root / "scores" / run_id / "scored.jsonl"
     if not scored.exists():
         sys.exit(f"error: no scored.jsonl at {scored}; run `auslex score {args.run_dir}` first.")
     report = build_report(scored, run_id=run_id,
                           n_boot=args.n_boot, n_perm=args.n_perm, seed=args.seed)
-    paths = write_report(report, ROOT)
+    paths = write_report(report, out_root)
     print(f"stats : {paths['stats_json']}")
     print(f"report: {paths['report_md']}")
     print()
@@ -410,9 +421,10 @@ def cmd_stats(args: argparse.Namespace) -> int:
 
 
 def cmd_site(args: argparse.Namespace) -> int:
-    run_dir = _resolve_run_dir(args.run_dir)
+    run_dir = _resolve_run_dir(args.run_dir, args.out_root)
     run_id = run_dir.name
-    scored = ROOT / "scores" / run_id / "scored.jsonl"
+    out_root = _output_root(args, run_dir)
+    scored = out_root / "scores" / run_id / "scored.jsonl"
     if not scored.exists():
         sys.exit(f"error: no scored.jsonl at {scored}; run `auslex score {args.run_dir}` first.")
     report = build_report(scored, run_id=run_id, seed=args.seed)
@@ -422,7 +434,7 @@ def cmd_site(args: argparse.Namespace) -> int:
         f"Every item embeds the global canary {GLOBAL_CANARY} plus a per-item "
         "canary derived from its id; reproducing either verbatim flags "
         "training-data contamination.")
-    index = publish_site(ROOT / "site" / run_id, report=report, meta=meta)
+    index = publish_site(out_root / "site" / run_id, report=report, meta=meta)
     print(f"site: {index}")
     return 0
 
@@ -469,7 +481,12 @@ def _build_parser() -> argparse.ArgumentParser:
                         help="comma-separated subset, e.g. 'local,gpt'")
         sp.add_argument("--reps", type=int, default=3)
         sp.add_argument("--seed", type=int, default=0)
-        sp.add_argument("--out-root", default=str(ROOT / "runs"))
+        sp.add_argument("--out-root", default=str(ROOT),
+                        help="folder that receives runs/, scores/, stats/, and site/ "
+                             "(default: the repository)")
+        sp.add_argument("--config", default=None,
+                        help="JSON file of per-slot overrides, e.g. "
+                             '{"models": {"gpt": {"model": "..."}}}')
         sp.add_argument("--run-id", default=None)
         sp.add_argument("--n-boot", type=int, default=10_000)
         sp.add_argument("--n-perm", type=int, default=10_000)
@@ -485,11 +502,17 @@ def _build_parser() -> argparse.ArgumentParser:
 
     sp = sub.add_parser("score", help="re-score an existing run directory")
     sp.add_argument("run_dir")
+    sp.add_argument("--out-root", default=None,
+                    help="folder holding runs/, scores/, stats/, and site/ "
+                         "(default: two levels above the run directory)")
     sp.add_argument("--questions", default=str(_default_questions()))
     sp.set_defaults(func=cmd_score)
 
     sp = sub.add_parser("stats", help="rebuild the statistics report for a run")
     sp.add_argument("run_dir")
+    sp.add_argument("--out-root", default=None,
+                    help="folder holding runs/, scores/, stats/, and site/ "
+                         "(default: two levels above the run directory)")
     sp.add_argument("--n-boot", type=int, default=10_000)
     sp.add_argument("--n-perm", type=int, default=10_000)
     sp.add_argument("--seed", type=int, default=0)
@@ -497,6 +520,9 @@ def _build_parser() -> argparse.ArgumentParser:
 
     sp = sub.add_parser("site", help="publish the leaderboard site for a run")
     sp.add_argument("run_dir")
+    sp.add_argument("--out-root", default=None,
+                    help="folder holding runs/, scores/, stats/, and site/ "
+                         "(default: two levels above the run directory)")
     sp.add_argument("--seed", type=int, default=0)
     sp.set_defaults(func=cmd_site)
 

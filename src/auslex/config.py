@@ -1,15 +1,17 @@
 """Config-driven model registry.
 
-The four benchmark models are plain data here, so swapping in a new release (or
-a different open-weight model) is a one-line change to this table — no code
+The eight benchmark slots are plain data here, so swapping in a new release or
+a different open-weight model is a one-line change to this table, with no code
 touching the runners.
 
-Resolution order for each field: default < config-file < environment.
+Resolution order for each field: default, then the config file, then the
+environment.  Pass a config file with ``auslex run --config path.json``.
 
 Environment variables:
-    OPENAI_API_KEY / ANTHROPIC_API_KEY / GOOGLE_API_KEY  — commercial slots
+    OPENAI_API_KEY, ANTHROPIC_API_KEY, GOOGLE_API_KEY, GROQ_API_KEY,
+    DEEPSEEK_API_KEY, MISTRAL_API_KEY, DASHSCOPE_API_KEY: commercial slots
     AUSLEX_LOCAL_BASE_URL   (default http://localhost:10000/v1)
-    AUSLEX_LOCAL_MODEL      (default: the loaded open-weight model)
+    AUSLEX_LOCAL_MODEL      the model name the local server exposes
 """
 
 from __future__ import annotations
@@ -187,37 +189,44 @@ def _apply_overrides(specs: list[ModelSpec], cfg: dict[str, Any]) -> list[ModelS
         if name not in by_name or not isinstance(overrides, dict):
             continue
         base = by_name[name]
-        allowed = {f for f in dataclasses.fields(ModelSpec) if f != "extra"}
-        kwargs = {k: v for k, v in overrides.items() if k in allowed}
+        # Compare field names, not Field objects, or every override is dropped.
+        allowed = {f.name for f in dataclasses.fields(ModelSpec)} - {"name"}
+        unknown = sorted(set(overrides) - allowed)
+        if unknown:
+            raise ValueError(f"unknown setting(s) {unknown} for slot {name!r}")
+        kwargs = dict(overrides)
+        if isinstance(kwargs.get("extra"), dict):
+            kwargs["extra"] = {**base.extra, **kwargs["extra"]}
         by_name[name] = dataclasses.replace(base, **kwargs)
     return list(by_name.values())
 
 
 def load_models(cfg_path: Optional[str | Path] = None) -> list[ModelSpec]:
-    """Build the model roster from defaults + optional config file + env."""
+    """Build the roster: defaults, then the optional config file, then env."""
     specs = default_models()
-
-    # Env overrides for the local slot (base_url / model).
-    local = next((s for s in specs if s.vendor == "local"), None)
-    if local is not None:
-        env_url = os.environ.get("AUSLEX_LOCAL_BASE_URL", DEFAULT_LOCAL_BASE_URL)
-        env_model = os.environ.get("AUSLEX_LOCAL_MODEL", DEFAULT_LOCAL_MODEL)
-        specs = [
-            dataclasses.replace(s, base_url=env_url, model=env_model)
-            if s.name == local.name
-            else s
-            for s in specs
-        ]
 
     if cfg_path:
         p = Path(cfg_path)
-        if p.exists():
-            import json
+        if not p.exists():
+            raise FileNotFoundError(f"config file not found: {p}")
+        import json
 
-            with open(p, "r", encoding="utf-8") as fh:
-                cfg = json.load(fh)
-            specs = _apply_overrides(specs, cfg)
+        with open(p, "r", encoding="utf-8") as fh:
+            specs = _apply_overrides(specs, json.load(fh))
 
+    # The environment wins over the config file, but only when it is set.
+    env_url = os.environ.get("AUSLEX_LOCAL_BASE_URL")
+    env_model = os.environ.get("AUSLEX_LOCAL_MODEL")
+    specs = [
+        dataclasses.replace(
+            s,
+            base_url=env_url or s.base_url,
+            model=env_model or s.model,
+        )
+        if s.vendor == "local"
+        else s
+        for s in specs
+    ]
     return specs
 
 
