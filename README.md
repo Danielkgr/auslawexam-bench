@@ -75,6 +75,19 @@ The mock runner seeds on the run seed, the slot, and the item id, so anyone can 
 
 ## How it works
 
+```mermaid
+flowchart LR
+    Q["Question set<br/>16 hash-locked items"] --> P["One shared prompt<br/>template v1.0.0"]
+    P --> R["Runners<br/>8 slots, live or mock"]
+    R --> T["Append-only transcript<br/>runs/run-id"]
+    T --> C["Citation extraction<br/>and classification"]
+    K["Known corpus<br/>48 verified authorities"] --> C
+    T --> J["Rubric judge<br/>seeded mock ensemble"]
+    C --> S["Statistics<br/>bootstrap intervals,<br/>permutation tests"]
+    J --> S
+    S --> W["Static leaderboard<br/>site/run-id"]
+```
+
 ### The headline metric
 
 For every answer, the harness extracts the citations and puts each one in a class.
