@@ -33,7 +33,8 @@ _CASE_TAIL = re.compile(
     r"[\(\[]\s*(\d{4})\s*[\)\]]\s*"
     r"(?:\d{1,4}\s+[A-Z]{2,7}(?:\s+\d+)?|[A-Z]{2,7}\s+\d+)"
 )
-_PARTY = r"[A-Z][\w'&.\-]*(?:\s*\([^)]*\))?"
+# A party word starts with a capital and may hold "/", as in "Plaintiff S157/2002".
+_PARTY = r"[A-Z][\w'&.\-/]*(?:\s*\([^)]*\))?"
 _SIDE = _PARTY + r"(?:\s+" + _PARTY + r")*"
 _CASE_HEAD = re.compile(r"(" + _SIDE + r"\s+v\.?\s+" + _SIDE + r")\s*$")
 
@@ -113,18 +114,50 @@ class CitationReport:
         }
 
 
+# Markdown emphasis around a case name ("*Waltons v Maher* (1988) ...") would
+# otherwise stop the party name being paired with its report.
+_EMPHASIS = re.compile(r"\*{1,3}|(?<![A-Za-z0-9])_{1,3}|_{1,3}(?![A-Za-z0-9])")
+
+
+# Capitalised words that open a sentence or a citation signal, not a party name.
+_LEAD = {
+    "see", "in", "cf", "compare", "following", "applying", "per", "also", "and",
+    "but", "under", "as", "from", "by", "since", "contrast", "citing", "unlike",
+    "accordingly", "therefore", "thus", "here", "there", "after", "before",
+}
+
+
+def _strip_lead(name: str) -> str:
+    words = name.split()
+    while len(words) > 1 and words[0].lower().rstrip(",") in _LEAD:
+        words.pop(0)
+    return " ".join(words)
+
+
 def extract_citations(text: str) -> list[Citation]:
+    text = _EMPHASIS.sub("", text)
     out: list[Citation] = []
     seen: set[tuple[str, str]] = set()
+    cases: list[Citation] = []
     for m in _CASE_TAIL.finditer(text):
         head = _CASE_HEAD.search(text[: m.start()])
-        raw = ((head.group(1) + " ") if head else "") + m.group(0)
+        name = _strip_lead(head.group(1)) if head else ""
+        raw = ((name + " ") if name else "") + m.group(0)
         raw = re.sub(r"\s+", " ", raw).strip()
         key = ("case", _norm(raw))
         if key in seen:
             continue
         seen.add(key)
-        out.append(Citation("case", raw, _norm(raw)))
+        cases.append(Citation("case", raw, _norm(raw)))
+    # A bare report such as "(1988) 164 CLR 387" that repeats a fuller citation
+    # in the same answer is a back-reference, not a second authority.
+    named_tails = {_case_parts(c.normalized)[0] for c in cases
+                   if _case_parts(c.normalized) and _case_parts(c.normalized)[1]}
+    for c in cases:
+        parts = _case_parts(c.normalized)
+        if parts and not parts[1] and parts[0] in named_tails:
+            continue
+        out.append(c)
     for m in _STAT_ANCHOR.finditer(text):
         name = _statute_name(text[: m.start()])
         raw = ((name + " ") if name else "") + m.group(0)
@@ -137,9 +170,36 @@ def extract_citations(text: str) -> list[Citation]:
     return out
 
 
+# Year, volume, report series, and first page at the end of a normalised case
+# citation: "1988 164 clr 387", "1932 ac 562", or "2021 hca 19".
+_TAIL_NORM = re.compile(r"(?:^|\s)(\d{4})\s(?:(\d{1,4})\s)?([a-z]{2,7})\s(\d+)$")
+# Words that say nothing about which case is meant.
+_GENERIC = {
+    "v", "the", "r", "queen", "king", "re", "ex", "parte", "pty", "ltd", "limited",
+    "co", "inc", "and", "of", "no", "for", "in", "a", "an",
+}
+
+
+def _case_parts(norm: str) -> Optional[tuple[tuple[str, ...], set[str]]]:
+    """Split a normalised case citation into its report tail and party words."""
+    m = _TAIL_NORM.search(norm)
+    if not m:
+        return None
+    tail = (m.group(1), m.group(2) or "", m.group(3), m.group(4))
+    return tail, {t for t in norm[: m.start()].split() if t not in _GENERIC}
+
+
 def _matches(cite_norm: str, authority_norm: str) -> bool:
     if cite_norm == authority_norm:
         return True
+    cite, auth = _case_parts(cite_norm), _case_parts(authority_norm)
+    if cite and auth:
+        # Two case citations: the report must be the same, and either side may
+        # be a bare report or an abbreviated name, but different party names on
+        # the same report page are a misattributed citation, not a match.
+        if cite[0] != auth[0]:
+            return False
+        return not cite[1] or not auth[1] or bool(cite[1] & auth[1])
     # One contains the other (pinpoints / abbreviations), requiring the shorter
     # side to be substantial so we don't match on a lone party surname.
     # Containment is checked on whole tokens, so "s 18" never matches "s 181"

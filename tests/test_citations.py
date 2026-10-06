@@ -136,3 +136,52 @@ def test_lettered_sections_and_rules_are_extracted():
     raws = [c.raw for c in extract_citations(text)]
     assert any(r.endswith("s 74H") for r in raws), raws
     assert any(r.endswith("r 14.28") for r in raws), raws
+
+
+# --- extraction of real-world citation forms -------------------------------- #
+
+def _waltons_item():
+    return make_item(required_authorities=[
+        {"kind": "case", "cite": "Waltons Stores (Interstate) Ltd v Maher (1988) 164 CLR 387"},
+    ])
+
+
+def test_markdown_italic_case_names_are_paired_with_their_report():
+    raws = [c.raw for c in extract_citations(
+        "The leading case is *Waltons Stores (Interstate) Ltd v Maher* (1988) 164 CLR 387.")]
+    assert raws == ["Waltons Stores (Interstate) Ltd v Maher (1988) 164 CLR 387"]
+
+
+def test_medium_neutral_and_volume_less_citations_are_extracted():
+    raws = [c.raw for c in extract_citations(
+        "See Love v Commonwealth [2020] HCA 3 and Donoghue v Stevenson [1932] AC 562.")]
+    assert "Love v Commonwealth [2020] HCA 3" in raws
+    assert "Donoghue v Stevenson [1932] AC 562" in raws
+
+
+def test_slash_in_a_party_name_keeps_the_whole_name():
+    raws = [c.raw for c in extract_citations(
+        "In Plaintiff S157/2002 v Commonwealth (2003) 211 CLR 476 the Court held...")]
+    assert raws == ["Plaintiff S157/2002 v Commonwealth (2003) 211 CLR 476"]
+
+
+def test_abbreviated_party_name_on_the_right_report_is_on_point():
+    item = _waltons_item()
+    rep = assess_answer(item, "Waltons Stores v Maher (1988) 164 CLR 387 applies.",
+                        build_known_corpus([item]))
+    assert rep.on_point == 1 and rep.fabricated == 0
+
+
+def test_invented_parties_on_a_real_report_page_are_fabricated():
+    item = _waltons_item()
+    rep = assess_answer(item, "Smith v Jones (1988) 164 CLR 387 applies.",
+                        build_known_corpus([item]))
+    assert rep.fabricated == 1
+
+
+def test_bare_back_reference_counts_once():
+    item = _waltons_item()
+    text = ("Waltons Stores (Interstate) Ltd v Maher (1988) 164 CLR 387 is the source. "
+            "As held in (1988) 164 CLR 387, reliance matters.")
+    rep = assess_answer(item, text, build_known_corpus([item]))
+    assert rep.total == 1 and rep.on_point == 1
