@@ -75,3 +75,17 @@ def test_full_mock_pipeline(tmp_path):
     paths = write_report(report, tmp_path)
     assert Path(paths["stats_json"]).exists()
     assert Path(paths["report_md"]).exists()
+
+
+def test_scoring_leaves_out_completions_for_changed_items(tmp_path):
+    """A completion answered the prompt it was given; if the item text later
+    changes, it must not be marked against the new answer key."""
+    items = sample_items()
+    cfg = RunConfig(models=[_mock_spec("alpha", 0.86, 0.08)], items=items, n_reps=2,
+                    run_id="stale-run", out_root=tmp_path, base_seed=0)
+    rep = run(cfg)
+    edited = [dict(items[0], question_text="A different question."), items[1]]
+    srep = score_run(Path(rep.run_dir), edited, out_root=tmp_path)
+    assert srep.n_stale == 2
+    assert srep.stale_items == [items[0]["id"]]
+    assert srep.n_scored == 2

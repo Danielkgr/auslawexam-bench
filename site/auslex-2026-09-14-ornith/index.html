@@ -25,15 +25,15 @@
 </head>
 <body>
 <h1>AusLawExam-Bench &middot; Leaderboard</h1>
-<p class="muted">A public, reproducible benchmark of Australian legal reasoning. 1 models &middot; 16 exam-style questions.</p>
-<h2>Item score (0&ndash;100) &amp; fabricated-citation rate</h2><table><thead><tr><th>#</th><th>Model</th><th class='num'>Mean score (95% CI)</th><th class='num'>Fabricated rate (95% CI)</th><th class='num'>Q</th></tr></thead><tbody><tr><td>1</td><td><span class="best">local</span></td><td class='num'>68.9 [57.8, 79.0]</td><td class='num fab'>0.911 [0.878, 0.961]</td><td class='num'>16</td></tr></tbody></table><p class='muted'>Lower fabricated-citation rate is better; the headline metric for a legal benchmark is the tendency to invent authority.</p>
+<p class="muted">A public, reproducible benchmark of Australian legal reasoning. 1 models &middot; 12 exam-style questions.</p>
+<h2>Item score (0&ndash;100) &amp; fabricated-citation rate</h2><table><thead><tr><th>#</th><th>Model</th><th class='num'>Mean score (95% CI)</th><th class='num'>Fabricated rate (95% CI)</th><th class='num'>Q</th></tr></thead><tbody><tr><td>1</td><td><span class="best">local</span></td><td class='num'>70.3 [59.4, 80.5]</td><td class='num fab'>0.922 [0.872, 0.974]</td><td class='num'>12</td></tr></tbody></table><p class='muted'>Lower fabricated-citation rate is better; the headline metric for a legal benchmark is the tendency to invent authority.</p>
 
-<h2>By difficulty</h2><table><thead><tr><th>Model</th><th class='num'>credit</th><th class='num'>distinction</th><th class='num'>high_distinction</th><th class='num'>pass</th></tr></thead><tbody><tr><td>local</td><td class='num'>68.55</td><td class='num'>62.53</td><td class='num'>91.1</td><td class='num'>67.61</td></tr></tbody></table>
+<h2>By difficulty</h2><table><thead><tr><th>Model</th><th class='num'>credit</th><th class='num'>distinction</th><th class='num'>pass</th></tr></thead><tbody><tr><td>local</td><td class='num'>71.73</td><td class='num'>66.26</td><td class='num'>70.33</td></tr></tbody></table>
 <footer>
   <p><strong>Method.</strong> percentile bootstrap, n_boot=10000, question-level, seeded paired permutation (sign-flip), n_perm=10000, two-sided, seeded</p>
   <p><strong>Contamination control.</strong> Every item embeds the global canary auslex:9f2c1a4e-7b3d plus a per-item canary derived from its id; reproducing either verbatim flags training-data contamination.</p>
   <p><strong>Provenance.</strong> Sample items are provisional and require lawyer verification before publication.</p>
-  <p class="muted">Run <code>auslex-2026-09-14-ornith</code> &middot; 1 models &middot; 16 questions &middot; 2026-09-14T05:26:13.972406+00:00</p>
+  <p class="muted">Run <code>auslex-2026-09-14-ornith</code> &middot; 1 models &middot; 12 questions &middot; 2026-09-14T05:26:13.972406+00:00</p>
 </footer>
 </body>
 </html>

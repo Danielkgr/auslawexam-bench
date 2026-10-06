@@ -1,12 +1,12 @@
-# AusLawExam-Bench: Run Report
+# AusLawExam-Bench — Run Report
 
-Run `auslex-2026-09-14-ornith` · 1 models · 16 questions.
+Run `auslex-2026-09-14-ornith` · 1 models · 12 questions.
 
-## Leaderboard (item score, 0-100, 95% CI)
+## Leaderboard (item score, 0–100, 95% CI)
 
 | Model | Mean score (95% CI) | Fabricated-citation rate (95% CI) | Questions |
 |---|---|---|---|
-| local | 68.9 [57.8, 79.0] | 0.911 [0.878, 0.961] | 16 |
+| local | 70.3 [59.4, 80.5] | 0.922 [0.872, 0.974] | 12 |
 
 ## Pairwise significance (paired permutation, two-sided)
 
