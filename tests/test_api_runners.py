@@ -7,11 +7,11 @@ here, so no test touches the network or needs a key.
 from __future__ import annotations
 
 import pytest
+from conftest import make_item
 
 from auslex.config import ModelSpec, default_models
 from auslex.prompts import messages as build_messages
 from auslex.runners import google_runner, local_runner, openai_runner
-from conftest import make_item
 
 MSGS = build_messages(make_item())
 
@@ -40,13 +40,18 @@ def _chat(content="An answer.", finish="stop", refusal=None):
     return {
         "model": "gpt-5.6",
         "system_fingerprint": "fp_test",
-        "choices": [{"finish_reason": finish,
-                     "message": {"role": "assistant", "content": content, "refusal": refusal}}],
+        "choices": [
+            {
+                "finish_reason": finish,
+                "message": {"role": "assistant", "content": content, "refusal": refusal},
+            }
+        ],
         "usage": {"prompt_tokens": 280, "completion_tokens": 40},
     }
 
 
 # --- OpenAI-compatible ------------------------------------------------------ #
+
 
 @pytest.fixture
 def openai_key(monkeypatch):
@@ -98,6 +103,7 @@ def test_openai_http_error_is_recorded(monkeypatch, openai_key):
 
 # --- Gemini ----------------------------------------------------------------- #
 
+
 @pytest.fixture
 def google_key(monkeypatch):
     monkeypatch.setenv("GOOGLE_API_KEY", "g-test")
@@ -148,6 +154,7 @@ def test_gemini_http_error_is_recorded(monkeypatch, google_key):
 
 
 # --- Local OpenAI-compatible endpoint --------------------------------------- #
+
 
 def test_local_success_sends_template_kwargs(monkeypatch):
     fake = _FakeHTTP(_chat())

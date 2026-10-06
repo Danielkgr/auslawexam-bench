@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import argparse
 import os
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+
+import auslex.publish
 
 from .api import router
 from .config import get_config
@@ -32,10 +35,6 @@ app.include_router(router)
 
 # Mount the web client.  A local build in frontend/dist wins, and otherwise the
 # built copy that ships with the package is served, so Node.js is not needed.
-from pathlib import Path
-
-import auslex.publish
-
 FRONTEND_DIST = Path(__file__).resolve().parents[1] / "frontend" / "dist"
 PACKAGED_CLIENT = Path(auslex.publish.__file__).resolve().parent / "assets"
 CLIENT_DIR = FRONTEND_DIST if FRONTEND_DIST.exists() else PACKAGED_CLIENT
@@ -48,7 +47,9 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="Run the AusLawExam-Bench UI server.")
     parser.add_argument("--host", default="127.0.0.1", help="Bind address (default: 127.0.0.1)")
-    parser.add_argument("--port", type=int, default=None, help="Port (default: AUSLEX_UI_PORT or 8000)")
+    parser.add_argument(
+        "--port", type=int, default=None, help="Port (default: AUSLEX_UI_PORT or 8000)"
+    )
     args = parser.parse_args()
 
     cfg = get_config()

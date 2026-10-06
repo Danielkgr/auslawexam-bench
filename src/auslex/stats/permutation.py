@@ -14,8 +14,8 @@ reproducible.
 from __future__ import annotations
 
 import random
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Mapping, Sequence
 
 
 @dataclass
@@ -23,8 +23,8 @@ class PermutationResult:
     a: str
     b: str
     n_pairs: int
-    mean_diff: float          # mean(a - b) over shared questions
-    p_value: float            # two-sided
+    mean_diff: float  # mean(a - b) over shared questions
+    p_value: float  # two-sided
     n_perm: int
     seed: int
 
@@ -45,9 +45,7 @@ class PermutationResult:
         }
 
 
-def _paired_diffs(
-    a: Mapping[str, float], b: Mapping[str, float]
-) -> list[float]:
+def _paired_diffs(a: Mapping[str, float], b: Mapping[str, float]) -> list[float]:
     common = [k for k in a if k in b]
     common.sort()  # deterministic ordering
     return [a[k] - b[k] for k in common]
@@ -85,8 +83,13 @@ def paired_permutation(
     # finite-sample estimate; avoids p == 0.
     p_value = (n_extreme + 1) / (n_perm + 1)
     return PermutationResult(
-        a=a_name, b=b_name, n_pairs=n, mean_diff=t_obs,
-        p_value=p_value, n_perm=n_perm, seed=seed,
+        a=a_name,
+        b=b_name,
+        n_pairs=n,
+        mean_diff=t_obs,
+        p_value=p_value,
+        n_perm=n_perm,
+        seed=seed,
     )
 
 
@@ -125,7 +128,7 @@ def paired_permutation_ratio(
     n_extreme = 0
     for _ in range(n_perm):
         xa, xb = [], []
-        for u, v in zip(pa, pb):
+        for u, v in zip(pa, pb, strict=True):
             if rng.random() < 0.5:
                 u, v = v, u
             xa.append(u)
@@ -134,6 +137,11 @@ def paired_permutation_ratio(
             n_extreme += 1
     p_value = (n_extreme + 1) / (n_perm + 1)
     return PermutationResult(
-        a=a_name, b=b_name, n_pairs=n, mean_diff=t_obs,
-        p_value=p_value, n_perm=n_perm, seed=seed,
+        a=a_name,
+        b=b_name,
+        n_pairs=n,
+        mean_diff=t_obs,
+        p_value=p_value,
+        n_perm=n_perm,
+        seed=seed,
     )

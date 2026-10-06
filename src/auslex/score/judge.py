@@ -19,11 +19,30 @@ import hashlib
 import random
 import re
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 _STOP = {
-    "the", "a", "an", "of", "to", "in", "on", "and", "or", "that", "this",
-    "must", "be", "is", "are", "it", "as", "for", "by", "with", "whether",
+    "the",
+    "a",
+    "an",
+    "of",
+    "to",
+    "in",
+    "on",
+    "and",
+    "or",
+    "that",
+    "this",
+    "must",
+    "be",
+    "is",
+    "are",
+    "it",
+    "as",
+    "for",
+    "by",
+    "with",
+    "whether",
 }
 
 
@@ -66,9 +85,17 @@ def _coverage(item: dict[str, Any], answer: str) -> dict[str, float]:
         issue_cov = 0.4
 
     # 3. structure: conclusion language present.
-    conclusion = any(w in ans_low for w in
-                     ("in conclusion", "conclude", "therefore", "accordingly",
-                      "the better view", "on balance"))
+    conclusion = any(
+        w in ans_low
+        for w in (
+            "in conclusion",
+            "conclude",
+            "therefore",
+            "accordingly",
+            "the better view",
+            "on balance",
+        )
+    )
     # 4. length signal (diminishing).
     length = min(1.0, len(answer) / 1400.0)
 
@@ -118,12 +145,16 @@ class JudgeResult:
 
 
 def _judge_once(
-    item: dict[str, Any], answer: str, cfg: JudgeConfig, j: int, q: float,
-    seed: Optional[int] = None,
+    item: dict[str, Any],
+    answer: str,
+    cfg: JudgeConfig,
+    j: int,
+    q: float,
+    seed: int | None = None,
 ) -> dict[str, float]:
     """One judge's per-criterion scores, in a randomised criterion order."""
     rubric = item.get("rubric", [])
-    seed_key = f"{cfg.name}|{j}|{item.get('id','?')}|{cfg.base_seed}"
+    seed_key = f"{cfg.name}|{j}|{item.get('id', '?')}|{cfg.base_seed}"
     if seed is not None:
         seed_key += f"|repseed:{seed}"
     rng = _seeded(seed_key)
@@ -143,18 +174,18 @@ def _judge_once(
 def judge_answer(
     item: dict[str, Any],
     answer: str,
-    cfg: Optional[JudgeConfig] = None,
-    seed: Optional[int] = None,
+    cfg: JudgeConfig | None = None,
+    seed: int | None = None,
 ) -> JudgeResult:
     """Score one answer against the item's rubric with a judge ensemble."""
     cfg = cfg or JudgeConfig()
     q = _quality_score(item, answer)
-    per_judge = [
-        _judge_once(item, answer, cfg, j, q, seed=seed) for j in range(cfg.n_judges)
-    ]
+    per_judge = [_judge_once(item, answer, cfg, j, q, seed=seed) for j in range(cfg.n_judges)]
     # Average per criterion across judges.
     per_criterion: dict[str, float] = {}
-    for crit in [r.get("criterion", f"criterion_{i}") for i, r in enumerate(item.get("rubric", []))]:
+    for crit in [
+        r.get("criterion", f"criterion_{i}") for i, r in enumerate(item.get("rubric", []))
+    ]:
         vals = [pj.get(crit, 0.0) for pj in per_judge]
         per_criterion[crit] = sum(vals) / len(vals) if vals else 0.0
     max_total = sum(int(r.get("max", 0)) for r in item.get("rubric", []))

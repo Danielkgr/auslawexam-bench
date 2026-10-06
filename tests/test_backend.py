@@ -1,11 +1,9 @@
 """Tests for the auslex-ui backend API."""
 
-import json
-import os
 import re
 import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -15,29 +13,29 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 import backend.api
 from backend.app import app
-from backend.secrets import load_secrets, save_secrets, get_key, set_key
+from backend.secrets import get_key, load_secrets, set_key
 
 
 @pytest.fixture(autouse=True)
 def _clear_secrets(tmp_path):
     """Use a temp secrets dir and out_root for every test."""
     secrets_dir = tmp_path / "secrets"
-    runs_dir = tmp_path / "runs"
     questions_dir = tmp_path / "questions"
-    
+
     # Create minimal question set
     questions_dir.mkdir(parents=True)
     (questions_dir / "auslex.jsonl").write_text(
         '{"id":"q001","type":"mcq","priestley_area":"contract","jurisdiction":["Cth"],"difficulty":"pass","marks":10,"rubric":[{"criterion":"A","max":5},{"criterion":"B","max":5}],"canary":"x","version":"v1","question_text":"What is the law?","facts":null,"instructions":"Answer.","gold_answer":"A","required_authorities":[],"topics":[],"verification_hash":"abc","verification_note":""}'
     )
-    
+
     with patch("backend.secrets.SECRETS_DIR", secrets_dir):
         with patch("backend.secrets.SECRETS_FILE", secrets_dir / "keys.json"):
             with patch("backend.api.OUTPUT_ROOT", tmp_path):
                 with patch("backend.api.DEFAULT_QUESTIONS", questions_dir / "auslex.jsonl"):
                     # Rebuild run_manager with the temporary output root
-                    from backend.run_state import RunManager
                     from backend.api import run_manager as _orig_rm
+                    from backend.run_state import RunManager
+
                     backend.api.run_manager = RunManager(output_root=tmp_path)
                     yield
                     # Restore original
@@ -143,7 +141,9 @@ class TestKeys:
                 return RawResponse(text="", error="HTTP 401: invalid x-api-key")
 
         monkeypatch.setenv("ANTHROPIC_API_KEY", "bad")
-        monkeypatch.setattr(backend.api, "get_runner", lambda spec, allow_mock_fallback=False: FailingRunner())
+        monkeypatch.setattr(
+            backend.api, "get_runner", lambda spec, allow_mock_fallback=False: FailingRunner()
+        )
         data = client.post("/api/keys/test/anthropic").json()
         assert data["ok"] is False and "401" in data["detail"]
 
@@ -173,11 +173,14 @@ class TestRuns:
         assert "run_id" in data
         run_id = data["run_id"]
 
-        # Wait for background worker to complete (local runner needs time)
-        import time; time.sleep(15)
+        # Wait for the background worker to finish, polling rather than sleeping.
+        import time
 
-        r2 = client.get("/api/runs")
-        runs = r2.json()
+        deadline = time.monotonic() + 30
+        runs = client.get("/api/runs").json()
+        while time.monotonic() < deadline and not (runs and runs[0].get("finished_at")):
+            time.sleep(0.2)
+            runs = client.get("/api/runs").json()
         assert len(runs) == 1
         assert runs[0]["run_id"] == run_id
         assert runs[0]["models"] == ["gpt", "local"]
@@ -276,4 +279,5 @@ class TestCLI:
     def test_cli_main(self):
         """Test that the CLI entrypoint can be imported."""
         from backend.cli import main
+
         assert callable(main)

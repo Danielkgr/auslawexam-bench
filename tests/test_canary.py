@@ -5,8 +5,8 @@ from __future__ import annotations
 import re
 
 from auslex.canary import (
-    GLOBAL_CANARY,
     _CANARY_RE,
+    GLOBAL_CANARY,
     find_canaries,
     has_canary,
     make_canary,

@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import pytest
+from conftest import make_item, make_mcq
 
 from auslex.schema import validate_item
-from conftest import make_item, make_mcq
 
 
 def test_valid_item_passes():

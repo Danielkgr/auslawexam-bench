@@ -17,8 +17,9 @@ verdict — anything flagged is sent back to a human, not auto-rejected.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Any, Iterable, Optional
+from typing import Any
 
 from .issues import Issue
 
@@ -58,7 +59,7 @@ def check_against_corpus(
     corpus_texts: Iterable[str],
     n: int = 8,
     threshold: float = 0.30,
-    item_id: Optional[str] = None,
+    item_id: str | None = None,
 ) -> list[Issue]:
     """Flag ``text`` if it overlaps any corpus document beyond ``threshold``."""
     issues: list[Issue] = []

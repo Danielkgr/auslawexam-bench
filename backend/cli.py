@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import sys
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -17,9 +16,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     import os
+
     os.environ.setdefault("AUSLEX_UI_PORT", str(args.port))
 
     import uvicorn
+
     uvicorn.run(
         "backend.app:app",
         host=args.host,

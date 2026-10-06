@@ -14,11 +14,11 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from .. import prompts as P
 from ..run.storage import RunStore
-from .citations import assess_answer, build_known_corpus, CitationReport
+from .citations import CitationReport, assess_answer, build_known_corpus
 from .judge import JudgeConfig, judge_answer
 
 
@@ -54,10 +54,14 @@ class ScoreReport:
     stale_items: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
-        return {"run_id": self.run_id, "scores_dir": self.scores_dir,
-                "n_scored": self.n_scored, "n_stale": self.n_stale,
-                "stale_items": self.stale_items,
-                "models": [m.to_dict() for m in self.models]}
+        return {
+            "run_id": self.run_id,
+            "scores_dir": self.scores_dir,
+            "n_scored": self.n_scored,
+            "n_stale": self.n_stale,
+            "stale_items": self.stale_items,
+            "models": [m.to_dict() for m in self.models],
+        }
 
 
 def _mean(xs: list[float]) -> float:
@@ -68,8 +72,8 @@ def score_run(
     run_dir: str | Path,
     items: list[dict[str, Any]],
     *,
-    corpus: Optional[set[str]] = None,
-    judge_cfg: Optional[JudgeConfig] = None,
+    corpus: set[str] | None = None,
+    judge_cfg: JudgeConfig | None = None,
     out_root: str | Path | None = None,
 ) -> ScoreReport:
     run_dir = Path(run_dir)
@@ -132,9 +136,13 @@ def score_run(
                     "model_id": rec.get("model_id"),
                     "is_mock": rec.get("is_mock", False),
                     "scores": [],
-                    "fab_total": 0, "op_total": 0, "total_cites": 0,  # POOLED numerators + denom
-                    "items": set(), "n_err": 0,
-                    "per_diff": {}, "per_pri": {},
+                    "fab_total": 0,
+                    "op_total": 0,
+                    "total_cites": 0,  # POOLED numerators + denom
+                    "items": set(),
+                    "n_err": 0,
+                    "per_diff": {},
+                    "per_pri": {},
                 },
             )
             m["scores"].append(row["item_score_100"])
@@ -156,26 +164,28 @@ def score_run(
     models: list[ModelScore] = []
     for name, m in by_model.items():
         total_cites = m["total_cites"] or 1  # guard div-by-zero
-        models.append(ModelScore(
-            model=name,
-            model_id=m["model_id"] or name,
-            is_mock=m["is_mock"],
-            n_items=len(m["items"]),
-            n_completed=len(m["scores"]),
-            n_error=err_counts.get(name, 0),
-            mean_item_score_100=round(_mean(m["scores"]), 2),
-            fabricated_rate=round(m["fab_total"] / total_cites, 4),
-            on_point_rate=round(m["op_total"] / total_cites, 4),
-            avg_citations=round(total_cites / len(m["scores"]) if m["scores"] else 0.0, 2),
-            per_difficulty={
-                k: {"n": len(v), "mean_item_score_100": round(_mean(v), 2)}
-                for k, v in sorted(m["per_diff"].items())
-            },
-            per_priestley={
-                k: {"n": len(v), "mean_item_score_100": round(_mean(v), 2)}
-                for k, v in sorted(m["per_pri"].items())
-            },
-        ))
+        models.append(
+            ModelScore(
+                model=name,
+                model_id=m["model_id"] or name,
+                is_mock=m["is_mock"],
+                n_items=len(m["items"]),
+                n_completed=len(m["scores"]),
+                n_error=err_counts.get(name, 0),
+                mean_item_score_100=round(_mean(m["scores"]), 2),
+                fabricated_rate=round(m["fab_total"] / total_cites, 4),
+                on_point_rate=round(m["op_total"] / total_cites, 4),
+                avg_citations=round(total_cites / len(m["scores"]) if m["scores"] else 0.0, 2),
+                per_difficulty={
+                    k: {"n": len(v), "mean_item_score_100": round(_mean(v), 2)}
+                    for k, v in sorted(m["per_diff"].items())
+                },
+                per_priestley={
+                    k: {"n": len(v), "mean_item_score_100": round(_mean(v), 2)}
+                    for k, v in sorted(m["per_pri"].items())
+                },
+            )
+        )
     models.sort(key=lambda x: (-x.mean_item_score_100, x.fabricated_rate))
 
     summary = {
@@ -190,6 +200,11 @@ def score_run(
         json.dump(summary, fh, indent=2, sort_keys=True, default=str)
         fh.write("\n")
 
-    return ScoreReport(run_id=run_id, scores_dir=str(scores_dir),
-                       n_scored=n_scored, models=models,
-                       n_stale=n_stale, stale_items=sorted(stale_items))
+    return ScoreReport(
+        run_id=run_id,
+        scores_dir=str(scores_dir),
+        n_scored=n_scored,
+        models=models,
+        n_stale=n_stale,
+        stale_items=sorted(stale_items),
+    )

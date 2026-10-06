@@ -16,8 +16,6 @@ a real model run.
 
 from __future__ import annotations
 
-from typing import Optional
-
 from ..config import ModelSpec, is_real
 from .anthropic_runner import AnthropicRunner
 from .base import RawResponse, Runner, estimate_cost_usd, http_json

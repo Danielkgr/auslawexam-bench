@@ -17,8 +17,9 @@ mock and real runs.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Any, Iterable, Optional
+from typing import Any
 
 # Case citations are matched in two stages: a "tail" (year, volume, reporter)
 # then a "head" (the "Party v Party" run ending just before the tail). This is
@@ -78,10 +79,10 @@ def _norm(s: str) -> str:
 
 @dataclass
 class Citation:
-    kind: str          # "case" | "statute"
+    kind: str  # "case" | "statute"
     raw: str
     normalized: str
-    cls: str = ""      # "on_point" | "known_other" | "fabricated", set by assess_answer
+    cls: str = ""  # "on_point" | "known_other" | "fabricated", set by assess_answer
 
 
 @dataclass
@@ -108,9 +109,7 @@ class CitationReport:
             "fabricated": self.fabricated,
             "fabricated_rate": round(self.fabricated_rate, 4),
             "on_point_rate": round(self.on_point_rate, 4),
-            "citations": [
-                {"kind": c.kind, "raw": c.raw, "class": c.cls} for c in self.citations
-            ],
+            "citations": [{"kind": c.kind, "raw": c.raw, "class": c.cls} for c in self.citations],
         }
 
 
@@ -121,9 +120,31 @@ _EMPHASIS = re.compile(r"\*{1,3}|(?<![A-Za-z0-9])_{1,3}|_{1,3}(?![A-Za-z0-9])")
 
 # Capitalised words that open a sentence or a citation signal, not a party name.
 _LEAD = {
-    "see", "in", "cf", "compare", "following", "applying", "per", "also", "and",
-    "but", "under", "as", "from", "by", "since", "contrast", "citing", "unlike",
-    "accordingly", "therefore", "thus", "here", "there", "after", "before",
+    "see",
+    "in",
+    "cf",
+    "compare",
+    "following",
+    "applying",
+    "per",
+    "also",
+    "and",
+    "but",
+    "under",
+    "as",
+    "from",
+    "by",
+    "since",
+    "contrast",
+    "citing",
+    "unlike",
+    "accordingly",
+    "therefore",
+    "thus",
+    "here",
+    "there",
+    "after",
+    "before",
 }
 
 
@@ -151,8 +172,11 @@ def extract_citations(text: str) -> list[Citation]:
         cases.append(Citation("case", raw, _norm(raw)))
     # A bare report such as "(1988) 164 CLR 387" that repeats a fuller citation
     # in the same answer is a back-reference, not a second authority.
-    named_tails = {_case_parts(c.normalized)[0] for c in cases
-                   if _case_parts(c.normalized) and _case_parts(c.normalized)[1]}
+    named_tails = set()
+    for c in cases:
+        parts = _case_parts(c.normalized)
+        if parts and parts[1]:
+            named_tails.add(parts[0])
     for c in cases:
         parts = _case_parts(c.normalized)
         if parts and not parts[1] and parts[0] in named_tails:
@@ -175,12 +199,30 @@ def extract_citations(text: str) -> list[Citation]:
 _TAIL_NORM = re.compile(r"(?:^|\s)(\d{4})\s(?:(\d{1,4})\s)?([a-z]{2,7})\s(\d+)$")
 # Words that say nothing about which case is meant.
 _GENERIC = {
-    "v", "the", "r", "queen", "king", "re", "ex", "parte", "pty", "ltd", "limited",
-    "co", "inc", "and", "of", "no", "for", "in", "a", "an",
+    "v",
+    "the",
+    "r",
+    "queen",
+    "king",
+    "re",
+    "ex",
+    "parte",
+    "pty",
+    "ltd",
+    "limited",
+    "co",
+    "inc",
+    "and",
+    "of",
+    "no",
+    "for",
+    "in",
+    "a",
+    "an",
 }
 
 
-def _case_parts(norm: str) -> Optional[tuple[tuple[str, ...], set[str]]]:
+def _case_parts(norm: str) -> tuple[tuple[str, ...], set[str]] | None:
     """Split a normalised case citation into its report tail and party words."""
     m = _TAIL_NORM.search(norm)
     if not m:
@@ -271,7 +313,7 @@ _SEED_AUTHORITIES: list[str] = [
 
 
 def build_known_corpus(
-    items: Iterable[dict[str, Any]], extra: Optional[Iterable[str]] = None
+    items: Iterable[dict[str, Any]], extra: Iterable[str] | None = None
 ) -> set[str]:
     """Set of normalised real-AU authorities: every dataset required_authority
     plus a built-in seed of well-known real authorities and any optional extras.
@@ -297,14 +339,12 @@ def build_known_corpus(
 def assess_answer(
     item: dict[str, Any],
     text: str,
-    corpus: Optional[set[str]] = None,
+    corpus: set[str] | None = None,
 ) -> CitationReport:
     """Classify every citation in ``text`` for one item."""
     if corpus is None:
         corpus = build_known_corpus([item])
-    required = [
-        _norm(a.get("cite", "")) for a in item.get("required_authorities", [])
-    ]
+    required = [_norm(a.get("cite", "")) for a in item.get("required_authorities", [])]
     required = [r for r in required if r]
 
     report = CitationReport()

@@ -20,13 +20,14 @@ import re
 import sys
 import time
 import urllib.request
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 
 from .. import prompts as P
-from ..config import ModelSpec, default_models, spec_dict
+from ..config import ModelSpec, spec_dict
 from ..io import hash_item
 from ..runners import RawResponse, Runner, get_runner, is_mock_runner
 from ..runners.local_runner import LocalRunner
@@ -52,7 +53,7 @@ _TRANSIENT = re.compile(
 )
 
 
-def is_transient(error: Optional[str]) -> bool:
+def is_transient(error: str | None) -> bool:
     return bool(error) and bool(_TRANSIENT.search(error or ""))
 
 
@@ -85,7 +86,7 @@ class RunConfig:
     models: list[ModelSpec]
     items: list[dict[str, Any]]
     n_reps: int = 3
-    run_id: Optional[str] = None
+    run_id: str | None = None
     out_root: Path = Path("runs")
     base_seed: int = 0
     allow_mock_fallback: bool = False
@@ -94,10 +95,10 @@ class RunConfig:
     # Extra attempts for a transient failure (rate limit, 5xx, network).
     max_retries: int = 2
     retry_base_delay: float = 2.0
-    question_filter: Optional[str] = None
-    priestley_filter: Optional[str] = None
-    jurisdiction_filter: Optional[str] = None
-    difficulty_filter: Optional[str] = None
+    question_filter: str | None = None
+    priestley_filter: str | None = None
+    jurisdiction_filter: str | None = None
+    difficulty_filter: str | None = None
 
 
 @dataclass
@@ -139,8 +140,7 @@ def _make_meta(
         "base_seed": cfg.base_seed,
         "models": model_states,
         "items": [
-            {"id": it["id"], "version": it.get("version"),
-             "content_hash": hash_item(it)}
+            {"id": it["id"], "version": it.get("version"), "content_hash": hash_item(it)}
             for it in cfg.items
         ],
         "python": platform.python_version(),
@@ -190,13 +190,11 @@ def run(cfg: RunConfig) -> RunReport:
     meta = _make_meta(cfg, model_states)
 
     per_model: dict[str, ModelSummary] = {
-        spec.name: ModelSummary(name=spec.name, is_mock=ismock, fallback=fb,
-                                n_ok=0, n_error=0)
+        spec.name: ModelSummary(name=spec.name, is_mock=ismock, fallback=fb, n_ok=0, n_error=0)
         for spec, _, ismock, fb in resolved
     }
     for name in skipped:
-        per_model[name] = ModelSummary(name=name, is_mock=False, fallback=False,
-                                       n_ok=0, n_error=0)
+        per_model[name] = ModelSummary(name=name, is_mock=False, fallback=False, n_ok=0, n_error=0)
     n_completions = n_ok = n_err = 0
     # Write the config snapshot first, so an interrupted run still describes
     # itself; it is finalised with the counts at the end.
@@ -210,7 +208,9 @@ def run(cfg: RunConfig) -> RunReport:
         for rep in range(cfg.n_reps)
     ]
 
-    def call(task: tuple[ModelSpec, Runner, bool, bool, dict[str, Any], int]) -> tuple[RawResponse, int]:
+    def call(
+        task: tuple[ModelSpec, Runner, bool, bool, dict[str, Any], int],
+    ) -> tuple[RawResponse, int]:
         spec, runner, _, _, item, rep = task
         return complete_with_retry(
             lambda: runner.complete(P.messages(item), seed=cfg.base_seed + rep, item=item),
@@ -221,7 +221,7 @@ def run(cfg: RunConfig) -> RunReport:
     # Calls run concurrently, but results are written strictly in task order,
     # so records.jsonl is identical whatever the concurrency.
     with ThreadPoolExecutor(max_workers=max(1, cfg.concurrency)) as pool:
-        for task, (resp, attempts) in zip(tasks, pool.map(call, tasks)):
+        for task, (resp, attempts) in zip(tasks, pool.map(call, tasks), strict=True):
             spec, runner, is_mock, fb, item, rep = task
             item_id = item.get("id", "?")
             system, _ = P.build_prompt(item)
@@ -282,9 +282,12 @@ def run(cfg: RunConfig) -> RunReport:
         n_completions=n_completions,
         n_ok=n_ok,
         n_error=n_err,
-        models=[per_model.get(s.name, ModelSummary(name=s.name, is_mock=False,
-                                                   fallback=False, n_ok=0, n_error=0))
-                for s in cfg.models],
+        models=[
+            per_model.get(
+                s.name, ModelSummary(name=s.name, is_mock=False, fallback=False, n_ok=0, n_error=0)
+            )
+            for s in cfg.models
+        ],
         started_at=started,
         finished_at=finished,
     )

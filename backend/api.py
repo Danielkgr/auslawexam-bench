@@ -2,37 +2,32 @@
 
 from __future__ import annotations
 
-import asyncio
+import dataclasses
 import os
+import re
+from collections.abc import AsyncIterator
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
+
 from auslex.io import read_jsonl
+from auslex.run.orchestrator import RunConfig as OrchestrationRunConfig
+from auslex.run.orchestrator import probe_local
+from auslex.run.storage import RunStore
+from auslex.runners import get_runner
+from auslex.score.citations import _matches, _norm
 
 from .models import (
     ApiKeyConfig,
     CitationAudit,
-    ItemResult,
-    LeaderboardModel,
     LocalProbeResult,
-    PairwiseResult,
-    QuestionDetail,
-    QuestionListItem,
     RunConfig,
-    RunStatus,
     SlotStatus,
-    StatsReport,
     TestConnectionResult,
 )
 from .run_state import RunManager, _apply_keys_to_env, _get_stored_key, _restore_env
-from auslex.run.orchestrator import probe_local, RunConfig as OrchestrationRunConfig
-from auslex.run.storage import RunStore
-from auslex.runners import get_runner
-from auslex.score.citations import _matches, _norm
-import dataclasses
-import re
 
 router = APIRouter(prefix="/api")
 
@@ -86,23 +81,26 @@ def _safe_path(base: Path, run_id: str) -> Path:
 
 def _load_questions() -> list[dict[str, Any]]:
     from auslex.io import read_jsonl
+
     return read_jsonl(DEFAULT_QUESTIONS)
 
 
 def _spec_to_status(spec: Any) -> SlotStatus:
     from auslex.config import is_real
+
     key = _get_stored_key(spec.vendor) or (
         os.environ.get(spec.api_key_env) if spec.api_key_env else None
     )
     reachable: bool | None = None
     if spec.vendor == "local":
         reachable = probe_local(spec.base_url or "")
+    live = bool(is_real(spec) and (spec.vendor != "local" or reachable))
     return SlotStatus(
         name=spec.name,
         vendor=spec.vendor,
         model=spec.model,
-        is_real=is_real(spec) and (spec.vendor != "local" or reachable),
-        is_mock=not (is_real(spec) and (spec.vendor != "local" or reachable)),
+        is_real=live,
+        is_mock=not live,
         is_reachable=reachable,
         key_present=bool(key),
         base_url=spec.base_url,
@@ -123,6 +121,7 @@ async def health() -> dict[str, str]:
 async def get_slots() -> list[dict[str, Any]]:
     """Return the eight model slots with their real or mock status."""
     from auslex.config import default_models
+
     specs = default_models()
     return [_spec_to_status(s).model_dump() for s in specs]
 
@@ -185,7 +184,8 @@ async def get_keys() -> ApiKeyConfig:
 @router.put("/keys")
 async def set_keys(cfg: ApiKeyConfig) -> dict[str, str]:
     """Store API keys (local-only, never logged)."""
-    from .secrets import set_key, delete_key
+    from .secrets import delete_key, set_key
+
     if cfg.openai_key:
         set_key("openai", cfg.openai_key)
     else:
@@ -224,8 +224,12 @@ async def test_connection(provider: str) -> TestConnectionResult:
         return TestConnectionResult(ok=False, detail=f"No key configured for {provider}")
 
     # Set env var so the runner picks it up.
-    env_map = {"openai": "OPENAI_API_KEY", "anthropic": "ANTHROPIC_API_KEY", "google": "GOOGLE_API_KEY"}
-    env_var = env_map.get(provider)
+    env_map = {
+        "openai": "OPENAI_API_KEY",
+        "anthropic": "ANTHROPIC_API_KEY",
+        "google": "GOOGLE_API_KEY",
+    }
+    env_var = env_map[provider]
     old = os.environ.get(env_var)
     if env_var:
         os.environ[env_var] = key
@@ -298,6 +302,7 @@ async def get_run_status(run_id: str) -> dict[str, Any]:
 async def stream_run(run_id: str) -> StreamingResponse:
     """SSE stream for run progress."""
     _validate_run_id(run_id)
+
     async def event_stream() -> AsyncIterator[str]:
         async for event in run_manager.stream_records(run_id):
             yield event
@@ -315,18 +320,20 @@ async def list_runs() -> list[dict[str, Any]]:
         s = RunStore(root, rid, create_dirs=False)
         if s.meta_path.exists():
             meta = s.read_meta()
-            result.append({
-                "run_id": rid,
-                "started_at": meta.get("started_at", ""),
-                "finished_at": meta.get("finished_at", ""),
-                "n_models": len(meta.get("models", [])),
-                "n_items": len(meta.get("items", [])),
-                "n_reps": meta.get("n_reps", 0),
-                "n_completions": meta.get("n_completions", 0),
-                "n_ok": meta.get("n_ok", 0),
-                "n_error": meta.get("n_error", 0),
-                "models": [m.get("name") for m in meta.get("models", [])],
-            })
+            result.append(
+                {
+                    "run_id": rid,
+                    "started_at": meta.get("started_at", ""),
+                    "finished_at": meta.get("finished_at", ""),
+                    "n_models": len(meta.get("models", [])),
+                    "n_items": len(meta.get("items", [])),
+                    "n_reps": meta.get("n_reps", 0),
+                    "n_completions": meta.get("n_completions", 0),
+                    "n_ok": meta.get("n_ok", 0),
+                    "n_error": meta.get("n_error", 0),
+                    "models": [m.get("name") for m in meta.get("models", [])],
+                }
+            )
     return result
 
 
@@ -338,6 +345,7 @@ async def get_report(run_id: str) -> dict[str, Any]:
     if not scored_path.exists():
         raise HTTPException(status_code=404, detail=f"no scored data for run {run_id}")
     from auslex.stats.report import build_report
+
     report = build_report(scored_path, run_id=run_id)
     return report
 
@@ -351,6 +359,7 @@ async def get_item_results(
     """Get per-item results for a run, with optional filters."""
     _validate_run_id(run_id)
     from auslex.score.citations import build_known_corpus
+
     scored_path = _scored_path(run_id)
     if not scored_path.exists():
         raise HTTPException(status_code=404, detail=f"no scored data for run {run_id}")
@@ -365,8 +374,9 @@ async def get_item_results(
     corpus = build_known_corpus(items)
     # The answer text lives in the run's own records, not in the scores.
     store = RunStore(_runs_root(), run_id, create_dirs=False)
-    texts = {(r.get("model"), r.get("item_id"), r.get("rep")): r.get("text")
-             for r in store.records()}
+    texts = {
+        (r.get("model"), r.get("item_id"), r.get("rep")): r.get("text") for r in store.records()
+    }
 
     results = []
     for row in rows:
@@ -376,52 +386,53 @@ async def get_item_results(
         citation_audits = []
         if cites.get("citations") and all(c.get("class") for c in cites["citations"]):
             citation_audits = [
-                CitationAudit(kind=c["kind"], raw=c["raw"], classification=c["class"])
+                CitationAudit.model_validate(
+                    {"kind": c["kind"], "raw": c["raw"], "classification": c["class"]}
+                )
                 for c in cites["citations"]
             ]
         elif item and cites.get("citations"):
-            req_cites = {
-                _norm(a.get("cite", ""))
-                for a in item.get("required_authorities", [])
-            }
+            req_cites = {_norm(a.get("cite", "")) for a in item.get("required_authorities", [])}
             for c in cites["citations"]:
                 cn = _norm(c["raw"])
+                cls: Literal["on_point", "known_other", "fabricated"] = "fabricated"
                 if any(_matches(cn, r) for r in req_cites):
                     cls = "on_point"
                 elif any(_matches(cn, ref) for ref in corpus):
                     cls = "known_other"
-                else:
-                    cls = "fabricated"
-                citation_audits.append(CitationAudit(
-                    kind=c["kind"], raw=c["raw"], classification=cls
-                ))
+                citation_audits.append(
+                    CitationAudit(kind=c["kind"], raw=c["raw"], classification=cls)
+                )
 
         # Check contamination.
         contamination = False
         if item:
             from auslex.canary import find_canaries, make_canary
+
             item_canary = make_canary(item["id"])
             text = texts.get((row.get("model"), row.get("item_id"), row.get("rep"))) or ""
             found = find_canaries(text)
             contamination = item_canary in found or any(item_canary in c for c in found)
 
-        results.append({
-            "run_id": run_id,
-            "model": row.get("model"),
-            "item_id": row.get("item_id"),
-            "rep": row.get("rep"),
-            "is_mock": row.get("is_mock", False),
-            "priestley_area": row.get("priestley_area"),
-            "difficulty": row.get("difficulty"),
-            "item_score_100": row.get("item_score_100", 0),
-            "fabricated_rate": cites.get("fabricated_rate", 0),
-            "on_point_rate": cites.get("on_point_rate", 0),
-            "total_citations": cites.get("total", 0),
-            "citations": [ca.model_dump() for ca in citation_audits],
-            "rubric": row.get("rubric", {}),
-            "answer_text": texts.get((row.get("model"), row.get("item_id"), row.get("rep"))),
-            "contamination_flag": contamination,
-        })
+        results.append(
+            {
+                "run_id": run_id,
+                "model": row.get("model"),
+                "item_id": row.get("item_id"),
+                "rep": row.get("rep"),
+                "is_mock": row.get("is_mock", False),
+                "priestley_area": row.get("priestley_area"),
+                "difficulty": row.get("difficulty"),
+                "item_score_100": row.get("item_score_100", 0),
+                "fabricated_rate": cites.get("fabricated_rate", 0),
+                "on_point_rate": cites.get("on_point_rate", 0),
+                "total_citations": cites.get("total", 0),
+                "citations": [ca.model_dump() for ca in citation_audits],
+                "rubric": row.get("rubric", {}),
+                "answer_text": texts.get((row.get("model"), row.get("item_id"), row.get("rep"))),
+                "contamination_flag": contamination,
+            }
+        )
     return results
 
 
@@ -442,6 +453,7 @@ async def probe_local_endpoint() -> dict[str, Any]:
     if reachable:
         try:
             import urllib.request
+
             with urllib.request.urlopen(url.rstrip("/") + "/models", timeout=5) as r:
                 data = __import__("json").loads(r.read().decode("utf-8"))
             models = data.get("data", data if isinstance(data, list) else [])
@@ -464,7 +476,7 @@ async def export_site(run_id: str) -> dict[str, str]:
     store = RunStore(_runs_root(), run_id, create_dirs=False)
     meta = store.read_meta()
     meta["contamination_note"] = (
-        f"Every item embeds the global canary plus a per-item canary derived "
+        "Every item embeds the global canary plus a per-item canary derived "
         "from its id; reproducing either verbatim flags training-data contamination."
     )
     site_dir = OUTPUT_ROOT / "site" / run_id
