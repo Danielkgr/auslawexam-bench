@@ -51,6 +51,9 @@ class ModelSpec:
     # for models that reject it (current Claude and GPT reasoning models).
     temperature: Optional[float] = 0.0
     max_tokens: int = 3000
+    # Request field that carries max_tokens.  OpenAI's reasoning models need
+    # "max_completion_tokens"; most OpenAI-compatible servers take "max_tokens".
+    max_tokens_param: str = "max_tokens"
     # Mock-only knobs: relative "competence" in [0,1] and fabrication tendency.
     mock_quality: float = 0.6
     mock_fabricate_rate: float = 0.15
@@ -78,8 +81,11 @@ def default_models() -> list[ModelSpec]:
             runner="openai",
             base_url="https://api.openai.com/v1",
             api_key_env="OPENAI_API_KEY",
-            temperature=0.0,
-            max_tokens=3000,
+            # GPT-5-family reasoning models accept only the default
+            # temperature, and count reasoning tokens against the limit.
+            temperature=None,
+            max_tokens=16000,
+            max_tokens_param="max_completion_tokens",
             mock_quality=0.86,
             mock_fabricate_rate=0.08,
         ),

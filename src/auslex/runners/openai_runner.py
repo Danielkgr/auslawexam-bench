@@ -37,17 +37,27 @@ class OpenAIRunner(Runner):
     def _resolve_key(self) -> Optional[str]:
         return os.environ.get(self.spec.api_key_env or "")
 
-    def complete(
-        self, messages, *, seed: Optional[int] = None, item: Optional[dict] = None
-    ) -> RawResponse:  # noqa: ARG002
+    def _payload(self, messages: list[dict[str, str]], seed: Optional[int]) -> dict[str, Any]:
+        # GPT-5-family reasoning models reject max_tokens and any temperature
+        # other than the default, so the token limit goes under the slot's
+        # configured parameter name and temperature is sent only when the slot
+        # sets one.  OpenAI-compatible providers that still expect max_tokens
+        # keep the default name.
         payload: dict[str, Any] = {
             "model": self.spec.model,
             "messages": messages,
-            "temperature": self.spec.temperature,
-            "max_tokens": self.spec.max_tokens,
+            self.spec.max_tokens_param: self.spec.max_tokens,
         }
+        if self.spec.temperature is not None:
+            payload["temperature"] = self.spec.temperature
         if seed is not None:
             payload["seed"] = seed
+        return payload
+
+    def complete(
+        self, messages, *, seed: Optional[int] = None, item: Optional[dict] = None
+    ) -> RawResponse:  # noqa: ARG002
+        payload = self._payload(messages, seed)
         headers = {
             "Authorization": f"Bearer {self._key}",
             "Content-Type": "application/json",
@@ -66,9 +76,18 @@ class OpenAIRunner(Runner):
             pt = int(usage.get("prompt_tokens", 0))
             ct = int(usage.get("completion_tokens", 0))
             text = msg.get("content") or ""
+            finish_reason = choice.get("finish_reason") or "stop"
+            error: Optional[str] = None
+            if msg.get("refusal"):
+                error = f"refusal: {msg['refusal']}"
+            elif finish_reason == "content_filter":
+                error = "refusal: the provider's content filter stopped the answer"
+            elif finish_reason == "length":
+                error = f"truncated: the answer hit {self.spec.max_tokens_param}={self.spec.max_tokens}"
             return RawResponse(
                 text=text,
-                finish_reason=choice.get("finish_reason", "stop"),
+                finish_reason=finish_reason,
+                error=error,
                 prompt_tokens=pt,
                 completion_tokens=ct,
                 latency_ms=latency_ms,

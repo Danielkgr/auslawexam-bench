@@ -23,10 +23,13 @@ lawyer-verified.
 2. **One shared prompt for all models.** No per-model prompt tuning, no
    per-model system prompts. Every model receives the identical, **versioned**
    prompt template. The prompt version is recorded in `runs/<id>/meta.json`.
-3. **Zero temperature, multiple reps.** Generation is `temperature=0` for
-   determinism; `n_reps` (default 3) repeated completions per
-   (model, question) capture residual non-determinism and give per-item
-   variance for the stats.
+3. **Temperature 0 where accepted, multiple reps.** Generation uses
+   `temperature=0` for every slot whose model accepts it.  Current Claude
+   models (`claude-opus-5-5`) and GPT-5-family reasoning models reject a
+   temperature setting, so those slots send none and run at the model
+   default.  `n_reps` (default 3) repeated completions per (model, question)
+   measure the run-to-run variance, which for those slots is the main source
+   of spread, and give per-item variance for the stats.
 4. **Append-only, content-hashed provenance.** Runs are never rewritten.
    Items are locked by content hash; outputs are addressed by content hash.
    This makes the benchmark tamper-evident.

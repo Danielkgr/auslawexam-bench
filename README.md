@@ -16,7 +16,7 @@
 
 ## What it is
 
-AusLawExam-Bench puts exam-style questions on Australian law to eight model slots, one each for GPT, Claude, Gemini, Groq, DeepSeek, Mistral, and Qwen, plus a local open-weight slot.  Every model gets the same versioned prompt at temperature 0.  The harness extracts each citation from each answer, classifies it as real or fabricated, scores the answer against a rubric, and publishes the raw outputs next to the scores so anyone can audit a number end to end.
+AusLawExam-Bench puts exam-style questions on Australian law to eight model slots, one each for GPT, Claude, Gemini, Groq, DeepSeek, Mistral, and Qwen, plus a local open-weight slot.  Every model gets the same versioned prompt, at temperature 0 where the model accepts it.  Current Claude and GPT reasoning models accept no temperature setting, so those slots run at the model default and the three repetitions measure the variance.  The harness extracts each citation from each answer, classifies it as real or fabricated, scores the answer against a rubric, and publishes the raw outputs next to the scores so anyone can audit a number end to end.
 
 > [!CAUTION]
 > This is a benchmarking prototype and gives no legal advice.  It does not answer legal questions or verify legal propositions.  The 16 shipped questions are provisional drafts that no qualified Australian lawyer has reviewed, and their gold answers and required authorities may contain errors.  Do not rely on them, or on any model output the benchmark produces, for a real legal decision.
@@ -90,7 +90,7 @@ A model can score well on rubric items and still have a high fabricated rate.  T
 
 | Stage | Command | What happens | Output |
 |---|---|---|---|
-| **Run** | `auslex run` | Sends the shared prompt at temperature 0 for every model, item, and repetition | `records.jsonl` |
+| **Run** | `auslex run` | Sends the shared prompt for every model, item, and repetition, at temperature 0 where the model accepts it | `records.jsonl` |
 | **Score** | `auslex score` | Extracts and classifies citations, then applies the rubric judge to each completion | `scored.jsonl` |
 | **Stats** | `auslex stats` | Computes percentile bootstrap 95% confidence intervals and paired sign-flip permutation tests, 10,000 resamples each | `report.md` |
 | **Site** | `auslex site` | Renders a static leaderboard page with inline CSS and no JavaScript | `index.html` |
@@ -182,13 +182,26 @@ Configuration lives in [src/auslex/config.py](src/auslex/config.py).  A config f
 | Slot | Vendor | Model | Live when | Mock profile |
 |---|---|---|---|---|
 | gpt | OpenAI | gpt-5.6 | `OPENAI_API_KEY` is set | quality 0.86, fab 0.08 |
-| claude | Anthropic | claude-opus-5 | `ANTHROPIC_API_KEY` is set | quality 0.83, fab 0.10 |
+| claude | Anthropic | claude-opus-5-5 | `ANTHROPIC_API_KEY` is set and the `claude` extra is installed | quality 0.83, fab 0.10 |
 | gemini | Google | gemini-2.0-flash | `GOOGLE_API_KEY` is set | quality 0.80, fab 0.13 |
 | groq | Groq | llama-3.3-70b-specdec | `GROQ_API_KEY` is set | quality 0.82, fab 0.10 |
 | deepseek | DeepSeek | deepseek-chat | `DEEPSEEK_API_KEY` is set | quality 0.78, fab 0.12 |
 | mistral | Mistral | mistral-small-latest | `MISTRAL_API_KEY` is set | quality 0.75, fab 0.14 |
 | qwen | Qwen | qwen2.5-72b | `DASHSCOPE_API_KEY` is set | quality 0.76, fab 0.13 |
 | local | OpenAI-compatible | 14. Qwen3.8-27B (Q5_K_M) | `base_url` answers | quality 0.55, fab 0.25 |
+
+### Claude slot
+
+The Claude slot runs on the official `anthropic` SDK.  Install it with `pip install -e ".[claude]"`, then run `ANTHROPIC_API_KEY=... auslex run --models claude --reps 3`.
+
+| Setting | Value | Why |
+|---|---|---|
+| Model | `claude-opus-5-5` | The current default Claude model |
+| Sampling | None sent | The model rejects `temperature`, `top_p`, and `top_k` |
+| Effort | `high`, set explicitly | Opus 5.5 defaults to `medium` and its thinking cannot be switched off |
+| Output budget | 32,000 tokens, streamed | Room for an essay answer plus thinking |
+| Refusal or truncation | Recorded as an error | The answer is kept for audit but not scored |
+| Server-side fallback | Off | A fallback would answer with a different model and silently change what is measured |
 
 ### Local slot
 
