@@ -4,7 +4,7 @@
 
 ### A reproducible benchmark of Australian legal reasoning for LLMs, scored on how often a model invents a citation
 
-![16 provisional questions](https://img.shields.io/badge/questions-16_provisional-9a6700?style=for-the-badge) ![87 tests](https://img.shields.io/badge/tests-87-0969da?style=for-the-badge) ![8 model slots](https://img.shields.io/badge/model_slots-8-0969da?style=for-the-badge) ![runs offline on mocks](https://img.shields.io/badge/runs-offline-8250df?style=for-the-badge) ![Apache-2.0 code, CC BY 4.0 data](https://img.shields.io/badge/licence-Apache--2.0_%2F_CC_BY_4.0-57606a?style=for-the-badge)
+![16 provisional questions](https://img.shields.io/badge/questions-16_provisional-9a6700?style=for-the-badge) ![114 tests](https://img.shields.io/badge/tests-114-0969da?style=for-the-badge) ![8 model slots](https://img.shields.io/badge/model_slots-8-0969da?style=for-the-badge) ![runs offline on mocks](https://img.shields.io/badge/runs-offline-8250df?style=for-the-badge) ![Apache-2.0 code, CC BY 4.0 data](https://img.shields.io/badge/licence-Apache--2.0_%2F_CC_BY_4.0-57606a?style=for-the-badge)
 
 </div>
 
@@ -121,7 +121,7 @@ That one command runs the whole pipeline offline.  It sends the shared prompt to
 python3 -m pytest
 ```
 
-The 87 tests across 11 files cover schema validation, canary derivation and detection, the Australian-jurisdiction filters, citation extraction and classification, the permutation test, content hashing, mock runner determinism, a full run from mock to site, CLI parsing, the FastAPI endpoints, the served web client and its default paths, and the secrets store.
+The 114 tests across 13 files cover schema validation, canary derivation and detection, the Australian-jurisdiction filters, citation extraction and classification, the permutation test, content hashing, mock runner determinism, a full run from mock to site, CLI parsing, the FastAPI endpoints, the served web client and its default paths, the secrets store, and the Claude, OpenAI-compatible, Gemini, and local runners against mocked HTTP.
 
 <br>
 
@@ -244,7 +244,7 @@ backend/           FastAPI server for the web UI
 frontend/          React and Vite dashboard
 data/              Question set, canaries, gold manifest
 paper/             Methodology, contamination statement, analysis plan
-tests/             87 tests
+tests/             114 tests
 ```
 
 <br>
