@@ -13,8 +13,8 @@ and a pairwise-permutation significance table against the other models.
 ### Reading the fabricated rate (important caveat)
 
 `fabricated` is defined against a **known-authorities corpus** that is, at the
-current scale, the union of the 16 items' `required_authorities` - a small set
-of real Australian cases/statutes. Consequently:
+current scale, the union of the 16 items' `required_authorities` and a
+41-entry seed list of verified authorities, 48 entries in all. Consequently:
 
 - A citation that is **real but not in that small corpus is counted as
   fabricated.** So the reported rate is a **conservative upper bound** on the
@@ -49,7 +49,7 @@ a real judge is wired in.
   offline-reproducible, real local-model inference, seeded statistics.
 - A **demonstration of the reporting surface**: what a per-model fabricated
   rate, CI, and pairwise test looks like when rendered.
-- A **smoke check** that the local Qwen3.8-27B slot runs and produces
+- A **smoke check** that the local open-weight slot runs and produces
   non-fabricated, on-point citations when given the required authorities in-prompt.
 
 What the numbers will **NOT** mean at 16 items: any claim about *which model is
@@ -64,7 +64,7 @@ Once the question set is (a) grown to 100-200, (b) lawyer-verified, and (c)
 paired with a real judge and a grown known-authorities corpus:
 
 - **Fabricated-citation rate** becomes a meaningful, comparable safety metric
-  across the four slots, with tight CIs and powered pairwise tests.
+  across the eight slots, with tight CIs and powered pairwise tests.
 - **Rubric item score** becomes a calibrated measure of legal-reasoning quality,
   with by-difficulty and by-Priestley-area breakdowns.
 - **Contamination flags** (canary hits) gate the leaderboard so no score rests
@@ -88,7 +88,7 @@ paired with a real judge and a grown known-authorities corpus:
 | 1 | Grow known-authorities corpus (seed list of real AU authorities) | **Planned** | Turns fabricated rate from an upper bound into an estimate |
 | 2 | Lawyer-verify the question set to 100-200 | **Planned** | Removes the "provisional" disclaimer; prerequisite for any real claim |
 | 3 | Real LLM judge (replace seeded mock ensemble) | **Planned** | Makes rubric item scores a real measurement |
-| 4 | Real commercial runs (set OPENAI/ANTHROPIC/GOOGLE keys) | **Config-ready** | The 3 commercial slots currently run as seeded mocks |
+| 4 | Real commercial runs (set the provider API keys) | **Config-ready** | The 7 commercial slots are tested against mocked HTTP and run as seeded mocks without keys |
 | 5 | Near-duplicate / semantic-leakage check at authoring time | **Planned** | Closes the canary gap for semantic memorisation |
 | 6 | Per-Priestley-area and per-difficulty slicing on the site | **Partial** | By-difficulty is on the site; by-area is in the report data |
 | 7 | Publish to GitHub Pages + Hugging Face (`auslex export-hf`) | **Config-ready** | Public, citable, reproducible release |
@@ -108,7 +108,7 @@ paired with a real judge and a grown known-authorities corpus:
 ## 8. What a reader should do with the current numbers
 
 Treat the shipped leaderboard as a **worked example of the method on 16
-unverified items with one real local model and three seeded mocks**. The useful
+unverified items with one real local model and seven seeded mocks**. The useful
 takeaway is not "model A beats model B" but: *here is a reproducible pipeline
 that will produce a defensible AU-legal benchmark once the corpus is grown, the
 items are lawyer-verified, and a real judge is wired in* - and here is exactly
