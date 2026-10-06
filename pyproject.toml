@@ -22,7 +22,9 @@ dependencies = ["pydantic>=2.7"]
 [project.optional-dependencies]
 # Only needed for the Hugging Face parquet export; JSONL export works without it.
 hf = ["datasets>=2.19"]
-dev = ["pytest>=8"]
+# The Claude slot runs on the official Anthropic SDK.
+claude = ["anthropic>=1.11,<2"]
+dev = ["pytest>=8", "anthropic>=1.11,<2"]
 ui = [
     "fastapi>=0.111",
     "uvicorn>=0.30",
