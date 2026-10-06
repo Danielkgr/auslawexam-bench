@@ -2,19 +2,19 @@
 
 from __future__ import annotations
 
+from conftest import make_item
+
 from auslex.ingest.filters import (
     check_item,
     find_non_au,
     lint_gold_answer,
     lint_question,
 )
-from conftest import make_item
 
 
 def test_clean_gold_answer_has_no_issues():
     issues = lint_gold_answer(
-        "The rule is in Smith v Jones (2020) 270 ALR 1 and the "
-        "Civil Liability Act 2002 (Cth) s 5."
+        "The rule is in Smith v Jones (2020) 270 ALR 1 and the Civil Liability Act 2002 (Cth) s 5."
     )
     assert issues == []
 

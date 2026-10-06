@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Any, Optional
+from typing import Any
 
 from ..config import ModelSpec
 from .base import RawResponse, Runner, estimate_cost_usd
@@ -85,8 +85,8 @@ class AnthropicRunner(Runner):
         self,
         messages: list[dict[str, str]],
         *,
-        seed: Optional[int] = None,  # Claude has no seed parameter; recorded only
-        item: Optional[dict[str, Any]] = None,
+        seed: int | None = None,  # Claude has no seed parameter; recorded only
+        item: dict[str, Any] | None = None,
     ) -> RawResponse:
         sdk = self._sdk
         t0 = time.perf_counter()
@@ -107,7 +107,7 @@ class AnthropicRunner(Runner):
         price = PRICES_PER_MTOK.get(self.spec.model)
         cost = round(estimate_cost_usd(pt, ct, *price), 6) if price else None
 
-        error: Optional[str] = None
+        error: str | None = None
         if message.stop_reason == "refusal":
             # stop_details is populated only for a refusal, so read it only here.
             details = message.stop_details

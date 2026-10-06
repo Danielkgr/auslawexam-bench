@@ -10,8 +10,9 @@ interval.
 from __future__ import annotations
 
 import random
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Any, Callable, Sequence
+from typing import Any
 
 
 @dataclass
@@ -85,5 +86,4 @@ def bootstrap_ci(
     alpha = (1.0 - ci) / 2.0
     low = _percentile(stats, alpha)
     high = _percentile(stats, 1.0 - alpha)
-    return Interval(low=low, high=high, point=point, n=n,
-                    n_boot=n_boot, ci=ci, seed=seed)
+    return Interval(low=low, high=high, point=point, n=n, n_boot=n_boot, ci=ci, seed=seed)

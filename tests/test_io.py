@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+from conftest import make_item
+
 from auslex.io import (
     canonical_json,
     hash_item,
     read_jsonl,
     write_jsonl,
 )
-from conftest import make_item
 
 
 def test_canonical_json_key_order_independent():

@@ -11,20 +11,20 @@ import logging
 import os
 import threading
 import time
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any
+
+from fastapi import HTTPException
 
 from auslex.canary import GLOBAL_CANARY
-from auslex.config import ModelSpec, default_models, load_models, resolve_api_key, is_real
-from auslex.io import read_jsonl
-from auslex.run.orchestrator import RunConfig, RunReport, probe_local
+from auslex.run.orchestrator import RunConfig, RunReport
 from auslex.run.storage import RunStore
 from auslex.score.score import score_run
 from auslex.stats.report import build_report, write_report
 
 from .secrets import load_secrets
-from fastapi import HTTPException
 
 log = logging.getLogger(__name__)
 
@@ -53,11 +53,22 @@ class RunManager:
         run_id = cfg.run_id or f"auslex-{int(time.time())}"
         cfg.run_id = run_id  # ensure cfg carries the id into the worker
         with self._lock:
-            self._runs[run_id] = InFlightRun(run_id=run_id, report=RunReport(
-                run_id=run_id, run_dir="", n_models=0, n_items=len(cfg.items),
-                n_reps=cfg.n_reps, n_completions=0, n_ok=0, n_error=0,
-                models=[], started_at="", finished_at="",
-            ))
+            self._runs[run_id] = InFlightRun(
+                run_id=run_id,
+                report=RunReport(
+                    run_id=run_id,
+                    run_dir="",
+                    n_models=0,
+                    n_items=len(cfg.items),
+                    n_reps=cfg.n_reps,
+                    n_completions=0,
+                    n_ok=0,
+                    n_error=0,
+                    models=[],
+                    started_at="",
+                    finished_at="",
+                ),
+            )
             self._record_count[run_id] = 0
         t = threading.Thread(target=self._run_worker, args=(cfg,), daemon=True)
         t.start()
@@ -66,11 +77,8 @@ class RunManager:
     def _run_worker(self, cfg: RunConfig) -> None:
         """Execute the run, then score and stats."""
         from auslex.run.orchestrator import run
-        from auslex.io import read_jsonl
-        from auslex.score.score import score_run
-        from auslex.stats.report import build_report, write_report
 
-        run_id = cfg.run_id  # must match the key in self._runs
+        run_id = cfg.run_id or ""  # start_run always sets it; must match self._runs
         saved_env: dict[str, str] = {}
 
         try:
@@ -128,8 +136,11 @@ class RunManager:
 
             # Stats, read from the scores the scorer just wrote.
             report_stats = build_report(
-                Path(srep.scores_dir) / "scored.jsonl", run_id=report.run_id,
-                n_boot=cfg.n_reps * 1000, n_perm=cfg.n_reps * 1000, seed=cfg.base_seed,
+                Path(srep.scores_dir) / "scored.jsonl",
+                run_id=report.run_id,
+                n_boot=cfg.n_reps * 1000,
+                n_perm=cfg.n_reps * 1000,
+                seed=cfg.base_seed,
             )
             write_report(report_stats, self.output_root)
             log.debug("run %s: statistics written", run_id)
@@ -155,10 +166,17 @@ class RunManager:
                 if run_id in self._runs:
                     r = self._runs[run_id]
                     r.report = RunReport(
-                        run_id=run_id, run_dir="", n_models=len(cfg.models),
-                        n_items=len(cfg.items), n_reps=cfg.n_reps,
-                        n_completions=0, n_ok=0, n_error=0,
-                        models=[], started_at="", finished_at="",
+                        run_id=run_id,
+                        run_dir="",
+                        n_models=len(cfg.models),
+                        n_items=len(cfg.items),
+                        n_reps=cfg.n_reps,
+                        n_completions=0,
+                        n_ok=0,
+                        n_error=0,
+                        models=[],
+                        started_at="",
+                        finished_at="",
                     )
 
         self._notify_waiters(run_id)
@@ -180,16 +198,16 @@ class RunManager:
         last_count = 0
         while True:
             if self.stop_event_is_set(run_id):
-                yield f"data: {{\"type\": \"done\"}}\n\n"
+                yield 'data: {"type": "done"}\n\n'
                 return
             records = store.records()
             count = len(records)
             if count != last_count:
-                yield f"data: {{\"type\": \"progress\", \"count\": {count}, \"total\": {self._total_completions(run_id)}}}\n\n"
+                yield f'data: {{"type": "progress", "count": {count}, "total": {self._total_completions(run_id)}}}\n\n'
                 last_count = count
                 self._record_count[run_id] = count
             if self.is_done(run_id):
-                yield f"data: {{\"type\": \"done\"}}\n\n"
+                yield 'data: {"type": "done"}\n\n'
                 return
             await asyncio.sleep(0.5)
 
@@ -224,7 +242,9 @@ class RunManager:
                     "run_id": run_id,
                     "status": "done" if meta.get("finished_at") else "running",
                     "n_completions": meta.get("n_completions", 0),
-                    "n_total": meta.get("n_reps", 3) * len(meta.get("items", [])) * len(meta.get("models", [])),
+                    "n_total": meta.get("n_reps", 3)
+                    * len(meta.get("items", []))
+                    * len(meta.get("models", [])),
                     "n_ok": meta.get("n_ok", 0),
                     "n_error": meta.get("n_error", 0),
                     "models": meta.get("models", []),
@@ -248,7 +268,9 @@ class RunManager:
                     "n_total": rp.n_items * rp.n_reps,
                     "n_ok": m.n_ok,
                     "n_error": m.n_error,
-                    "status": "done" if (m.n_ok + m.n_error) >= rp.n_items * rp.n_reps else "running",
+                    "status": "done"
+                    if (m.n_ok + m.n_error) >= rp.n_items * rp.n_reps
+                    else "running",
                 }
                 for m in rp.models
             ],
@@ -276,7 +298,7 @@ def _get_stored_key(provider: str) -> str | None:
     return load_secrets().get(provider)
 
 
-def _apply_keys_to_env(cfg: RunConfig) -> dict[str, str]:
+def _apply_keys_to_env(cfg: object = None) -> dict[str, str]:
     """Temporarily set API keys from the secrets store into env."""
     saved: dict[str, str] = {}
     key_map = {

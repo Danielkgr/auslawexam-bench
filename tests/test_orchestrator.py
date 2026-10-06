@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import threading
 
+from conftest import sample_items
+
 from auslex.config import ModelSpec
 from auslex.run.orchestrator import RunConfig, complete_with_retry, is_transient, run
 from auslex.run.storage import RunStore
 from auslex.runners import RawResponse
-from conftest import sample_items
 
 
 def _mock(name: str) -> ModelSpec:
@@ -16,8 +17,14 @@ def _mock(name: str) -> ModelSpec:
 
 
 def _records(tmp_path, concurrency: int) -> list[dict]:
-    cfg = RunConfig(models=[_mock("a"), _mock("b")], items=sample_items(), n_reps=3,
-                    run_id=f"c{concurrency}", out_root=tmp_path, concurrency=concurrency)
+    cfg = RunConfig(
+        models=[_mock("a"), _mock("b")],
+        items=sample_items(),
+        n_reps=3,
+        run_id=f"c{concurrency}",
+        out_root=tmp_path,
+        concurrency=concurrency,
+    )
     run(cfg)
     return RunStore(tmp_path, f"c{concurrency}").records()
 
@@ -35,9 +42,11 @@ def test_records_are_identical_whatever_the_concurrency(tmp_path):
 
 def test_transient_errors_are_retried_with_backoff():
     calls, sleeps = [], []
-    replies = [RawResponse(text="", error="HTTP 429 from x: slow down"),
-               RawResponse(text="", error="HTTP 503 from x: busy"),
-               RawResponse(text="an answer")]
+    replies = [
+        RawResponse(text="", error="HTTP 429 from x: slow down"),
+        RawResponse(text="", error="HTTP 503 from x: busy"),
+        RawResponse(text="an answer"),
+    ]
 
     def call():
         calls.append(1)
@@ -50,7 +59,10 @@ def test_transient_errors_are_retried_with_backoff():
 def test_permanent_errors_are_not_retried():
     resp, attempts = complete_with_retry(
         lambda: RawResponse(text="", error="HTTP 400 from x: bad request"),
-        max_retries=3, base_delay=0, sleep=lambda s: None)
+        max_retries=3,
+        base_delay=0,
+        sleep=lambda s: None,
+    )
     assert attempts == 1 and not resp.ok
     assert not is_transient("refusal: the model declined to answer")
     assert is_transient("connection error: reset") and is_transient("rate limited (HTTP 429): x")
@@ -73,6 +85,14 @@ def test_calls_really_run_concurrently(tmp_path, monkeypatch):
         return original(self, *args, **kwargs)
 
     monkeypatch.setattr(MockRunner, "complete", slow)
-    run(RunConfig(models=[_mock("a")], items=sample_items(), n_reps=4, run_id="p",
-                  out_root=tmp_path, concurrency=4))
+    run(
+        RunConfig(
+            models=[_mock("a")],
+            items=sample_items(),
+            n_reps=4,
+            run_id="p",
+            out_root=tmp_path,
+            concurrency=4,
+        )
+    )
     assert peak[0] > 1

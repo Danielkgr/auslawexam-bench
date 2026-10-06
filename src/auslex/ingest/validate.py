@@ -11,8 +11,9 @@ from __future__ import annotations
 
 import datetime as _dt
 import json
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable, Optional
+from typing import Any
 
 from .. import canary as _canary
 from ..io import hash_item
@@ -37,9 +38,7 @@ def validate_item_dict(item: dict[str, Any]) -> list[Issue]:
 
     c = item.get("canary", "")
     if not c.startswith("auslex:"):
-        issues.append(
-            Issue("error", "CANARY", "item has no valid 'auslex:' canary", item_id)
-        )
+        issues.append(Issue("error", "CANARY", "item has no valid 'auslex:' canary", item_id))
     # A freshly-authored item must NOT already contain its own global canary
     # (that would mean the dataset text leaked into the item body).
     if _canary.GLOBAL_CANARY in item.get("question_text", ""):
@@ -56,7 +55,7 @@ def validate_item_dict(item: dict[str, Any]) -> list[Issue]:
 
 def validate_dataset(
     items: list[dict[str, Any]],
-    corpus_texts: Optional[Iterable[str]] = None,
+    corpus_texts: Iterable[str] | None = None,
     dedup: bool = True,
 ) -> Report:
     """Validate a full candidate dataset and return an aggregated Report."""
@@ -65,7 +64,7 @@ def validate_dataset(
     # Uniqueness of ids.
     seen: set[str] = set()
     for it in items:
-        iid = it.get("id")
+        iid = str(it.get("id"))
         if iid in seen:
             report.add(Issue("error", "DUP_ID", f"duplicate item id {iid!r}", iid))
         seen.add(iid)
@@ -121,7 +120,7 @@ def write_manifest(manifest: dict[str, Any], path: str | Path) -> None:
 
 
 def load_manifest(path: str | Path) -> dict[str, Any]:
-    with open(path, "r", encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         return json.load(fh)
 
 
@@ -136,9 +135,7 @@ def lock_items(items: list[dict[str, Any]], manifest_path: str | Path) -> dict[s
     return manifest
 
 
-def check_lock(
-    items: list[dict[str, Any]], manifest: dict[str, Any]
-) -> list[Issue]:
+def check_lock(items: list[dict[str, Any]], manifest: dict[str, Any]) -> list[Issue]:
     """Detect edits made after a lock (hash mismatch) or missing/unknown items."""
     issues: list[Issue] = []
     locked = manifest.get("items", {})
@@ -175,10 +172,13 @@ def check_stamps(items: list[dict[str, Any]]) -> list[Issue]:
     for it in items:
         stamp = (it.get("verification") or {}).get("hash")
         if stamp and stamp != hash_item(it):
-            issues.append(Issue(
-                "error", "STALE_HASH",
-                "verification.hash no longer matches the item's content; "
-                "bump the version, add a changelog entry, and re-lock",
-                it.get("id"),
-            ))
+            issues.append(
+                Issue(
+                    "error",
+                    "STALE_HASH",
+                    "verification.hash no longer matches the item's content; "
+                    "bump the version, add a changelog entry, and re-lock",
+                    it.get("id"),
+                )
+            )
     return issues

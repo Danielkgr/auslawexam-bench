@@ -84,8 +84,26 @@ def test_run_writes_every_output_under_out_root_and_applies_config(tmp_path):
     cfg = tmp_path / "slots.json"
     cfg.write_text(json.dumps({"models": {"gpt": {"model": "gpt-from-config"}}}))
     out = tmp_path / "out"
-    rc = main(["run", "--models", "gpt", "--mock", "--reps", "1", "--run-id", "t1",
-               "--n-boot", "50", "--n-perm", "50", "--config", str(cfg), "--out-root", str(out)])
+    rc = main(
+        [
+            "run",
+            "--models",
+            "gpt",
+            "--mock",
+            "--reps",
+            "1",
+            "--run-id",
+            "t1",
+            "--n-boot",
+            "50",
+            "--n-perm",
+            "50",
+            "--config",
+            str(cfg),
+            "--out-root",
+            str(out),
+        ]
+    )
     assert rc == 0
     for sub in ("runs", "scores", "stats", "site"):
         assert (out / sub / "t1").is_dir(), sub

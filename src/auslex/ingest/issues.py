@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -13,7 +13,7 @@ class Issue:
     level: str  # "error" | "warning" | "info"
     code: str
     message: str
-    item_id: Optional[str] = None
+    item_id: str | None = None
 
     def render(self) -> str:
         where = f"[{self.item_id}] " if self.item_id else ""

@@ -7,11 +7,11 @@ import json
 import anthropic
 import httpx2
 import pytest
+from conftest import make_item
 
 from auslex.config import ModelSpec
 from auslex.prompts import messages as build_messages
 from auslex.runners.anthropic_runner import AnthropicRunner
-from conftest import make_item
 
 
 def _spec(**over) -> ModelSpec:
@@ -32,19 +32,51 @@ def _spec(**over) -> ModelSpec:
 def _sse(text: str, stop_reason: str, stop_details=None, out_tokens: int = 42) -> str:
     """A minimal Messages API event stream carrying one text block."""
     events = [
-        ("message_start", {"type": "message_start", "message": {
-            "id": "msg_test", "type": "message", "role": "assistant", "model": "claude-opus-5-5",
-            "content": [], "stop_reason": None, "stop_sequence": None,
-            "usage": {"input_tokens": 300, "output_tokens": 1}}}),
-        ("content_block_start", {"type": "content_block_start", "index": 0,
-                                 "content_block": {"type": "text", "text": ""}}),
-        ("content_block_delta", {"type": "content_block_delta", "index": 0,
-                                 "delta": {"type": "text_delta", "text": text}}),
+        (
+            "message_start",
+            {
+                "type": "message_start",
+                "message": {
+                    "id": "msg_test",
+                    "type": "message",
+                    "role": "assistant",
+                    "model": "claude-opus-5-5",
+                    "content": [],
+                    "stop_reason": None,
+                    "stop_sequence": None,
+                    "usage": {"input_tokens": 300, "output_tokens": 1},
+                },
+            },
+        ),
+        (
+            "content_block_start",
+            {
+                "type": "content_block_start",
+                "index": 0,
+                "content_block": {"type": "text", "text": ""},
+            },
+        ),
+        (
+            "content_block_delta",
+            {
+                "type": "content_block_delta",
+                "index": 0,
+                "delta": {"type": "text_delta", "text": text},
+            },
+        ),
         ("content_block_stop", {"type": "content_block_stop", "index": 0}),
-        ("message_delta", {"type": "message_delta",
-                           "delta": {"stop_reason": stop_reason, "stop_sequence": None,
-                                     "stop_details": stop_details},
-                           "usage": {"output_tokens": out_tokens}}),
+        (
+            "message_delta",
+            {
+                "type": "message_delta",
+                "delta": {
+                    "stop_reason": stop_reason,
+                    "stop_sequence": None,
+                    "stop_details": stop_details,
+                },
+                "usage": {"output_tokens": out_tokens},
+            },
+        ),
         ("message_stop", {"type": "message_stop"}),
     ]
     return "".join(f"event: {name}\ndata: {json.dumps(data)}\n\n" for name, data in events)

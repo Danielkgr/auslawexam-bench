@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from conftest import sample_items
+
 from auslex.config import ModelSpec
 from auslex.run.orchestrator import RunConfig, run
 from auslex.score.score import score_run
 from auslex.stats.report import build_report, render_markdown, write_report
-from conftest import sample_items
 
 
 def _mock_spec(name: str, quality: float, fab: float) -> ModelSpec:
@@ -54,7 +55,7 @@ def test_full_mock_pipeline(tmp_path):
     assert len(srep.models) == 2
     scored = Path(srep.scores_dir) / "scored.jsonl"
     assert scored.exists()
-    n_lines = len([l for l in scored.read_text().splitlines() if l.strip()])
+    n_lines = len([line for line in scored.read_text().splitlines() if line.strip()])
     assert n_lines == rep.n_ok
     # Higher-quality mock should outscore the weaker one.
     scores = {m.model: m.mean_item_score_100 for m in srep.models}
@@ -81,8 +82,14 @@ def test_scoring_leaves_out_completions_for_changed_items(tmp_path):
     """A completion answered the prompt it was given; if the item text later
     changes, it must not be marked against the new answer key."""
     items = sample_items()
-    cfg = RunConfig(models=[_mock_spec("alpha", 0.86, 0.08)], items=items, n_reps=2,
-                    run_id="stale-run", out_root=tmp_path, base_seed=0)
+    cfg = RunConfig(
+        models=[_mock_spec("alpha", 0.86, 0.08)],
+        items=items,
+        n_reps=2,
+        run_id="stale-run",
+        out_root=tmp_path,
+        base_seed=0,
+    )
     rep = run(cfg)
     edited = [dict(items[0], question_text="A different question."), items[1]]
     srep = score_run(Path(rep.run_dir), edited, out_root=tmp_path)

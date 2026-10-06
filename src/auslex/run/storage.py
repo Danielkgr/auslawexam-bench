@@ -43,7 +43,7 @@ class RunStore:
             fh.write("\n")
 
     def read_meta(self) -> dict[str, Any]:
-        with open(self.meta_path, "r", encoding="utf-8") as fh:
+        with open(self.meta_path, encoding="utf-8") as fh:
             return json.load(fh)
 
     # -- append-only record log ------------------------------------------- #
@@ -56,7 +56,7 @@ class RunStore:
         out: list[dict[str, Any]] = []
         if not self.records_path.exists():
             return out
-        with open(self.records_path, "r", encoding="utf-8") as fh:
+        with open(self.records_path, encoding="utf-8") as fh:
             for line in fh:
                 line = line.strip()
                 if line:

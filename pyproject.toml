@@ -24,7 +24,14 @@ dependencies = ["pydantic>=2.7"]
 hf = ["datasets>=2.19"]
 # The Claude slot runs on the official Anthropic SDK.
 claude = ["anthropic>=1.11,<2"]
-dev = ["pytest>=8", "anthropic>=1.11,<2"]
+# Pinned so the CI lint, format, and type checks match a local run.
+dev = [
+    "pytest>=8",
+    "anthropic>=1.11,<2",
+    "httpx>=0.27",
+    "ruff==0.16.8",
+    "mypy==2.3.1",
+]
 ui = [
     "fastapi>=0.111",
     "uvicorn>=0.30",
@@ -46,3 +53,25 @@ include = ["auslex*", "backend*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["frontend", "src/auslex/publish/assets"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+# Long string literals in prompts and tests are clearer unbroken.
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# The CLI resolves the repository root before importing the package modules.
+"src/auslex/cli.py" = ["E402"]
+# Tests put the src tree and the tests directory on sys.path first.
+"tests/*" = ["E402"]
+
+[tool.mypy]
+python_version = "3.10"
+files = ["src/auslex", "backend"]
+ignore_missing_imports = true
+warn_unused_ignores = true

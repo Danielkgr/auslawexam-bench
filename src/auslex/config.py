@@ -20,7 +20,7 @@ import dataclasses
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 DEFAULT_LOCAL_BASE_URL = "http://localhost:10000/v1"
 # No default: the local slot must name the model its server exposes, through
@@ -48,11 +48,11 @@ class ModelSpec:
     vendor: str  # "openai" | "anthropic" | "google" | "local"
     model: str  # API model id
     runner: str  # which runner implementation to use
-    base_url: Optional[str] = None  # for local / OpenAI-compat endpoints
-    api_key_env: Optional[str] = None
+    base_url: str | None = None  # for local / OpenAI-compat endpoints
+    api_key_env: str | None = None
     # None means the request carries no temperature at all, which is required
     # for models that reject it (current Claude and GPT reasoning models).
-    temperature: Optional[float] = 0.0
+    temperature: float | None = 0.0
     max_tokens: int = 3000
     # Request field that carries max_tokens.  OpenAI's reasoning models need
     # "max_completion_tokens"; most OpenAI-compatible servers take "max_tokens".
@@ -63,7 +63,7 @@ class ModelSpec:
     extra: dict[str, Any] = field(default_factory=dict)
 
 
-def _env(name: Optional[str]) -> Optional[str]:
+def _env(name: str | None) -> str | None:
     if not name:
         return None
     val = os.environ.get(name)
@@ -204,7 +204,7 @@ def _apply_overrides(specs: list[ModelSpec], cfg: dict[str, Any]) -> list[ModelS
     return list(by_name.values())
 
 
-def load_models(cfg_path: Optional[str | Path] = None) -> list[ModelSpec]:
+def load_models(cfg_path: str | Path | None = None) -> list[ModelSpec]:
     """Build the roster: defaults, then the optional config file, then env."""
     specs = default_models()
 
@@ -214,7 +214,7 @@ def load_models(cfg_path: Optional[str | Path] = None) -> list[ModelSpec]:
             raise FileNotFoundError(f"config file not found: {p}")
         import json
 
-        with open(p, "r", encoding="utf-8") as fh:
+        with open(p, encoding="utf-8") as fh:
             specs = _apply_overrides(specs, json.load(fh))
 
     # The environment wins over the config file, but only when it is set.
@@ -233,7 +233,7 @@ def load_models(cfg_path: Optional[str | Path] = None) -> list[ModelSpec]:
     return specs
 
 
-def resolve_api_key(spec: ModelSpec) -> Optional[str]:
+def resolve_api_key(spec: ModelSpec) -> str | None:
     """Return the API key for a spec if one is configured, else None."""
     return _env(spec.api_key_env)
 
