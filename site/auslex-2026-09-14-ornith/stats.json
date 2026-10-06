@@ -1,7 +1,7 @@
 {
   "fabricated_pairwise": [],
   "method": {
-    "ci": "percentile bootstrap, n_boot=10000, question-level, seeded",
+    "ci": "percentile bootstrap, n_boot=10000, resampling questions; the fabricated rate is the pooled ratio, recomputed on each resample",
     "comparison": "paired permutation (sign-flip), n_perm=10000, two-sided, seeded",
     "seed": 0
   },
@@ -18,10 +18,12 @@
       },
       "fabricated_rate": {
         "ci95": [
-          0.8721,
-          0.9744
+          0.816,
+          0.9757
         ],
-        "point": 0.9224
+        "citations": 210,
+        "fabricated": 190,
+        "point": 0.9048
       },
       "is_mock": false,
       "mean_item_score_100": {
