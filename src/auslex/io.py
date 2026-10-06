@@ -22,12 +22,14 @@ def read_jsonl(path: str | Path) -> list[dict[str, Any]]:
     return rows
 
 
-def write_jsonl(path: str | Path, rows: Iterable[dict[str, Any]]) -> None:
+def write_jsonl(
+    path: str | Path, rows: Iterable[dict[str, Any]], *, sort_keys: bool = False
+) -> None:
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
     with open(p, "w", encoding="utf-8") as fh:
         for row in rows:
-            fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+            fh.write(json.dumps(row, ensure_ascii=False, sort_keys=sort_keys) + "\n")
 
 
 def canonical_json(obj: Any) -> str:

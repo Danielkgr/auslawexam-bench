@@ -240,31 +240,44 @@ def _print_models(specs) -> None:
 # --------------------------------------------------------------------------- #
 
 
+def _manifest_path(questions: Path) -> Path:
+    """The default dataset's manifest lives in data/gold; others sit beside the file."""
+    if questions.resolve() == _default_questions().resolve():
+        return ROOT / "data" / "gold" / "manifest.json"
+    return questions.with_suffix(".manifest.json")
+
+
 def cmd_validate(args: argparse.Namespace) -> int:
     from .ingest import validate_dataset
-    from .ingest.validate import lock_items
+    from .ingest.validate import check_lock, check_stamps, load_manifest, lock_items
+    from .io import write_jsonl
 
-    items = _load_items(args.questions)
+    questions = Path(args.questions)
+    manifest_path = Path(args.manifest) if args.manifest else _manifest_path(questions)
+    items = _load_items(questions)
     report = validate_dataset(items)
+    if args.lock:
+        if report.errors:
+            print("not locking: the dataset has validation errors")
+        else:
+            manifest = lock_items(items, manifest_path)
+            write_jsonl(questions, items, sort_keys=True)
+            print(f"locked {len(items)} items -> {manifest_path}")
+            print(f"global canary   -> {manifest['global_canary']}")
+    if manifest_path.exists():
+        report.issues += check_lock(items, load_manifest(manifest_path))
+        report.issues += check_stamps(items)
+    else:
+        print(f"no manifest at {manifest_path}; run with --lock to create one")
+
     errs = [i for i in report.issues if i.level == "error"]
     warns = [i for i in report.issues if i.level == "warning"]
-    print(f"questions file: {args.questions}")
+    print(f"questions file: {questions}")
     print(f"items={len(items)}  errors={len(errs)}  warnings={len(warns)}")
     for i in warns:
         print(f"  warn  [{i.code}] {i.item_id}: {i.message}")
     for i in errs:
         print(f"  ERROR [{i.code}] {i.item_id}: {i.message}")
-
-    if args.lock:
-        manifest = lock_items(items, ROOT / "data" / "gold" / "manifest.json")
-        # Persist the hash-locked gold set.
-        from .io import write_jsonl
-        gold = ROOT / "data" / "gold" / "auslex.jsonl"
-        write_jsonl(gold, items)
-        print(f"locked gold set -> {gold}")
-        print(f"manifest        -> {ROOT / 'data' / 'gold' / 'manifest.json'}")
-        print(f"global canary   -> {manifest['global_canary']}")
-
     return 1 if errs else 0
 
 
@@ -466,7 +479,9 @@ def _build_parser() -> argparse.ArgumentParser:
     sp = sub.add_parser("validate", help="validate a questions file (and optionally lock)")
     sp.add_argument("--questions", default=str(_default_questions()))
     sp.add_argument("--lock", action="store_true",
-                    help="compute + persist the hash-locked gold set and manifest")
+                    help="stamp each item's content hash and write the manifest")
+    sp.add_argument("--manifest", default=None,
+                    help="manifest path (default: data/gold/manifest.json for the shipped set)")
     sp.set_defaults(func=cmd_validate)
 
     sp = sub.add_parser("probe-local", help="probe the local OpenAI-compatible endpoint")
