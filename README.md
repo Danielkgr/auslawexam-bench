@@ -29,6 +29,9 @@ It is a working prototype.  The full pipeline runs offline on deterministic seed
 
 One real model has been scored so far, a local open-weight model on the local slot.  No commercial slot has been run, because there are no commercial API keys in the run environment.
 
+> [!NOTE]
+> The seven commercial slots are wired and tested against mocked HTTP, covering success, refusal, truncation, and HTTP errors, but none has been run against a live API.  Before a live run, `auslex estimate --models claude,gpt,gemini --reps 3` prints the call count and an estimated cost for each slot.  It is an estimate: input tokens come from prompt length, output assumes the committed local run's mean answer length, and thinking tokens are not included.  A model without a confirmed price shows `unknown` until one is passed with `--price`.
+
 ### A real run on the local slot
 
 Run `auslex-2026-09-14-ornith` put the 16 provisional items to a local model of about 35.5B parameters, served as GGUF by llama.cpp through an OpenAI-compatible endpoint (`ornith-agent-strix`, context window 131072).  The server does not report the exact quantisation.  It used the shared prompt template v1.0.0 at temperature 0, with three repetitions per item, for 48 completions, of which 48 finished and 0 errored.  Dataset 0.2.0 then corrected the answer key, and four items changed their question text, so the scores below cover the 12 unchanged items and their 36 completions.  All 48 raw outputs stay committed.
@@ -161,7 +164,7 @@ python3 -m pytest
 ruff check . && ruff format --check . && mypy
 ```
 
-The 139 tests across 15 files cover schema validation, canary derivation and detection, the Australian-jurisdiction filters, citation extraction and classification, the permutation test, content hashing, mock runner determinism, a full run from mock to site, CLI parsing, the FastAPI endpoints, the served web client and its default paths, the secrets store, the Claude, OpenAI-compatible, Gemini, and local runners against mocked HTTP, the hash lock, the interval statistics, and concurrent runs with retry.
+The 145 tests across 16 files cover schema validation, canary derivation and detection, the Australian-jurisdiction filters, citation extraction and classification, the permutation test, content hashing, mock runner determinism, a full run from mock to site, CLI parsing, the FastAPI endpoints, the served web client and its default paths, the secrets store, the Claude, OpenAI-compatible, Gemini, and local runners against mocked HTTP, the hash lock, the interval statistics, concurrent runs with retry, the public site builder, and the cost estimate.
 
 <br>
 
@@ -181,6 +184,9 @@ python3 -m http.server --directory site/<run-id> 8080
 
 # Check a local OpenAI-compatible endpoint
 auslex probe-local --list
+
+# Count the calls and estimate the cost of a live run before spending anything
+auslex estimate --models claude,gpt,gemini --reps 3
 
 # Re-score, re-run the statistics, or rebuild the site on their own
 auslex score runs/<run-id>
@@ -292,7 +298,7 @@ backend/           FastAPI server for the web UI
 frontend/          React and Vite dashboard
 data/              Question set, canaries, gold manifest
 paper/             Methodology, contamination statement, analysis plan
-tests/             139 tests
+tests/             145 tests
 ```
 
 <br>
