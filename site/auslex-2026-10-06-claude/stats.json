@@ -1,0 +1,63 @@
+{
+  "fabricated_pairwise": [],
+  "method": {
+    "ci": "percentile bootstrap, n_boot=10000, resampling questions; the fabricated rate is the pooled ratio, recomputed on each resample",
+    "comparison": "paired permutation (sign-flip), n_perm=10000, two-sided, seeded",
+    "seed": 0
+  },
+  "models": [
+    {
+      "ci_seed": {
+        "ci": 0.95,
+        "high": 92.6342,
+        "low": 85.7056,
+        "n": 16,
+        "n_boot": 10000,
+        "point": 89.3004,
+        "seed": 0
+      },
+      "fabricated_rate": {
+        "ci95": [
+          0.8472,
+          0.9289
+        ],
+        "citations": 847,
+        "fabricated": 753,
+        "point": 0.889
+      },
+      "is_mock": false,
+      "mean_item_score_100": {
+        "ci95": [
+          85.71,
+          92.63
+        ],
+        "point": 89.3
+      },
+      "model": "claude",
+      "n_questions": 16,
+      "per_difficulty": {
+        "credit": 90.77,
+        "distinction": 96.37,
+        "high_distinction": 97.12,
+        "pass": 83.92
+      },
+      "per_priestley": {
+        "admin": 83.79,
+        "civil_procedure": 89.11,
+        "constitutional": 89.61,
+        "contract": 91.68,
+        "corporations": 96.51,
+        "crime": 84.83,
+        "equity_trusts": 86.27,
+        "ethics": 96.34,
+        "evidence": 91.94,
+        "property": 82.97,
+        "torts": 92.93
+      }
+    }
+  ],
+  "n_models": 1,
+  "n_questions_total": 16,
+  "pairwise_permutation": [],
+  "run_id": "auslex-2026-10-06-claude"
+}
