@@ -42,24 +42,32 @@ auslex run --models local --reps 3 --seed 0 --run-id auslex-2026-09-14-ornith
 | Metric | Value (95% CI) | What it actually measures |
 |---|---|---|
 | Mean rubric item score (0 to 100) | **70.3** [59.4, 80.5] | The deterministic seeded rubric judge, not a human legal grade |
-| Citations by class, `on_point` / `known_other` / `fabricated` | **8 / 9 / 202** of 219 | Automated match against the item's required authorities and a 48-entry known corpus |
-| Fabricated-citation rate (upper bound) | **0.922** [0.872, 0.974] | Share of extracted citations the matcher could not confirm |
+| Citations by class, `on_point` / `known_other` / `fabricated` | **9 / 11 / 190** of 210 | Automated match against the item's required authorities and a 48-entry known corpus |
+| Fabricated-citation rate (upper bound) | **0.905** [0.816, 0.976] | Share of extracted citations the matcher could not confirm |
 
 > [!IMPORTANT]
-> The headline rate here reflects the matcher more than the model.  Of the 202 unmatched citations, 114 are bare report tails such as `(1988) 164 CLR 387` that the extractor did not pair with a party name, mostly because the model wraps case names in markdown italics, as in `*Waltons Stores (Interstate) Ltd v Maher* (1988) 164 CLR 387`.  The rest mix real but uncatalogued Australian authorities with a small number of genuinely suspect citations.  **The true fabricated-citation rate is materially below 0.922 and is UNVERIFIED** until a citation-by-citation legal review is done.
+> The headline rate here reflects the small known corpus more than the model.  Of the 190 unmatched citations, 35 are bare report tails that the extractor could not pair with a party name.  The rest mix real but uncatalogued authorities, many of them English cases reported in the Appeal Cases, with citations that still need a legal check.  **The true fabricated-citation rate is materially below 0.905 and is UNVERIFIED** until a citation-by-citation legal review is done.
 
 The raw outputs, scores, intervals, and rendered leaderboard for this run are committed under `runs/`, `scores/`, `stats/`, and `site/`, each in an `auslex-2026-09-14-ornith` folder.  Re-derive them with `auslex score`, `auslex stats`, and `auslex site` on `runs/auslex-2026-09-14-ornith`.
 
 ### Mock run
 
-The table below comes from a mock run of 16 questions and three repetitions with no API keys, so **every number in it is synthetic**.  It shows the metric working and says nothing about any real model.
+The table below comes from a mock run of 16 questions and three repetitions with no API keys, so **every number in it is synthetic**.  It shows the metric working and says nothing about any real model.  Reproduce it with this command.
+
+```bash
+auslex run --reps 3 --mock --run-id auslex-mock --out-root /tmp/auslex-mock
+```
 
 | # | Slot | Mean score (95% CI) | Fabricated rate (95% CI) |
 |:--:|---|---|---|
-| 1 | gpt | 87.9 [86.5, 89.5] | 0.028 [0.000, 0.059] |
-| 2 | claude | 86.9 [85.9, 88.1] | 0.052 [0.021, 0.094] |
-| 3 | gemini | 86.8 [85.7, 88.0] | 0.038 [0.000, 0.090] |
-| 4 | local | 80.0 [71.8, 87.0] | 0.608 [0.441, 0.771] |
+| 1 | groq | 89.2 [88.4, 90.0] | 0.087 [0.029, 0.155] |
+| 2 | claude | 89.2 [88.4, 90.0] | 0.073 [0.027, 0.129] |
+| 3 | gpt | 89.1 [88.3, 90.0] | 0.043 [0.000, 0.082] |
+| 4 | gemini | 89.1 [88.3, 89.9] | 0.060 [0.000, 0.130] |
+| 5 | deepseek | 88.2 [87.3, 89.0] | 0.087 [0.029, 0.155] |
+| 6 | qwen | 88.1 [87.2, 88.9] | 0.045 [0.000, 0.100] |
+| 7 | mistral | 86.6 [85.6, 87.5] | 0.060 [0.015, 0.113] |
+| 8 | local | 77.1 [72.5, 81.1] | 0.164 [0.109, 0.213] |
 
 The mock runner seeds on the run seed, the slot, and the item id, so anyone can reproduce these exact numbers offline without an API key.  Every completion carries an `is_mock` flag from end to end, and the leaderboard labels mock rows as synthetic rather than presenting them as model output.
 
@@ -82,6 +90,11 @@ fabricated_rate = fabricated / total_citations
 ```
 
 A model can score well on rubric items and still have a high fabricated rate.  That gap is what the benchmark exists to expose.
+
+The fabricated rate is pooled over every citation a slot makes, and its 95% interval resamples questions and recomputes the same pooled rate, so the point always describes the same statistic as its interval.
+
+> [!NOTE]
+> The extractor reads full case citations, including names in markdown italics, medium-neutral citations such as `[2021] HCA 19`, year-ordered reports such as `[1932] AC 562`, and Act or rule citations that give a jurisdiction and a section or rule.  A bare report that repeats a fuller citation in the same answer counts once, and an abbreviated party name on the right report still matches.  It still misses short forms such as `Waltons at 404` or `ibid`, a section cited without its Act, sections of the Constitution, and report series written with a space, such as `Qd R`.  Those go uncounted rather than counted as fabricated.
 
 > [!WARNING]
 > With 16 questions the known corpus is small, so a real Australian citation that is not yet catalogued counts as `fabricated`.  The reported rate is a conservative upper bound on true hallucination rather than a precise estimate.  [paper/ANALYSIS_PLAN.md](paper/ANALYSIS_PLAN.md) sets out how the bound tightens as the question set grows toward 100 to 200 items.
