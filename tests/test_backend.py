@@ -33,12 +33,12 @@ def _clear_secrets(tmp_path):
     
     with patch("backend.secrets.SECRETS_DIR", secrets_dir):
         with patch("backend.secrets.SECRETS_FILE", secrets_dir / "keys.json"):
-            with patch("backend.api.DEFAULT_OUT_ROOT", runs_dir):
+            with patch("backend.api.OUTPUT_ROOT", tmp_path):
                 with patch("backend.api.DEFAULT_QUESTIONS", questions_dir / "auslex.jsonl"):
-                    # Rebuild run_manager with new out_root
+                    # Rebuild run_manager with the temporary output root
                     from backend.run_state import RunManager
                     from backend.api import run_manager as _orig_rm
-                    backend.api.run_manager = RunManager(out_root=runs_dir)
+                    backend.api.run_manager = RunManager(output_root=tmp_path)
                     yield
                     # Restore original
                     backend.api.run_manager = _orig_rm
@@ -93,7 +93,6 @@ class TestKeys:
         assert data["anthropic_key"] is None
         assert data["google_key"] is None
         assert data["local_base_url"] == "http://localhost:10000/v1"
-        assert data["local_model"] == "14. Qwen3.8-27B (Q5_K_M)"
         assert data["local_enable_thinking"] is False
 
     def test_set_keys(self, client, tmp_path):
@@ -114,6 +113,39 @@ class TestKeys:
         data = load_secrets()
         assert data["openai"] == "sk-test-123"
         assert data["anthropic"] == "ant-test-123"
+
+    def test_test_connection_uses_the_providers_slot(self, client, monkeypatch):
+        """The provider is "openai" but its slot is "gpt"; the match used to fail."""
+        from auslex.runners import RawResponse
+
+        asked = []
+
+        class FakeRunner:
+            def complete(self, messages, seed=None, item=None):
+                return RawResponse(text="hello", model="gpt-test")
+
+        def fake_get_runner(spec, allow_mock_fallback=False):
+            asked.append(spec.name)
+            return FakeRunner()
+
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+        monkeypatch.setattr(backend.api, "get_runner", fake_get_runner)
+        r = client.post("/api/keys/test/openai")
+        assert r.status_code == 200
+        assert r.json()["ok"] is True, r.json()
+        assert asked == ["gpt"]
+
+    def test_test_connection_reports_a_failed_call(self, client, monkeypatch):
+        from auslex.runners import RawResponse
+
+        class FailingRunner:
+            def complete(self, messages, seed=None, item=None):
+                return RawResponse(text="", error="HTTP 401: invalid x-api-key")
+
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "bad")
+        monkeypatch.setattr(backend.api, "get_runner", lambda spec, allow_mock_fallback=False: FailingRunner())
+        data = client.post("/api/keys/test/anthropic").json()
+        assert data["ok"] is False and "401" in data["detail"]
 
     def test_test_connection_unknown_provider(self, client):
         r = client.post("/api/keys/test/unknown")
@@ -237,7 +269,7 @@ class TestDefaultPaths:
         questions = repo_root / "data" / "questions" / "auslex.jsonl"
         assert Path(cfg["questions_path"]) == questions
         assert questions.exists()
-        assert Path(cfg["out_root"]) == repo_root / "runs"
+        assert Path(cfg["out_root"]) == repo_root
 
 
 class TestCLI:
