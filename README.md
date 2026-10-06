@@ -27,10 +27,10 @@ It is a working prototype.  The full pipeline runs offline on deterministic seed
 
 ## Results
 
-One real model has been scored so far, a local open-weight model on the local slot.  No commercial slot has been run, because there are no commercial API keys in the run environment.
+Two real models have been scored so far, Claude Opus 5.5 on the Claude slot and a local open-weight model on the local slot, each in its own run.  The other six commercial slots have not been run.
 
 > [!NOTE]
-> The seven commercial slots are wired and tested against mocked HTTP, covering success, refusal, truncation, and HTTP errors, but none has been run against a live API.  Before a live run, `auslex estimate --models claude,gpt,gemini --reps 3` prints the call count and an estimated cost for each slot.  It is an estimate: input tokens come from prompt length, output assumes the committed local run's mean answer length, and thinking tokens are not included.  A model without a confirmed price shows `unknown` until one is passed with `--price`.
+> All seven commercial slots are wired and tested against mocked HTTP, covering success, refusal, truncation, and HTTP errors.  Only the Claude slot has been run against a live API.  Before a live run, `auslex estimate --models claude,gpt,gemini --reps 3` prints the call count and an estimated cost for each slot.  It is an estimate, because input tokens come from prompt length, output assumes the committed local run's mean answer length, and thinking tokens are not included.  For the Claude run it said $1.54 and the run cost $7.67.  Most of the difference is thinking tokens, and the rest is answers longer than the local run's.  A model without a confirmed price shows `unknown` until one is passed with `--price`.
 
 ### A real run on the local slot
 
@@ -60,6 +60,29 @@ auslex run --models local --reps 3 --seed 0 --run-id auslex-2026-09-14-ornith
 *The item audit for one real answer (item 0001, repetition 0): the question and its required authority, the model's answer, the seeded mock judge's rubric marks, and the class of every extracted citation.  A `fabricated` label means the matcher could not confirm the citation against its 48-entry corpus, so it is an upper bound, not a finding that the case is invented.*
 
 The raw outputs, scores, intervals, and rendered leaderboard for this run are committed under `runs/`, `scores/`, `stats/`, and `site/`, each in an `auslex-2026-09-14-ornith` folder.  Re-derive them with `auslex score`, `auslex stats`, and `auslex site` on `runs/auslex-2026-09-14-ornith`.
+
+### A real run on the Claude slot
+
+Run `auslex-2026-10-06-claude` put the 16 provisional items, as they stand after dataset 0.2.0, to `claude-opus-5-5` through the Anthropic API.  It used the shared prompt template v1.0.0 at `high` effort with `max_tokens` of 32,000, at the model's default temperature because the model accepts no other, and with server-side fallbacks off.  Three repetitions per item gave 48 completions, of which 48 finished, 0 errored, and none needed a retry.  It ran on 6 October 2026 from revision `462134f`.
+
+```bash
+ANTHROPIC_API_KEY=... \
+auslex run --models claude --reps 3 --seed 0 --run-id auslex-2026-10-06-claude
+```
+
+| Metric | Value (95% CI) | What it actually measures |
+|---|---|---|
+| Mean rubric item score (0 to 100) | **89.3** [85.7, 92.6] | The deterministic seeded rubric judge, not a human legal grade.  It rewards naming the item's required authorities, the words of its key issues, a stated conclusion, and length. |
+| Citations by class, `on_point` / `known_other` / `fabricated` | **47 / 47 / 753** of 847 | Automated match against the item's required authorities and a 48-entry known corpus |
+| Fabricated-citation rate (upper bound) | **0.889** [0.847, 0.929] | Share of extracted citations the matcher could not confirm |
+| Cost | **$7.67** for 48 calls | Summed from each response's usage at list prices.  21,429 input tokens and 379,220 output tokens, thinking included.  The invoice is the authority. |
+
+> [!IMPORTANT]
+> The `fabricated` class here is not a count of invented cases.  Claude's answers held about 18 extracted citations each, far more than the 48-entry corpus can confirm.  Of the 753 unmatched citations, 374 distinct, 67 are statutory provisions and 686 are cases.  55 of the cases are bare report tails that the extractor could not pair with a party name, and 77 are English authorities in series such as the Appeal Cases.  The most frequent unmatched citations are well-known High Court decisions, among them *Amalgamated Society of Engineers v Adelaide Steamship Co Ltd* (1920) 28 CLR 129, *Commonwealth v Verwayen* (1990) 170 CLR 394, and *Mann v Paterson Constructions Pty Ltd* (2019) 267 CLR 560.  One of them, `Matthews Pty Ltd v Paul (1987) 162 CLR 221`, is *Pavey & Matthews Pty Ltd v Paul* with its first party cut off by the extractor at the ampersand.  **The true fabricated-citation rate is materially below 0.889 and is UNVERIFIED** until a citation-by-citation legal review is done.
+
+The two real runs are not a like-for-like comparison.  The local run is scored on 12 items and the Claude run on 16, the local model ran with thinking off and a 3,000-token limit, and the mock judge's length and coverage signals favour long answers.  The leaderboard compares slots only within a run, so neither run's score or rate should be read against the other's.
+
+The raw outputs, scores, intervals, and rendered leaderboard for this run are committed under `runs/`, `scores/`, `stats/`, and `site/`, each in an `auslex-2026-10-06-claude` folder, and the console output is in `eval-logs/`.  [PROVENANCE.md](runs/auslex-2026-10-06-claude/PROVENANCE.md) records how the run was made.
 
 ### Mock run
 
