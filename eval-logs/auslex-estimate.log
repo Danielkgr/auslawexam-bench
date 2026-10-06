@@ -1,0 +1,9 @@
+ESTIMATE ONLY.  Input tokens are approximated from prompt length at four characters
+per token.  Output assumes 1538 tokens per answer; thinking and
+reasoning tokens are billed as output and are not included, so the real cost can be
+higher.  The last column assumes every answer uses its full output budget.
+
+slot     model                    calls  input tok  output tok   est. USD    max USD
+claude   claude-opus-5-5             48     14,835      73,824       1.54      30.78
+
+estimated total for priced slots: about USD 1.54

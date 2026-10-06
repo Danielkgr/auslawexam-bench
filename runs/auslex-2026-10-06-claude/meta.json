@@ -1,0 +1,118 @@
+{
+  "base_seed": 0,
+  "finished_at": "2026-10-06T12:26:02.108558+00:00",
+  "items": [
+    {
+      "content_hash": "4e7e1e1102ac2075bff605c9f51ccdb4e7d2946d2781b5f52439d5b1efbd0ec5",
+      "id": "auslex-2026-0001",
+      "version": "0.1.0"
+    },
+    {
+      "content_hash": "3e5c2e4f31cb9d43ded00447caff940d7c874a7649c30af9540e4c1ef0863b35",
+      "id": "auslex-2026-0002",
+      "version": "0.1.0"
+    },
+    {
+      "content_hash": "ea608b1b378f4d4ee5e869e9deaa2b0f8c227d1fa4d7664ecbec8b44185daeb0",
+      "id": "auslex-2026-0003",
+      "version": "0.1.0"
+    },
+    {
+      "content_hash": "dc829c1e538704424fe698ac7e1faa59ce2eb326f9d9f1893183e64215ad60f4",
+      "id": "auslex-2026-0004",
+      "version": "0.2.0"
+    },
+    {
+      "content_hash": "0a154059fc4de8b70e85a1be3a8f94a0487dd12284057921baf426d53dcadf6d",
+      "id": "auslex-2026-0005",
+      "version": "0.2.0"
+    },
+    {
+      "content_hash": "a22098abbffa4e0fc8b5d514fef9d1c8db59705525bc235d98015285c600c4e6",
+      "id": "auslex-2026-0006",
+      "version": "0.2.0"
+    },
+    {
+      "content_hash": "f0dd921da25440ed3636da6f3e4711cbeb8db498416a435acf5ddadb62f936c5",
+      "id": "auslex-2026-0007",
+      "version": "0.2.0"
+    },
+    {
+      "content_hash": "614c0535469ea019752d2456bf6202128ca80c15291ec36e138dbb0638ba3806",
+      "id": "auslex-2026-0008",
+      "version": "0.2.0"
+    },
+    {
+      "content_hash": "ae809d4a9be016e2bff2e9f3882987e634b6d02be511c019c0198709bfc993de",
+      "id": "auslex-2026-0009",
+      "version": "0.1.0"
+    },
+    {
+      "content_hash": "afd0c55f8f10c59898f574edb71434312ce89ec129fb29c7e8456f5b9eaa518c",
+      "id": "auslex-2026-0010",
+      "version": "0.2.0"
+    },
+    {
+      "content_hash": "af64f8757367cf980fea91321169fc7495c75b0397be664d909c09c9f557822b",
+      "id": "auslex-2026-0011",
+      "version": "0.2.0"
+    },
+    {
+      "content_hash": "8ef8abe91a459cacf7467f790802e2bcc4f6d1a43db7a474b4d085474723a515",
+      "id": "auslex-2026-0012",
+      "version": "0.2.0"
+    },
+    {
+      "content_hash": "afe9c4b3068e61dee8702e0204136a11632addb44ab880b8702cf9caf6fe21e3",
+      "id": "auslex-2026-0013",
+      "version": "0.2.0"
+    },
+    {
+      "content_hash": "6ccbcee8a6ddb0e9c63603b44a9749ee17748be422a16774c470c5cc01bfa22f",
+      "id": "auslex-2026-0014",
+      "version": "0.2.0"
+    },
+    {
+      "content_hash": "09d8287dea02e1ebc717fe74ac71429792aad10a5387a1afce1aad79bc180741",
+      "id": "auslex-2026-0015",
+      "version": "0.2.0"
+    },
+    {
+      "content_hash": "d426ca3ca43aeb366f51afc7239ff6ad4a77a07803afd1ea1eba3406a82442a2",
+      "id": "auslex-2026-0016",
+      "version": "0.2.0"
+    }
+  ],
+  "models": [
+    {
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "base_url": null,
+      "extra": {
+        "effort": "high"
+      },
+      "fallback": false,
+      "is_mock": false,
+      "max_tokens": 32000,
+      "max_tokens_param": "max_tokens",
+      "mock_fabricate_rate": 0.1,
+      "mock_quality": 0.83,
+      "model": "claude-opus-5-5",
+      "name": "claude",
+      "runner": "AnthropicRunner",
+      "temperature": null,
+      "vendor": "anthropic"
+    }
+  ],
+  "n_completions": 48,
+  "n_error": 0,
+  "n_ok": 48,
+  "n_reps": 3,
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+  "prompt_template_version": "1.0.0",
+  "python": "3.14.4",
+  "run_id": "auslex-2026-10-06-claude",
+  "started_at": "2026-10-06T12:09:31.785636+00:00",
+  "sys_argv": [
+    "/home/lex1and/portfolio-evals/.venv/bin/auslex"
+  ]
+}
