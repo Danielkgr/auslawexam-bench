@@ -1,8 +1,10 @@
 """The run orchestrator.
 
 ``run(config)`` takes every item, sends the single shared prompt to every
-configured model ``n_reps`` times (temperature 0, seed = rep), and writes an
-append-only, content-hash-addressed transcript under ``runs/<run-id>/``.
+configured model ``n_reps`` times, and writes an append-only transcript, with
+each item's content hash, under ``runs/<run-id>/``.  Calls run with bounded
+concurrency and retry transient failures with backoff; records are written in
+a fixed order, so the transcript does not depend on the concurrency.
 
 Commercial slots with no API key (or a local endpoint that fails its probe)
 are skipped by default — the pipeline no longer silently falls back to mock
@@ -14,16 +16,19 @@ from __future__ import annotations
 
 import datetime as dt
 import platform
+import re
 import sys
+import time
 import urllib.request
-from dataclasses import asdict, dataclass, field
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 from .. import prompts as P
 from ..config import ModelSpec, default_models, spec_dict
 from ..io import hash_item
-from ..runners import Runner, get_runner, is_mock_runner
+from ..runners import RawResponse, Runner, get_runner, is_mock_runner
 from ..runners.local_runner import LocalRunner
 from ..runners.mock_runner import MockRunner
 from .storage import RunStore
@@ -39,6 +44,38 @@ def probe_local(base_url: str, timeout: float = 8.0) -> bool:
         return False
 
 
+# Errors worth retrying: rate limits, overload and server errors, timeouts, and
+# network failures.  A 400, a refusal, or a truncated answer is not retried.
+_TRANSIENT = re.compile(
+    r"HTTP (?:408|409|425|429|5\d\d)\b|rate limited|connection error|URL error|timed out",
+    re.IGNORECASE,
+)
+
+
+def is_transient(error: Optional[str]) -> bool:
+    return bool(error) and bool(_TRANSIENT.search(error or ""))
+
+
+def complete_with_retry(
+    call: Callable[[], RawResponse],
+    *,
+    max_retries: int,
+    base_delay: float,
+    sleep: Callable[[float], None] = time.sleep,
+) -> tuple[RawResponse, int]:
+    """Run ``call``, retrying transient failures with exponential backoff.
+
+    Returns the final response and the number of attempts made.
+    """
+    attempt = 1
+    resp = call()
+    while is_transient(resp.error) and attempt <= max_retries:
+        sleep(base_delay * 2 ** (attempt - 1))
+        attempt += 1
+        resp = call()
+    return resp, attempt
+
+
 def _utc_stamp() -> str:
     return dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d-%H%M%S")
 
@@ -52,6 +89,11 @@ class RunConfig:
     out_root: Path = Path("runs")
     base_seed: int = 0
     allow_mock_fallback: bool = False
+    # Calls in flight at once.  Records are still written in a fixed order.
+    concurrency: int = 4
+    # Extra attempts for a transient failure (rate limit, 5xx, network).
+    max_retries: int = 2
+    retry_base_delay: float = 2.0
     question_filter: Optional[str] = None
     priestley_filter: Optional[str] = None
     jurisdiction_filter: Optional[str] = None
@@ -132,8 +174,7 @@ def run(cfg: RunConfig) -> RunReport:
             skipped.append(spec.name)
             print(f"  skip  {spec.name}: {exc}")
 
-    # Meta is written once (config snapshot), before any completions, so a run
-    # directory always self-describes even if it is interrupted.
+    # The config snapshot for meta.json.
     model_states = [
         {
             **spec_dict(spec),
@@ -157,60 +198,73 @@ def run(cfg: RunConfig) -> RunReport:
         per_model[name] = ModelSummary(name=name, is_mock=False, fallback=False,
                                        n_ok=0, n_error=0)
     n_completions = n_ok = n_err = 0
+    # Write the config snapshot first, so an interrupted run still describes
+    # itself; it is finalised with the counts at the end.
+    store.write_meta(meta)
 
-    for spec, runner, is_mock, fb in resolved:
-        for item in cfg.items:
+    # Every call in a fixed order: model, then item, then repetition.
+    tasks: list[tuple[ModelSpec, Runner, bool, bool, dict[str, Any], int]] = [
+        (spec, runner, is_mock, fb, item, rep)
+        for spec, runner, is_mock, fb in resolved
+        for item in cfg.items
+        for rep in range(cfg.n_reps)
+    ]
+
+    def call(task: tuple[ModelSpec, Runner, bool, bool, dict[str, Any], int]) -> tuple[RawResponse, int]:
+        spec, runner, _, _, item, rep = task
+        return complete_with_retry(
+            lambda: runner.complete(P.messages(item), seed=cfg.base_seed + rep, item=item),
+            max_retries=cfg.max_retries,
+            base_delay=cfg.retry_base_delay,
+        )
+
+    # Calls run concurrently, but results are written strictly in task order,
+    # so records.jsonl is identical whatever the concurrency.
+    with ThreadPoolExecutor(max_workers=max(1, cfg.concurrency)) as pool:
+        for task, (resp, attempts) in zip(tasks, pool.map(call, tasks)):
+            spec, runner, is_mock, fb, item, rep = task
             item_id = item.get("id", "?")
-            content_hash = hash_item(item)
-            msgs = P.messages(item)
-            p_hash = P.prompt_hash(item)
-            system, user = P.build_prompt(item)
-            for rep in range(cfg.n_reps):
-                seed = cfg.base_seed + rep
-                resp = runner.complete(msgs, seed=seed, item=item)
-                ok = resp.ok and bool(resp.text)
-                record = {
-                    "run_id": cfg.run_id,
-                    "model": spec.name,
-                    "model_id": spec.model,
-                    "vendor": spec.vendor,
-                    "is_mock": is_mock,
-                    "fallback": fb,
-                    "item_id": item_id,
-                    "content_hash": content_hash,
-                    "rep": rep,
-                    "seed": seed,
-                    "prompt_hash": p_hash,
-                    "prompt_template_version": P.TEMPLATE_VERSION,
-                    "temperature": spec.temperature,
-                    "system": system,
-                    "text": resp.text,
-                    "reasoning": resp.reasoning,
-                    "finish_reason": resp.finish_reason,
-                    "prompt_tokens": resp.prompt_tokens,
-                    "completion_tokens": resp.completion_tokens,
-                    "total_tokens": resp.prompt_tokens + resp.completion_tokens,
-                    "latency_ms": resp.latency_ms,
-                    "cost_usd": resp.cost_usd,
-                    "system_fingerprint": resp.system_fingerprint,
-                    "error": resp.error,
-                    "ok": ok,
-                    "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
-                }
-                store.log(record)
-                # Full raw payload (incl. exact provider body) for audit.
-                store.write_raw(
-                    spec.name, item_id, rep,
-                    {"record": {k: v for k, v in record.items()},
-                     "raw": resp.raw},
-                )
-                n_completions += 1
-                if ok:
-                    n_ok += 1
-                    per_model[spec.name].n_ok += 1
-                else:
-                    n_err += 1
-                    per_model[spec.name].n_error += 1
+            system, _ = P.build_prompt(item)
+            ok = resp.ok and bool(resp.text)
+            record = {
+                "run_id": cfg.run_id,
+                "model": spec.name,
+                "model_id": spec.model,
+                "vendor": spec.vendor,
+                "is_mock": is_mock,
+                "fallback": fb,
+                "item_id": item_id,
+                "content_hash": hash_item(item),
+                "rep": rep,
+                "seed": cfg.base_seed + rep,
+                "prompt_hash": P.prompt_hash(item),
+                "prompt_template_version": P.TEMPLATE_VERSION,
+                "temperature": spec.temperature,
+                "system": system,
+                "text": resp.text,
+                "reasoning": resp.reasoning,
+                "finish_reason": resp.finish_reason,
+                "prompt_tokens": resp.prompt_tokens,
+                "completion_tokens": resp.completion_tokens,
+                "total_tokens": resp.prompt_tokens + resp.completion_tokens,
+                "latency_ms": resp.latency_ms,
+                "cost_usd": resp.cost_usd,
+                "system_fingerprint": resp.system_fingerprint,
+                "error": resp.error,
+                "attempts": attempts,
+                "ok": ok,
+                "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
+            }
+            store.log(record)
+            # Full raw payload (incl. exact provider body) for audit.
+            store.write_raw(spec.name, item_id, rep, {"record": dict(record), "raw": resp.raw})
+            n_completions += 1
+            if ok:
+                n_ok += 1
+                per_model[spec.name].n_ok += 1
+            else:
+                n_err += 1
+                per_model[spec.name].n_error += 1
 
     finished = dt.datetime.now(dt.timezone.utc).isoformat()
     meta["finished_at"] = finished

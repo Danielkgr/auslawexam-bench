@@ -324,6 +324,8 @@ def _run_pipeline(args: argparse.Namespace) -> str:
         out_root=Path(args.out_root) / "runs",
         base_seed=args.seed,
         allow_mock_fallback=getattr(args, "mock", False),
+        concurrency=args.concurrency,
+        max_retries=args.max_retries,
     )
     rep = run(cfg)
     print(f"run complete: {rep.run_id}")
@@ -505,6 +507,10 @@ def _build_parser() -> argparse.ArgumentParser:
         sp.add_argument("--run-id", default=None)
         sp.add_argument("--n-boot", type=int, default=10_000)
         sp.add_argument("--n-perm", type=int, default=10_000)
+        sp.add_argument("--concurrency", type=int, default=4,
+                        help="calls in flight at once (records keep a fixed order)")
+        sp.add_argument("--max-retries", type=int, default=2,
+                        help="extra attempts for rate limits, 5xx, and network errors")
         sp.add_argument("--mock", action="store_true",
                         help="allow mock fallback for slots without API keys (offline testing only)")
         if with_pipeline:

@@ -171,6 +171,8 @@ auslex export-hf --out export/hf
 | `--models local,gpt` | Runs a subset of slots | All slots |
 | `--reps N` | Repetitions per item | `3` |
 | `--mock` | Falls back to the mock runner for any slot with no API key | Off |
+| `--concurrency N` | Calls in flight at once; records keep a fixed order | `4` |
+| `--max-retries N` | Extra attempts, with exponential backoff, for rate limits, server errors, and network failures | `2` |
 | `--out-root <dir>` | Folder that receives `runs/`, `scores/`, `stats/`, and `site/` | The repository |
 | `--config <file>` | JSON overrides per slot, such as `{"models": {"gpt": {"model": "..."}}}` | None |
 | `--run-id <id>` | Names the run | `auslex-` and a UTC timestamp |
