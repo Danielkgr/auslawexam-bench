@@ -469,6 +469,16 @@ def cmd_site(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_pages(args: argparse.Namespace) -> int:
+    from .publish.pages import build_pages
+
+    published = build_pages(args.out_root, args.out)
+    print(f"published {len(published)} real run(s) -> {args.out}")
+    for run_id in published:
+        print(f"  - {run_id}")
+    return 0
+
+
 def cmd_export_hf(args: argparse.Namespace) -> int:
     items = _load_items(args.questions)
     out = Path(args.out)
@@ -588,6 +598,15 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     sp.add_argument("--seed", type=int, default=0)
     sp.set_defaults(func=cmd_site)
+
+    sp = sub.add_parser("pages", help="build the public site from committed real runs only")
+    sp.add_argument("--out", default="_site", help="output folder (default: _site)")
+    sp.add_argument(
+        "--out-root",
+        default=str(ROOT),
+        help="folder holding runs/, scores/, and stats/ (default: the repository)",
+    )
+    sp.set_defaults(func=cmd_pages)
 
     sp = sub.add_parser("export-hf", help="offline Hugging Face dataset export")
     sp.add_argument("--questions", default=str(_default_questions()))

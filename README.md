@@ -187,9 +187,14 @@ auslex score runs/<run-id>
 auslex stats runs/<run-id>
 auslex site runs/<run-id>
 
+# Build the public site from committed real runs only, as the Pages workflow does
+auslex pages --out _site
+
 # Export for Hugging Face
 auslex export-hf --out export/hf
 ```
+
+The `Pages` workflow builds that site on every push to `master` and deploys it to GitHub Pages.  It publishes a run only if every slot in it ran a real model, so mock numbers never reach the public site.
 
 ### Run flags
 
