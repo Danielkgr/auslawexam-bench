@@ -2,7 +2,6 @@
 
 Commands
 --------
-    author      Regenerate the provisional sample question set.
     validate    Validate a questions file (schema + jurisdiction + canary + dedup),
                 and optionally hash-lock the gold set.
     probe-local Probe the local OpenAI-compatible endpoint and list its models.
@@ -21,7 +20,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Optional
@@ -50,8 +48,7 @@ def _default_questions() -> Path:
 def _load_items(path: str | Path) -> list[dict[str, Any]]:
     p = Path(path)
     if not p.exists():
-        sys.exit(f"error: questions file not found: {p}\n"
-                 f"Run `auslex author` to generate the provisional sample set.")
+        sys.exit(f"error: questions file not found: {p}")
     return read_jsonl(p)
 
 
@@ -240,12 +237,6 @@ def _print_models(specs) -> None:
 # --------------------------------------------------------------------------- #
 # Subcommands
 # --------------------------------------------------------------------------- #
-
-
-def cmd_author(_args: argparse.Namespace) -> int:
-    script = ROOT / "tools" / "author_samples.py"
-    print(f"Authoring provisional sample set: {script}")
-    return subprocess.call([sys.executable, str(script)])
 
 
 def cmd_validate(args: argparse.Namespace) -> int:
@@ -456,9 +447,6 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--version", action="version", version="auslex 0.1.0")
     sub = p.add_subparsers(dest="cmd", required=True)
-
-    sp = sub.add_parser("author", help="regenerate the provisional sample question set")
-    sp.set_defaults(func=cmd_author)
 
     sp = sub.add_parser("validate", help="validate a questions file (and optionally lock)")
     sp.add_argument("--questions", default=str(_default_questions()))
