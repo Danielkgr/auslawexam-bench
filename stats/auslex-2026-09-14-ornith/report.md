@@ -6,7 +6,7 @@ Run `auslex-2026-09-14-ornith`, 1 models, 12 questions.
 
 | Model | Mean score (95% CI) | Fabricated-citation rate (95% CI) | Questions |
 |---|---|---|---|
-| local | 70.3 [59.4, 80.5] | 0.905 [0.816, 0.976] | 12 |
+| local | 70.3 [59.4, 80.5] | 0.906 [0.817, 0.976] | 12 |
 
 ## Pairwise significance (paired permutation, two-sided)
 
