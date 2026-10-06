@@ -19,6 +19,9 @@ _OUT_PER_MTOK = 5.0
 
 DEFAULT_BASE = "https://generativelanguage.googleapis.com/v1beta"
 
+# Finish reasons that mean the model or its safety layer declined to answer.
+_REFUSAL_REASONS = {"SAFETY", "RECITATION", "BLOCKLIST", "PROHIBITED_CONTENT", "SPII"}
+
 
 class GoogleRunner(Runner):
     def __init__(self, spec: ModelSpec, *, timeout: float = 600.0):
@@ -42,11 +45,10 @@ class GoogleRunner(Runner):
         ]
         payload: dict[str, Any] = {
             "contents": contents,
-            "generationConfig": {
-                "temperature": self.spec.temperature,
-                "maxOutputTokens": self.spec.max_tokens,
-            },
+            "generationConfig": {"maxOutputTokens": self.spec.max_tokens},
         }
+        if self.spec.temperature is not None:
+            payload["generationConfig"]["temperature"] = self.spec.temperature
         if seed is not None:
             payload["generationConfig"]["seed"] = seed
         if system_parts:
@@ -65,6 +67,12 @@ class GoogleRunner(Runner):
         except RuntimeError as e:
             return RawResponse(text="", error=str(e), model=self.spec.model)
 
+        block = (body.get("promptFeedback") or {}).get("blockReason")
+        if block and not body.get("candidates"):
+            return RawResponse(
+                text="", error=f"refusal: the prompt was blocked ({block})",
+                finish_reason="BLOCKED", latency_ms=latency_ms, model=self.spec.model, raw=body,
+            )
         try:
             cand = body["candidates"][0]
             parts = cand.get("content", {}).get("parts", [])
@@ -72,9 +80,16 @@ class GoogleRunner(Runner):
             usage = body.get("usageMetadata", {}) or {}
             pt = int(usage.get("promptTokenCount", 0))
             ct = int(usage.get("candidatesTokenCount", 0))
+            finish_reason = cand.get("finishReason", "STOP")
+            error: Optional[str] = None
+            if finish_reason == "MAX_TOKENS":
+                error = f"truncated: the answer hit maxOutputTokens={self.spec.max_tokens}"
+            elif finish_reason in _REFUSAL_REASONS:
+                error = f"refusal: generation stopped ({finish_reason})"
             return RawResponse(
                 text=text,
-                finish_reason=cand.get("finishReason", "STOP"),
+                finish_reason=finish_reason,
+                error=error,
                 prompt_tokens=pt,
                 completion_tokens=ct,
                 latency_ms=latency_ms,

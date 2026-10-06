@@ -30,9 +30,10 @@ class LocalRunner(Runner):
         payload: dict[str, Any] = {
             "model": self.spec.model,
             "messages": messages,
-            "temperature": self.spec.temperature,
-            "max_tokens": self.spec.max_tokens,
+            self.spec.max_tokens_param: self.spec.max_tokens,
         }
+        if self.spec.temperature is not None:
+            payload["temperature"] = self.spec.temperature
         if seed is not None:
             # Some servers honour a top-level seed; harmless if ignored.
             payload["seed"] = seed
@@ -61,6 +62,8 @@ class LocalRunner(Runner):
             # A thinking model that spent its whole budget in reasoning returns an
             # empty answer; surface that clearly so the transcript self-explains.
             error: Optional[str] = None
+            if finish_reason == "length":
+                error = f"truncated: the answer hit max_tokens={self.spec.max_tokens}"
             if not text.strip() and (reasoning or "").strip():
                 error = (
                     f"empty answer: model produced only reasoning_content "
