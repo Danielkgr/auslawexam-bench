@@ -91,7 +91,7 @@ paired with a real judge and a grown known-authorities corpus:
 | 4 | Real commercial runs (set the provider API keys) | **Config-ready** | The 7 commercial slots are tested against mocked HTTP and run as seeded mocks without keys |
 | 5 | Near-duplicate / semantic-leakage check at authoring time | **Planned** | Closes the canary gap for semantic memorisation |
 | 6 | Per-Priestley-area and per-difficulty slicing on the site | **Partial** | By-difficulty is on the site; by-area is in the report data |
-| 7 | Publish to GitHub Pages + Hugging Face (`auslex export-hf`) | **Config-ready** | Public, citable, reproducible release |
+| 7 | Publish to GitHub Pages + Hugging Face (`auslex pages`, `auslex export-hf`) | **Pages workflow added** | Public, citable, reproducible release of real runs only |
 
 ## 7. Threats to validity and mitigations
 
