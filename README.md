@@ -4,7 +4,7 @@
 
 ### A reproducible benchmark of Australian legal reasoning for LLMs, scored on how often a model invents a citation
 
-![16 provisional questions](https://img.shields.io/badge/questions-16_provisional-9a6700?style=for-the-badge) ![114 tests](https://img.shields.io/badge/tests-114-0969da?style=for-the-badge) ![8 model slots](https://img.shields.io/badge/model_slots-8-0969da?style=for-the-badge) ![runs offline on mocks](https://img.shields.io/badge/runs-offline-8250df?style=for-the-badge) ![Apache-2.0 code, CC BY 4.0 data](https://img.shields.io/badge/licence-Apache--2.0_%2F_CC_BY_4.0-57606a?style=for-the-badge)
+![16 provisional questions](https://img.shields.io/badge/questions-16_provisional-9a6700?style=for-the-badge) ![CI](https://img.shields.io/github/actions/workflow/status/Danielkgr/auslawexam-bench/ci.yml?branch=master&style=for-the-badge&label=CI) ![8 model slots](https://img.shields.io/badge/model_slots-8-0969da?style=for-the-badge) ![runs offline on mocks](https://img.shields.io/badge/runs-offline-8250df?style=for-the-badge) ![Apache-2.0 code, CC BY 4.0 data](https://img.shields.io/badge/licence-Apache--2.0_%2F_CC_BY_4.0-57606a?style=for-the-badge)
 
 </div>
 
@@ -131,10 +131,12 @@ auslex run --reps 3 --mock
 That one command runs the whole pipeline offline.  It sends the shared prompt to every configured slot through the seeded mock runner, scores citations and rubric items, computes the intervals and permutation tests, and renders a static leaderboard page.  No API keys are needed.  Without `--mock`, a slot with no API key, or a local endpoint that does not answer, is skipped rather than mocked.
 
 ```bash
+pip install -e ".[dev,ui]"
 python3 -m pytest
+ruff check . && ruff format --check . && mypy
 ```
 
-The 114 tests across 13 files cover schema validation, canary derivation and detection, the Australian-jurisdiction filters, citation extraction and classification, the permutation test, content hashing, mock runner determinism, a full run from mock to site, CLI parsing, the FastAPI endpoints, the served web client and its default paths, the secrets store, and the Claude, OpenAI-compatible, Gemini, and local runners against mocked HTTP.
+The 139 tests across 15 files cover schema validation, canary derivation and detection, the Australian-jurisdiction filters, citation extraction and classification, the permutation test, content hashing, mock runner determinism, a full run from mock to site, CLI parsing, the FastAPI endpoints, the served web client and its default paths, the secrets store, the Claude, OpenAI-compatible, Gemini, and local runners against mocked HTTP, the hash lock, the interval statistics, and concurrent runs with retry.
 
 <br>
 
@@ -260,7 +262,7 @@ backend/           FastAPI server for the web UI
 frontend/          React and Vite dashboard
 data/              Question set, canaries, gold manifest
 paper/             Methodology, contamination statement, analysis plan
-tests/             114 tests
+tests/             139 tests
 ```
 
 <br>
