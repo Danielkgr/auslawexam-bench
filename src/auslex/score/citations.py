@@ -80,6 +80,7 @@ class Citation:
     kind: str          # "case" | "statute"
     raw: str
     normalized: str
+    cls: str = ""      # "on_point" | "known_other" | "fabricated", set by assess_answer
 
 
 @dataclass
@@ -107,7 +108,7 @@ class CitationReport:
             "fabricated_rate": round(self.fabricated_rate, 4),
             "on_point_rate": round(self.on_point_rate, 4),
             "citations": [
-                {"kind": c.kind, "raw": c.raw} for c in self.citations
+                {"kind": c.kind, "raw": c.raw, "class": c.cls} for c in self.citations
             ],
         }
 
@@ -251,10 +252,13 @@ def assess_answer(
         report.total += 1
         report.citations.append(c)
         if any(_matches(c.normalized, r) for r in required):
+            c.cls = "on_point"
             report.on_point += 1
         elif _in_corpus(c, corpus):
+            c.cls = "known_other"
             report.known_other += 1
         else:
+            c.cls = "fabricated"
             report.fabricated += 1
     return report
 

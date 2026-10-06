@@ -383,6 +383,9 @@ def cmd_score(args: argparse.Namespace) -> int:
     items = _load_items(args.questions)
     srep = score_run(run_dir, items)
     print(f"scored: {srep.n_scored} completions -> {srep.scores_dir}")
+    if srep.n_stale:
+        print(f"  left out {srep.n_stale} completions whose item text has changed since "
+              f"the run: {', '.join(srep.stale_items)}")
     for m in srep.models:
         flag = " [mock]" if m.is_mock else ""
         print(f"  - {m.model:<7} score={m.mean_item_score_100:5.1f}  "

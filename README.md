@@ -31,7 +31,7 @@ One real model has been scored so far, a local open-weight model on the local sl
 
 ### A real run on the local slot
 
-Run `auslex-2026-09-14-ornith` put the 16 provisional items to a local model of about 35.5B parameters, served as GGUF by llama.cpp through an OpenAI-compatible endpoint (`ornith-agent-strix`, context window 131072).  The server does not report the exact quantisation.  It used the shared prompt template v1.0.0 at temperature 0, with three repetitions per item, for 48 completions, of which 48 finished and 0 errored.
+Run `auslex-2026-09-14-ornith` put the 16 provisional items to a local model of about 35.5B parameters, served as GGUF by llama.cpp through an OpenAI-compatible endpoint (`ornith-agent-strix`, context window 131072).  The server does not report the exact quantisation.  It used the shared prompt template v1.0.0 at temperature 0, with three repetitions per item, for 48 completions, of which 48 finished and 0 errored.  Dataset 0.2.0 then corrected the answer key, and four items changed their question text, so the scores below cover the 12 unchanged items and their 36 completions.  All 48 raw outputs stay committed.
 
 ```bash
 AUSLEX_LOCAL_BASE_URL=http://localhost:10009/v1 \
@@ -41,12 +41,12 @@ auslex run --models local --reps 3 --seed 0 --run-id auslex-2026-09-14-ornith
 
 | Metric | Value (95% CI) | What it actually measures |
 |---|---|---|
-| Mean rubric item score (0 to 100) | **68.9** [57.8, 79.0] | The deterministic seeded rubric judge, not a human legal grade |
-| Citations by class, `on_point` / `known_other` / `fabricated` | **13 / 7 / 204** of 224 | Automated match against the item's required authorities and a 46-entry known corpus |
-| Fabricated-citation rate (upper bound) | **0.911** [0.878, 0.961] | Share of extracted citations the matcher could not confirm |
+| Mean rubric item score (0 to 100) | **70.3** [59.4, 80.5] | The deterministic seeded rubric judge, not a human legal grade |
+| Citations by class, `on_point` / `known_other` / `fabricated` | **8 / 9 / 202** of 219 | Automated match against the item's required authorities and a 48-entry known corpus |
+| Fabricated-citation rate (upper bound) | **0.922** [0.872, 0.974] | Share of extracted citations the matcher could not confirm |
 
 > [!IMPORTANT]
-> The headline rate here reflects the matcher more than the model.  A manual review of the 204 unmatched citations found that about two thirds are bare pinpoint tails the extractor did not pair with a party name.  The model gives `Waltons Stores (Interstate) Ltd v Maher (1988) 164 CLR 387` in full once, then refers back with a bare `(1988) 164 CLR 387` or an abbreviated party, and the strict matcher counts those as unmatched even though the full citation is in the seed corpus.  The remaining third mixes real but uncatalogued Australian authorities with a small number of genuinely suspect citations.  **The true fabricated-citation rate is materially below 0.911 and is UNVERIFIED** until a citation-by-citation legal review is done.
+> The headline rate here reflects the matcher more than the model.  Of the 202 unmatched citations, 114 are bare report tails such as `(1988) 164 CLR 387` that the extractor did not pair with a party name, mostly because the model wraps case names in markdown italics, as in `*Waltons Stores (Interstate) Ltd v Maher* (1988) 164 CLR 387`.  The rest mix real but uncatalogued Australian authorities with a small number of genuinely suspect citations.  **The true fabricated-citation rate is materially below 0.922 and is UNVERIFIED** until a citation-by-citation legal review is done.
 
 The raw outputs, scores, intervals, and rendered leaderboard for this run are committed under `runs/`, `scores/`, `stats/`, and `site/`, each in an `auslex-2026-09-14-ornith` folder.  Re-derive them with `auslex score`, `auslex stats`, and `auslex site` on `runs/auslex-2026-09-14-ornith`.
 

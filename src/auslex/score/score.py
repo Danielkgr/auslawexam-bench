@@ -16,6 +16,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
+from .. import prompts as P
 from ..run.storage import RunStore
 from .citations import assess_answer, build_known_corpus, CitationReport
 from .judge import JudgeConfig, judge_answer
@@ -46,10 +47,16 @@ class ScoreReport:
     scores_dir: str
     n_scored: int
     models: list[ModelScore]
+    # Completions whose prompt no longer matches the current item text, because
+    # the item changed after the run.  They answered a different question, so
+    # they are left out of the scores rather than marked against the new key.
+    n_stale: int = 0
+    stale_items: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {"run_id": self.run_id, "scores_dir": self.scores_dir,
-                "n_scored": self.n_scored,
+                "n_scored": self.n_scored, "n_stale": self.n_stale,
+                "stale_items": self.stale_items,
                 "models": [m.to_dict() for m in self.models]}
 
 
@@ -81,8 +88,11 @@ def score_run(
     if scored_path.exists():
         scored_path.unlink()  # scoring is idempotent / re-runnable
 
-    by_model: dict[str, dict[str, list[float]]] = {}
+    by_model: dict[str, dict[str, Any]] = {}
     n_scored = 0
+    n_stale = 0
+    stale_items: set[str] = set()
+    current_prompt = {iid: P.prompt_hash(it) for iid, it in item_by_id.items()}
 
     with open(scored_path, "w", encoding="utf-8") as fh:
         for rec in records:
@@ -90,6 +100,11 @@ def score_run(
                 continue
             item = item_by_id.get(rec["item_id"])
             if item is None:
+                continue
+            recorded = rec.get("prompt_hash")
+            if recorded and recorded != current_prompt[rec["item_id"]]:
+                n_stale += 1
+                stale_items.add(rec["item_id"])
                 continue
             cite: CitationReport = assess_answer(item, rec["text"], corpus)
             judged = judge_answer(item, rec["text"], judge_cfg, seed=rec.get("seed"))
@@ -166,6 +181,8 @@ def score_run(
     summary = {
         "run_id": run_id,
         "n_scored": n_scored,
+        "n_stale": n_stale,
+        "stale_items": sorted(stale_items),
         "judge": judge_cfg.name,
         "models": [m.to_dict() for m in models],
     }
@@ -174,4 +191,5 @@ def score_run(
         fh.write("\n")
 
     return ScoreReport(run_id=run_id, scores_dir=str(scores_dir),
-                       n_scored=n_scored, models=models)
+                       n_scored=n_scored, models=models,
+                       n_stale=n_stale, stale_items=sorted(stale_items))
