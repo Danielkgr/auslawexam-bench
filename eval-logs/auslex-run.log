@@ -1,0 +1,39 @@
+== auslex run =======================================================
+questions : /home/lex1and/portfolio-evals/auslawexam-bench/data/questions/auslex.jsonl  (16 items)
+models    :
+  - claude  claude-opus-5-5              real
+reps      : 3
+out root  : /home/lex1and/portfolio-evals/auslawexam-bench
+
+run complete: auslex-2026-10-06-claude
+  run dir : /home/lex1and/portfolio-evals/auslawexam-bench/runs/auslex-2026-10-06-claude
+  ok=48  error=0  completions=48
+  - claude  ok=48 err=0
+
+scored: 48 completions -> /home/lex1and/portfolio-evals/auslawexam-bench/scores/auslex-2026-10-06-claude
+  leaderboard (mean item score / fabricated-citation rate):
+  - claude  score= 89.3  fab=0.889  on_point=0.056
+
+stats   : /home/lex1and/portfolio-evals/auslawexam-bench/stats/auslex-2026-10-06-claude/stats.json
+report  : /home/lex1and/portfolio-evals/auslawexam-bench/stats/auslex-2026-10-06-claude/report.md
+
+site    : /home/lex1and/portfolio-evals/auslawexam-bench/site/auslex-2026-10-06-claude/index.html
+
+---- leaderboard (markdown) ----------------------------------------
+# AusLawExam-Bench run report
+
+Run `auslex-2026-10-06-claude`, 1 models, 16 questions.
+
+## Leaderboard (item score 0 to 100, with 95% CI)
+
+| Model | Mean score (95% CI) | Fabricated-citation rate (95% CI) | Questions |
+|---|---|---|---|
+| claude | 89.3 [85.7, 92.6] | 0.889 [0.847, 0.929] | 16 |
+
+## Pairwise significance (paired permutation, two-sided)
+
+| Model A | Model B | Mean diff (A - B) | p-value | Significant at 0.05 |
+|---|---|---|---|---|
+
+*Method: percentile bootstrap, n_boot=10000, resampling questions; the fabricated rate is the pooled ratio, recomputed on each resample; paired permutation (sign-flip), n_perm=10000, two-sided, seeded.*
+
