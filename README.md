@@ -181,6 +181,10 @@ auslex run --reps 3 --mock
 
 That one command runs the whole pipeline offline.  It sends the shared prompt to every configured slot through the seeded mock runner, scores citations and rubric items, computes the intervals and permutation tests, and renders a static leaderboard page.  No API keys are needed.  Without `--mock`, a slot with no API key, a local slot with no model named, or a local endpoint that does not answer, is skipped rather than mocked.
 
+### Packaging
+
+The `auslex` package is distributed from source through this repository, not published to PyPI.  Install it from a clone with `pip install -e .`, or build it directly with `pip install .`.  There is no release on PyPI, so `pip install auslex` will not find it.
+
 ```bash
 pip install -e ".[dev,ui]"
 python3 -m pytest
