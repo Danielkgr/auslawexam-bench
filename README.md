@@ -10,7 +10,7 @@
 
 <br>
 
-> In law, a confidently wrong citation is worse than an admitted gap.  A model that invents a leading case or misstates a section number can mislead as badly as one that writes nothing at all.  This benchmark checks every citation a model produces against known Australian authority, so **a model that scores well on the rubric while inventing cases shows up as exactly that**.
+> In law, a confidently wrong citation is worse than an admitted gap.  A model that invents a leading case or misstates a section number can mislead as badly as one that writes nothing at all.  This benchmark extracts each citation a model produces and checks it against a small known corpus of Australian authority, so **a model that scores well on the rubric while inventing cases surfaces as a high fabricated-citation rate, an upper bound rather than a confirmed finding of invention**.
 
 <br>
 
