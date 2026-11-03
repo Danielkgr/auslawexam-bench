@@ -190,7 +190,7 @@ def cmd_import(args: argparse.Namespace) -> int:
         print(f"  ERROR [{i.code}] {i.item_id}: {i.message}")
 
     if errs:
-        print("validation failed — not writing output (use --dry-run to preview)")
+        print("validation failed, not writing output (use --dry-run to preview)")
         return 1
 
     if args.dry_run:

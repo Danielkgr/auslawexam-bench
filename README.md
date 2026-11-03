@@ -271,6 +271,8 @@ Configuration lives in [src/auslex/config.py](src/auslex/config.py).  A config f
 | qwen | Qwen | qwen3-max | `DASHSCOPE_API_KEY` is set | quality 0.76, fab 0.13 |
 | local | OpenAI-compatible | Set by `AUSLEX_LOCAL_MODEL` | The model is named and `base_url` answers | quality 0.55, fab 0.25 |
 
+The Groq slot runs `openai/gpt-oss-120b`, but the repo holds no confirmed price for it, so `auslex estimate` reports its cost as `unknown` until a price is passed with `--price`.  The model still runs; the price line was removed rather than guessed.
+
 ### Claude slot
 
 The Claude slot runs on the official `anthropic` SDK.  Install it with `pip install -e ".[claude]"`, then run `ANTHROPIC_API_KEY=... auslex run --models claude --reps 3`.

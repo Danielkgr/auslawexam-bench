@@ -15,8 +15,6 @@ PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
     "claude-fable-5-1": (10.0, 50.0),
     # Gemini API model page for gemini-3.1-flash-lite, October 2026.
     "gemini-3.1-flash-lite": (0.25, 1.50),
-    # Groq model page for openai/gpt-oss-120b, October 2026.
-    "openai/gpt-oss-120b": (0.15, 0.60),
 }
 
 
