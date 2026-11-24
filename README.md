@@ -217,6 +217,9 @@ auslex pages --out _site
 
 # Export for Hugging Face
 auslex export-hf --out export/hf
+
+# Import questions from JSONL or CSV, with --dry-run to validate without writing
+auslex import --input <file> --out data/questions/imported.jsonl
 ```
 
 The `Pages` workflow builds that site on every push to `master` and deploys it to GitHub Pages.  It publishes a run only if every slot in it ran a real model, so mock numbers never reach the public site.
@@ -299,6 +302,7 @@ The 16 provisional items cover all four exam formats and all eleven Priestley ar
 
 ```text
 src/auslex/
+  cli.py           The auslex command line
   schema.py        Pydantic contract for the QuestionItem model
   config.py        Eight-slot roster, driven by config and environment
   pricing.py       Confirmed model prices for cost reporting and estimates
@@ -317,6 +321,11 @@ frontend/          React and Vite dashboard
 data/              Question set, canaries, gold manifest
 docs/images/       README screenshots
 paper/             Methodology, contamination statement, analysis plan
+runs/              Raw outputs, records, and metadata for the two real runs
+scores/            Scored records and score summaries for those runs
+stats/             Statistics reports for those runs
+site/              Rendered leaderboard pages for those runs
+eval-logs/         Console output of the Claude run and of the estimate before it
 tests/             145 tests
 ```
 
